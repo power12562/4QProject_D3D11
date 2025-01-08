@@ -1,5 +1,5 @@
-#include "RendererTestApp.h"
-#include <RendererTestScene.h>
+#include "EditerTestApp.h"
+#include <EditerTestScene.h>
 
 int APIENTRY wWinMain(
     _In_ HINSTANCE hInstance,
@@ -11,9 +11,9 @@ int APIENTRY wWinMain(
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
-    RendererTestApp app;
+    EditerTestApp app;
     app.Initialize(hInstance);
-    sceneManager.LoadScene<RendererTestScene>();
+    sceneManager.LoadScene<EditerTestScene>();
     app.Run();
     app.Uninitialize();
 

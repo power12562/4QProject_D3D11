@@ -1,11 +1,11 @@
 #pragma once
 #include <Scene/Base/Scene.h>
 
-class StartScene : public Scene
+class EditerTestScene : public Scene
 {
 public:
-	StartScene() = default;
-	virtual ~StartScene() override = default;
+	EditerTestScene() = default;
+	virtual ~EditerTestScene() override = default;
 	virtual void Start() override;
 
 	virtual void ImGUIRender();

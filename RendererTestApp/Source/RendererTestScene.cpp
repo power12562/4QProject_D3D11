@@ -1,7 +1,7 @@
-#include "StartScene.h"
+#include "RendererTestScene.h"
 #include <framework.h>
 
-void StartScene::Start()
+void RendererTestScene::Start()
 {
 	Scene::GuizmoSetting.UseImGuizmo = true;
 
@@ -15,7 +15,7 @@ void StartScene::Start()
 	auto cube = NewGameObject<CubeObject>(L"Cube");
 }
 
-void StartScene::ImGUIRender()
+void RendererTestScene::ImGUIRender()
 {
 	ImGui::Begin("Hierarchy");
 	ImGui::EditHierarchyView();
