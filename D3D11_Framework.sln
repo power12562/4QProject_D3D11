@@ -1,0 +1,44 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35222.181
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "D3D11_Engine", "D3D11_Engine\D3D11_Engine.vcxproj", "{C8880048-46A0-4CC4-BE47-C3144CD15787}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RendererTestApp", "RendererTestApp\RendererTestApp.vcxproj", "{D56F0A94-1FCD-4018-A22A-24315FB4889C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C8880048-46A0-4CC4-BE47-C3144CD15787} = {C8880048-46A0-4CC4-BE47-C3144CD15787}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C8880048-46A0-4CC4-BE47-C3144CD15787}.Debug|x64.ActiveCfg = Debug|x64
+		{C8880048-46A0-4CC4-BE47-C3144CD15787}.Debug|x64.Build.0 = Debug|x64
+		{C8880048-46A0-4CC4-BE47-C3144CD15787}.Debug|x86.ActiveCfg = Debug|Win32
+		{C8880048-46A0-4CC4-BE47-C3144CD15787}.Debug|x86.Build.0 = Debug|Win32
+		{C8880048-46A0-4CC4-BE47-C3144CD15787}.Release|x64.ActiveCfg = Release|x64
+		{C8880048-46A0-4CC4-BE47-C3144CD15787}.Release|x64.Build.0 = Release|x64
+		{C8880048-46A0-4CC4-BE47-C3144CD15787}.Release|x86.ActiveCfg = Release|Win32
+		{C8880048-46A0-4CC4-BE47-C3144CD15787}.Release|x86.Build.0 = Release|Win32
+		{D56F0A94-1FCD-4018-A22A-24315FB4889C}.Debug|x64.ActiveCfg = Debug|x64
+		{D56F0A94-1FCD-4018-A22A-24315FB4889C}.Debug|x64.Build.0 = Debug|x64
+		{D56F0A94-1FCD-4018-A22A-24315FB4889C}.Debug|x86.ActiveCfg = Debug|Win32
+		{D56F0A94-1FCD-4018-A22A-24315FB4889C}.Debug|x86.Build.0 = Debug|Win32
+		{D56F0A94-1FCD-4018-A22A-24315FB4889C}.Release|x64.ActiveCfg = Release|x64
+		{D56F0A94-1FCD-4018-A22A-24315FB4889C}.Release|x64.Build.0 = Release|x64
+		{D56F0A94-1FCD-4018-A22A-24315FB4889C}.Release|x86.ActiveCfg = Release|Win32
+		{D56F0A94-1FCD-4018-A22A-24315FB4889C}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {13783B46-0E14-4386-8064-5711402E37BF}
+	EndGlobalSection
+EndGlobal
