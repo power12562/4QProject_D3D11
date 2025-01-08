@@ -248,7 +248,7 @@ void Scene::ImGuizmoDraw()
 						if ((GuizmoSetting.SelectObject->transform.position - postion).Length() > Mathf::AngleEpsilon)
 							GuizmoSetting.SelectObject->transform.position = postion;
 						if ((GuizmoSetting.SelectObject->transform.scale - scale).Length() > Mathf::AngleEpsilon)
-							GuizmoSetting.SelectObject->transform.scale	   = scale;
+							GuizmoSetting.SelectObject->transform.scale = scale;
 						if (Mathf::GetAngleDifference(rotation, GuizmoSetting.SelectObject->transform.rotation) > Mathf::AngleEpsilon)
 							GuizmoSetting.SelectObject->transform.rotation = rotation;			
 					}
