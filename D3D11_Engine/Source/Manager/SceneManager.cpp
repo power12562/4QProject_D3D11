@@ -54,6 +54,7 @@ void SceneManager::AddScene(const wchar_t* scenePath)
 		{
 			MessageBox(NULL, L"이미 로드된 Scene 입니다.", sceneName.c_str(), MB_OK);
 		}
+		currScene->sceneName = std::filesystem::path(scenePath).filename();
 		gameObjectFactory.DeserializedScene(currScene.get(), scenePath);
 	}
 }

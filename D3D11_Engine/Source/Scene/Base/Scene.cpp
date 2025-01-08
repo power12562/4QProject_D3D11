@@ -236,15 +236,19 @@ void Scene::ImGuizmoDraw()
 					objMatrix.Decompose(scale, rotation, postion);
 					if (parent)
 					{
-						GuizmoSetting.SelectObject->transform.localPosition = postion;
-						GuizmoSetting.SelectObject->transform.localScale = scale;
+						if((GuizmoSetting.SelectObject->transform.localPosition - postion).Length() > Mathf::AngleEpsilon)
+							GuizmoSetting.SelectObject->transform.localPosition = postion;
+						if ((GuizmoSetting.SelectObject->transform.localScale - scale).Length() > Mathf::AngleEpsilon)
+							GuizmoSetting.SelectObject->transform.localScale = scale;
 						if(Mathf::GetAngleDifference(rotation, GuizmoSetting.SelectObject->transform.localRotation) > Mathf::AngleEpsilon)
 							GuizmoSetting.SelectObject->transform.localRotation = rotation;
 					}
 					else
 					{
-						GuizmoSetting.SelectObject->transform.position = postion;
-						GuizmoSetting.SelectObject->transform.scale	   = scale;
+						if ((GuizmoSetting.SelectObject->transform.position - postion).Length() > Mathf::AngleEpsilon)
+							GuizmoSetting.SelectObject->transform.position = postion;
+						if ((GuizmoSetting.SelectObject->transform.scale - scale).Length() > Mathf::AngleEpsilon)
+							GuizmoSetting.SelectObject->transform.scale	   = scale;
 						if (Mathf::GetAngleDifference(rotation, GuizmoSetting.SelectObject->transform.rotation) > Mathf::AngleEpsilon)
 							GuizmoSetting.SelectObject->transform.rotation = rotation;			
 					}
