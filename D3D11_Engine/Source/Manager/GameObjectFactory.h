@@ -62,6 +62,9 @@ public:
 	void* GameObjectAlloc(size_t id);
 	std::function<GameObject*(const wchar_t* name)>& NewGameObjectToKey(const char* key);
 
+	void SerializedScene(Scene* scene, const wchar_t* WritePath, bool isOverride = false);
+	void DeserializedScene(const wchar_t* ReadPath);
+
 	void SerializedObject(GameObject* object, const wchar_t* WritePath, bool isOverride = false);
 	GameObject* DeserializedObject(const wchar_t* ReadPath);
 private:

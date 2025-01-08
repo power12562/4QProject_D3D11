@@ -3,6 +3,8 @@
 #include <framework.h>
 #include <Utility/SerializedUtility.h>
 #include <Component/Render/SimpleBoneMeshRender.h>
+#include <ranges>
+#include <algorithm>
 
 GameObjectFactory& gameObjectFactory = GameObjectFactory::GetInstance();
 
@@ -44,7 +46,89 @@ std::function<GameObject*(const wchar_t* name)>& GameObjectFactory::NewGameObjec
 	throw std::runtime_error("Key not found in the map");
 }
 
-void GameObjectFactory::SerializedObject(GameObject* object, const wchar_t* WritePath, bool isOveride)
+void GameObjectFactory::SerializedScene(Scene* scene, const wchar_t* WritePath, bool isOverride)
+{
+	if (scene == nullptr)
+	{
+		__debugbreak(); //scene is a nullptr
+		return;
+	}
+
+	std::filesystem::path path(WritePath);
+	std::filesystem::path extension = path.extension();
+	if (extension != L".Scene")
+	{
+		if (extension != L"")
+		{
+			path.replace_extension(L".Scene");
+		}
+		else
+		{
+			if (!Utility::IsPathDirectory(path))
+			{
+				path += L"/";
+			}
+			path += scene->GetSceneName();
+			path += L".Scene";
+		}
+	}
+
+	if (!std::filesystem::exists(path))
+	{
+		if (!std::filesystem::exists(path.parent_path()))
+		{
+			std::filesystem::create_directories(path.parent_path());
+		}
+	}
+	else if (!isOverride)
+	{
+		int result = MessageBox(
+			NULL,
+			L"파일이 존재합니다. 덮어쓰시겠습니까?",
+			path.c_str(),
+			MB_OKCANCEL | MB_ICONQUESTION
+		);
+		if (result == IDCANCEL) {
+			return;
+		}
+	}
+
+	ObjectList objList = sceneManager.GetObjectList();
+	auto parentObjects = objList | std::views::filter([](GameObject* obj) { return !obj->transform.Parent;});
+	size_t objCount = std::ranges::distance(parentObjects);
+	std::ofstream ofs(path.c_str(), std::ios::binary | std::ios::trunc);
+	Binary::Write::data<size_t>(ofs, objCount);
+	for (const auto& item : parentObjects)
+	{
+		Serialized(item, ofs, 0);
+	}
+	ofs.close();
+}
+
+void GameObjectFactory::DeserializedScene(const wchar_t* ReadPath)
+{
+	std::filesystem::path path(ReadPath);
+	if (!std::filesystem::exists(path))
+	{
+		MessageBox(NULL, L"파일이 존재하지 않습니다.", ReadPath, MB_OK);
+		return;
+	}
+	if (path.extension() != L".Scene")
+	{
+		MessageBox(NULL, L"Scene 파일이 아닙니다.", ReadPath, MB_OK);
+		return;
+	}
+
+	std::ifstream ifs(path.c_str(), std::ios::binary);
+	size_t objCount = Binary::Read::data<size_t>(ifs);
+	for (size_t i = 0; i < objCount; i++)
+	{
+		Deserialized(ifs);
+	}
+	ifs.close();
+}
+
+void GameObjectFactory::SerializedObject(GameObject* object, const wchar_t* WritePath, bool isOverride)
 {
 	if (object == nullptr)
 	{
@@ -58,14 +142,22 @@ void GameObjectFactory::SerializedObject(GameObject* object, const wchar_t* Writ
 		return;
 	}
 	std::filesystem::path path(WritePath);
-	if (path.extension() != L".GameObject")
+	std::filesystem::path extension = path.extension();
+	if (extension != L".GameObject")
 	{
-		if (!Utility::IsPathDirectory(path))
+		if (extension != L"")
 		{
-			path += L"/";
+			path.replace_extension(L".GameObject");
 		}
-		path += object->GetName();
-		path += L".GameObject";
+		else
+		{
+			if (!Utility::IsPathDirectory(path))
+			{
+				path += L"/";
+			}
+			path += object->GetName();
+			path += L".GameObject";
+		}
 	}
 
 	if (!std::filesystem::exists(path))
@@ -75,7 +167,7 @@ void GameObjectFactory::SerializedObject(GameObject* object, const wchar_t* Writ
 			std::filesystem::create_directories(path.parent_path());
 		}
 	}
-	else if(!isOveride)
+	else if(!isOverride)
 	{
 		int result = MessageBox(
 			NULL,                      

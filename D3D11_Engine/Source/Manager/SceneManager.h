@@ -42,6 +42,9 @@ private:
 public:
 	template <typename T>
 	void LoadScene();
+	void LoadScene(const wchar_t* scenePath);
+	void AddScene(const wchar_t* scenePath);
+	void SaveScene(const wchar_t* savePath);
 
 	/*현재 씬에 오브젝트 추가*/
 	void AddGameObject(std::shared_ptr<GameObject>& object);

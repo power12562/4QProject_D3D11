@@ -9,6 +9,7 @@
 class GameObject;
 class CameraMoveHelper;
 class Camera;
+class Scene;
 class D3DTexture2D;
 struct cb_PBRMaterial;
 struct PBRDirectionalLight;
@@ -58,4 +59,9 @@ namespace ImGui
 	bool ShowOpenGameObjectPopup();
 	/*게임 오브젝트 저장 팝업 활성화*/
 	bool ShowSaveAsGameObjectPopup(GameObject* object);
+
+	/*게임 오브젝트 열기 팝업 활성화*/
+	bool ShowLoadScenePopup();
+	/*게임 오브젝트 저장 팝업 활성화*/
+	bool ShowSaveAsScenePopup(Scene* scene);
 };

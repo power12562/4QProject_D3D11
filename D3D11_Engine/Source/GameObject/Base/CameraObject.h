@@ -8,7 +8,8 @@ class CameraObject : public GameObject
 public:
 	CameraObject();
 	virtual ~CameraObject() override;
-
+	virtual void Serialized(std::ofstream& ofs);
+	virtual void Deserialized(std::ifstream& ifs);
 public:
 	void SetMainCamera();
 	

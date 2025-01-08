@@ -4,7 +4,7 @@
 #include <memory>
 #include <unordered_map>
 #include <map>
-#include <unordered_set>
+#include <unordered_map>
 #include <Utility/AssimpUtility.h>
 #include <directxtk/Keyboard.h>
 #include <functional>
@@ -41,6 +41,9 @@ private:
 private:
 	std::vector<std::shared_ptr<GameObject>> objectList;
 	std::vector<std::weak_ptr<GameObject>>   dontdestroyonloadList;
+
+	/*·ÎµåµÈ ¾À °ü¸®¿ë ¸Ê*/
+	std::unordered_map<std::wstring, std::weak_ptr<GameObject>> loadScenesMap;
 private:
 	//Update
 	void FixedUpdate();

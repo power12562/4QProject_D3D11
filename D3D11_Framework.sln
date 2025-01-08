@@ -11,6 +11,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RendererTestApp", "Renderer
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EditerTestApp", "EditerTestApp\EditerTestApp.vcxproj", "{3AB3F40A-79EC-4AE3-A1D2-6155A25A916C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C8880048-46A0-4CC4-BE47-C3144CD15787} = {C8880048-46A0-4CC4-BE47-C3144CD15787}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

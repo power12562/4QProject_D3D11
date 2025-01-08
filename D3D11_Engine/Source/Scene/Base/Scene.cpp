@@ -281,6 +281,10 @@ void Scene::ImGuizmoDraw()
 						{
 							ImGui::ShowOpenGameObjectPopup();
 						}
+						if (ImGui::MenuItem("Load Scene"))
+						{
+							ImGui::ShowLoadScenePopup();
+						}
 					}
 					ImGui::EndMenu();
 				}
@@ -293,6 +297,10 @@ void Scene::ImGuizmoDraw()
 							{
 								ImGui::ShowSaveAsGameObjectPopup(GuizmoSetting.SelectObject);
 							}						
+						}
+						if (ImGui::MenuItem("Save As Scene"))
+						{
+							ImGui::ShowSaveAsScenePopup(this);
 						}
 					}
 					ImGui::EndMenu();

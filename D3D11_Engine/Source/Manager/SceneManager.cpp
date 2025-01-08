@@ -3,8 +3,57 @@
 #include <Core/DXTKInputSystem.h>
 #include <D3DCore/D3D11_GameApp.h>
 #include <Component/Render/MeshRender.h>
+#include <filesystem>
+#include <ranges>
+#include <algorithm>
 
 SceneManager& sceneManager = SceneManager::GetInstance();
+
+void SceneManager::LoadScene(const wchar_t* scenePath)
+{
+	std::vector<unsigned int>dontDestroyIDs;
+	dontDestroyIDs.reserve(currScene->dontdestroyonloadList.size());
+	for (auto& i : currScene->dontdestroyonloadList)
+	{
+		if (!i.expired())
+		{
+			dontDestroyIDs.push_back(i.lock()->GetInstanceID());
+		}
+	}
+
+	auto destroyList = currScene->objectList
+		| std::views::filter([](auto& sptr){return sptr && !sptr->transform.Parent;})
+		| std::views::filter(
+		[&dontDestroyIDs](auto& sptr)
+		{
+			bool destroy = true;
+			for (auto& id : dontDestroyIDs)
+			{
+				destroy = id == sptr->GetInstanceID();
+			}
+			return destroy;
+		});
+
+	for (auto& obj : destroyList)
+	{
+		DestroyObject(obj.get());
+	}
+	currScene->sceneName = std::filesystem::path(scenePath).filename();
+	gameObjectFactory.DeserializedScene(scenePath);
+}
+
+void SceneManager::AddScene(const wchar_t* scenePath)
+{
+	if (currScene)
+	{
+		gameObjectFactory.DeserializedScene(scenePath);
+	}
+}
+
+void SceneManager::SaveScene(const wchar_t* savePath)
+{
+	gameObjectFactory.SerializedScene(currScene.get(), savePath);
+}
 
 void SceneManager::AddGameObject(std::shared_ptr<GameObject>& object)
 {
@@ -46,6 +95,7 @@ void SceneManager::DestroyObject(GameObject& obj)
 
 void SceneManager::DontDestroyOnLoad(GameObject* obj)
 {
+	obj = obj->transform.rootParent ? &obj->transform.rootParent->gameObject : obj;
 	if (nextScene)
 	{
 		nextScene->dontdestroyonloadList.emplace_back(obj->GetWeakPtr());
@@ -257,11 +307,14 @@ void SceneManager::ChangeScene()
 				nextScene->dontdestroyonloadList = std::move(currScene->dontdestroyonloadList);
 				for (auto& weakptr : nextScene->dontdestroyonloadList)
 				{
-					unsigned int id = weakptr.lock()->GetInstanceID();
-					if (nextScene->objectList.size() <= id)
-						nextScene->objectList.resize((size_t)id + 1);
+					if (!weakptr.expired())
+					{
+						unsigned int id = weakptr.lock()->GetInstanceID();
+						if (nextScene->objectList.size() <= id)
+							nextScene->objectList.resize((size_t)id + 1);
 
-					nextScene->objectList[id] = currScene->objectList[id];
+						nextScene->objectList[id] = currScene->objectList[id];
+					}
 				}
 			}
 			currScene.reset();
