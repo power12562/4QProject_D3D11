@@ -10,6 +10,7 @@ public:
 	virtual ~CameraObject() override;
 	virtual void Serialized(std::ofstream& ofs);
 	virtual void Deserialized(std::ifstream& ifs);
+	virtual void InspectorImguiDraw();
 public:
 	void SetMainCamera();
 	

@@ -772,6 +772,72 @@ bool ImGui::ShowLoadScenePopup()
 		return false;
 }
 
+bool ImGui::ShowSaveAsScenePopup(Scene* scene)
+{
+	constexpr float sizeX = 1280;
+	constexpr float halfX = 1280 * 0.5f;
+	constexpr float sizeY = 720;
+	constexpr float halfY = 720 * 0.5f;
+	auto popupFunc = [scene]()
+		{
+			SIZE size = D3D11_GameApp::GetClientSize();
+			static bool first = true;
+			ImGui::OpenPopup("Save As Scene");
+			ImGui::SetNextWindowSize({ sizeX, sizeY });
+			ImGui::SetNextWindowPos({ size.cx * 0.5f - halfX, size.cy * 0.5f - halfY });
+			if (ImGui::BeginPopupModal("Save As Scene", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove))
+			{
+				static IGFD::FileDialogConfig config{};
+				GameObject* selectObject = Scene::GuizmoSetting.SelectObject;
+				if (first)
+				{
+					config.fileName = utfConvert::wstring_to_utf8(scene->GetSceneName());
+					ImGuiFileDialog::Instance()->OpenDialog(
+						"Save Path Dlg",
+						"Choose Path",
+						".Scene",
+						config);
+					first = false;
+				}
+				ImGui::SetNextWindowSize({ sizeX, sizeY });
+				ImGui::SetNextWindowPos({ size.cx * 0.5f - halfX, size.cy * 0.5f - halfY });
+				if (ImGuiFileDialog::Instance()->Display("Save Path Dlg"))
+				{
+					if (ImGuiFileDialog::Instance()->IsOk())
+					{
+						std::string filePath = ImGuiFileDialog::Instance()->GetFilePathName();
+						if (!filePath.empty())
+						{
+							sceneManager.SaveScene(utfConvert::utf8_to_wstring(filePath).c_str());
+						}
+						sceneManager.PopImGuiPopupFunc();
+						ImGui::CloseCurrentPopup();
+						ImGuiFileDialog::Instance()->Close();
+						first = true;
+					}
+					else
+					{
+						sceneManager.PopImGuiPopupFunc();
+						ImGui::CloseCurrentPopup();
+						ImGuiFileDialog::Instance()->Close();
+						first = true;
+					}
+				}
+				ImGui::EndPopup();
+			}
+		};
+
+
+	bool ActiveImgui = sceneManager.IsImGuiActive();
+	if (ActiveImgui)
+	{
+		sceneManager.PushImGuiPopupFunc(popupFunc);
+		return true;
+	}
+	else
+		return false;
+}
+
 bool ImGui::ShowAddScenePopup()
 {
 	constexpr float sizeX = 1280;
@@ -834,61 +900,51 @@ bool ImGui::ShowAddScenePopup()
 		return false;
 }
 
-bool ImGui::ShowSaveAsScenePopup(Scene* scene)
+bool ImGui::ShowSubScenePopup()
 {
 	constexpr float sizeX = 1280;
 	constexpr float halfX = 1280 * 0.5f;
 	constexpr float sizeY = 720;
 	constexpr float halfY = 720 * 0.5f;
-	auto popupFunc = [scene]()
+	auto popupFunc = []()
 		{
 			SIZE size = D3D11_GameApp::GetClientSize();
-			static bool first = true;
-			ImGui::OpenPopup("Save As Scene");
+			static int selectSceneNum = 0;
+			static std::vector<char> sceneListTemp;
+			ImGui::OpenPopup("Sub Scene"); 
 			ImGui::SetNextWindowSize({ sizeX, sizeY });
 			ImGui::SetNextWindowPos({ size.cx * 0.5f - halfX, size.cy * 0.5f - halfY });
-			if (ImGui::BeginPopupModal("Save As Scene", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove))
+			if (ImGui::BeginPopupModal("Sub Scene", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
 			{
-				static IGFD::FileDialogConfig config{};
-				GameObject* selectObject = Scene::GuizmoSetting.SelectObject;
-				if (first)
+				auto sceneList = sceneManager.GetSceneList();
+				size_t count = sceneList.size();
+				if (count > 0)
 				{
-					config.fileName = utfConvert::wstring_to_utf8(scene->GetSceneName());
-					ImGuiFileDialog::Instance()->OpenDialog(
-						"Save Path Dlg",
-						"Choose Path",
-						".Scene",
-						config);
-					first = false;
-				}
-				ImGui::SetNextWindowSize({ sizeX, sizeY });
-				ImGui::SetNextWindowPos({ size.cx * 0.5f - halfX, size.cy * 0.5f - halfY });
-				if (ImGuiFileDialog::Instance()->Display("Save Path Dlg"))
-				{
-					if (ImGuiFileDialog::Instance()->IsOk())
+					std::string sceneName;
+					sceneListTemp.clear();
+					for (size_t i = 0; i < count; i++)
 					{
-						std::string filePath = ImGuiFileDialog::Instance()->GetFilePathName();
-						if (!filePath.empty())
-						{
-							sceneManager.SaveScene(utfConvert::utf8_to_wstring(filePath).c_str());
-						}
-						sceneManager.PopImGuiPopupFunc();
-						ImGui::CloseCurrentPopup();
-						ImGuiFileDialog::Instance()->Close();
-						first = true;
+						sceneName = utfConvert::wstring_to_utf8(sceneList[i]);
+						size_t startIndex = sceneListTemp.size();
+						sceneListTemp.resize(startIndex + sceneName.length() + 1);
+						strcpy_s(&sceneListTemp[startIndex], sceneName.length() + 1, sceneName.c_str());
 					}
-					else
+					sceneListTemp.emplace_back('\0');
+					ImGui::Combo("Scene List", &selectSceneNum, sceneListTemp.data(), count);
+				}
+				if (ImGui::Button("OK"))
+				{
+					ImGui::CloseCurrentPopup();
+					sceneManager.PopImGuiPopupFunc();
+					selectSceneNum = 0;
+					if (count > 0)
 					{
-						sceneManager.PopImGuiPopupFunc();
-						ImGui::CloseCurrentPopup();
-						ImGuiFileDialog::Instance()->Close();
-						first = true;
+						sceneManager.SubScene(sceneList[selectSceneNum].c_str());
 					}
 				}
 				ImGui::EndPopup();
 			}
 		};
-
 
 	bool ActiveImgui = sceneManager.IsImGuiActive();
 	if (ActiveImgui)

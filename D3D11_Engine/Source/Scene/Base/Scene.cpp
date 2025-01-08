@@ -71,16 +71,20 @@ void Scene::LateUpdate()
 }
 
 void Scene::Render()
-{
-	d3dRenderer.BegineDraw();
-	for (auto& obj : objectList)
+{	
+	if (Camera::GetMainCamera())
 	{
-		if (obj && obj->Active)
-			obj->Render();
+		d3dRenderer.BegineDraw();
+		for (auto& obj : objectList)
+		{
+			if (obj && obj->Active)
+				obj->Render();
+		}
+		d3dRenderer.EndDraw();
 	}
-	d3dRenderer.EndDraw();
 	if (UseImGUI)
 	{
+		d3dRenderer.SetRTVdefault();
 		ImGUIBegineDraw();
 		ImGuizmoDraw();
 		ImGUIRender();
@@ -108,14 +112,13 @@ void Scene::ImGuizmoDraw()
 	using namespace DirectX;
 	if (GuizmoSetting.UseImGuizmo)
 	{
+		ImGuiIO& io = ImGui::GetIO();
+		ImGuiContext& imGuiContext = *ImGui::GetCurrentContext();
 		if (Camera* mainCamera = Camera::GetMainCamera())
 		{
 			ImGuizmo::BeginFrame();
 			D3D11_VIEWPORT& frontView = d3dRenderer.ViewPortsVec.front();
 			ImGuizmo::SetRect(frontView.TopLeftX, frontView.TopLeftY, frontView.Width, frontView.Height);
-
-			ImGuiIO& io = ImGui::GetIO();
-			ImGuiContext& imGuiContext = *ImGui::GetCurrentContext();
 			SIZE clientSize = D3D11_GameApp::GetClientSize();
 			const Matrix& cameraVM = mainCamera->GetVM();
 			const Matrix& cameraPM = mainCamera->GetPM();
@@ -253,70 +256,71 @@ void Scene::ImGuizmoDraw()
 							GuizmoSetting.SelectObject->transform.rotation = rotation;			
 					}
 				}
-
-				//Inspector
-				{
-					constexpr float damp = 15.f;
-					static std::string windowName;
-					static ImVec2 windowSize(300, 200);
-					ImVec2 windowPos(io.DisplaySize.x - windowSize.x - damp, damp);
-					ImGui::SetNextWindowSize(windowSize, ImGuiCond_Appearing); // 창 크기 설정
-					ImGui::SetNextWindowPos(windowPos, ImGuiCond_Appearing);   // 위치 설정
-					windowName = GuizmoSetting.SelectObject->GetNameToString();
-					windowName += "##Inspector";
-					ImGui::PushID("Inspector");
-					ImGui::Begin(windowName.c_str());
-					{
-						ImGui::Checkbox("Active", &GuizmoSetting.SelectObject->Active);
-						ImGui::EditTransform(GuizmoSetting.SelectObject);
-					}
-					ImGui::End();
-					ImGui::PopID();
-				}
 			}	
-			
-			//Editer
-			if (ImGui::BeginMainMenuBar())
-			{
-				if (ImGui::BeginMenu("Open"))
-				{
-					{
-						if (ImGui::MenuItem("Open GameObject"))
-						{
-							ImGui::ShowOpenGameObjectPopup();
-						}
-						if (ImGui::MenuItem("Load Scene"))
-						{
-							ImGui::ShowLoadScenePopup();
-						}
-						if (ImGui::MenuItem("Add Scene"))
-						{
-							ImGui::ShowAddScenePopup();
-						}
-					}
-					ImGui::EndMenu();
-				}
-				if (ImGui::BeginMenu("Save")) 
-				{
-					{
-						if (ImGui::MenuItem("Save As GameObject"))
-						{
-							if (GuizmoSetting.SelectObject)
-							{
-								ImGui::ShowSaveAsGameObjectPopup(GuizmoSetting.SelectObject);
-							}						
-						}
-						if (ImGui::MenuItem("Save As Scene"))
-						{
-							ImGui::ShowSaveAsScenePopup(this);
-						}
-					}
-					ImGui::EndMenu();
-				}
-				ImGui::EndMainMenuBar();
-			}
-			ImGui::ResetGlobalID();
 		}
+
+		//Editer draw
+		if (ImGui::BeginMainMenuBar())
+		{
+			if (ImGui::BeginMenu("Game Object"))
+			{
+				if (ImGui::MenuItem("Open GameObject"))
+				{
+					ImGui::ShowOpenGameObjectPopup();
+				}
+				if (ImGui::MenuItem("Save As GameObject"))
+				{
+					if (GuizmoSetting.SelectObject)
+					{
+						ImGui::ShowSaveAsGameObjectPopup(GuizmoSetting.SelectObject);
+					}
+				}
+				ImGui::EndMenu();
+			}
+			if (ImGui::BeginMenu("Scene"))
+			{
+				if (ImGui::MenuItem("Load Scene"))
+				{
+					ImGui::ShowLoadScenePopup();
+				}
+				if (ImGui::MenuItem("Save As Scene"))
+				{
+					ImGui::ShowSaveAsScenePopup(this);
+				}
+				if (ImGui::MenuItem("Add Scene"))
+				{
+					ImGui::ShowAddScenePopup();
+				}
+				if (ImGui::MenuItem("Sub Scene"))
+				{
+					ImGui::ShowSubScenePopup();
+				}
+				ImGui::EndMenu();
+			}
+			ImGui::EndMainMenuBar();
+		}
+		//Inspector
+		if(GuizmoSetting.SelectObject)
+		{
+			constexpr float damp = 15.f;
+			static std::string windowName;
+			static ImVec2 windowSize(300, 200);
+			ImVec2 windowPos(io.DisplaySize.x - windowSize.x - damp, damp);
+			ImGui::SetNextWindowSize(windowSize, ImGuiCond_Appearing); // 창 크기 설정
+			ImGui::SetNextWindowPos(windowPos, ImGuiCond_Appearing);   // 위치 설정
+			windowName = GuizmoSetting.SelectObject->GetNameToString();
+			windowName += "##Inspector";
+			ImGui::PushID("Inspector");
+			ImGui::Begin(windowName.c_str());
+			{
+				ImGui::Checkbox("Active", &GuizmoSetting.SelectObject->Active);
+				ImGui::EditTransform(GuizmoSetting.SelectObject);
+				GuizmoSetting.SelectObject->InspectorImguiDraw();
+			}
+			ImGui::End();
+			ImGui::PopID();
+		}
+		ImGui::ResetGlobalID();
 	}
 }
 

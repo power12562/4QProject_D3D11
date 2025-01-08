@@ -2,6 +2,7 @@
 #include <Manager/SceneManager.h>
 #include <Utility/SerializedUtility.h>
 #include <Component/Camera/CameraMoveHelper.h>
+#include <Utility/ImguiHelper.h>
 
 CameraObject::CameraObject()
 {
@@ -38,6 +39,14 @@ void CameraObject::Deserialized(std::ifstream& ifs)
 	if (bool isHelper = Read::data<bool>(ifs))
 	{
 		AddComponent<CameraMoveHelper>();
+	}
+}
+
+void CameraObject::InspectorImguiDraw()
+{
+	if (ImGui::Button("Set Main Camera"))
+	{
+		SetMainCamera();
 	}
 }
 

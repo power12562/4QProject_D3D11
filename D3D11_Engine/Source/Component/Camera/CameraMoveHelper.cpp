@@ -1,5 +1,6 @@
 #include "CameraMoveHelper.h"
 #include <Core/TimeSystem.h>
+#include <Component/Camera/Camera.h>
 #include <Math\Mathf.h>
 
 CameraMoveHelper::CameraMoveHelper()
@@ -20,23 +21,29 @@ void CameraMoveHelper::FixedUpdate()
 
 void CameraMoveHelper::Update()
 {
-	inputVector.Normalize();
-	if (inputVector.Length() > 0.0f)
+	if (Camera* mainCame = Camera::GetMainCamera())
 	{
-		transform.position += inputVector * moveSpeed * TimeSystem::Time.DeltaTime;
-		inputVector = Vector3::Zero;
+		if (&mainCame->gameObject == &gameObject)
+		{
+			inputVector.Normalize();
+			if (inputVector.Length() > 0.0f)
+			{
+				transform.position += inputVector * moveSpeed * TimeSystem::Time.DeltaTime;
+				inputVector = Vector3::Zero;
+			}
+			if (yawRotation)
+			{
+				transform.rotation = Quaternion::CreateFromAxisAngle(Vector3::UnitX, yawRotation) * transform.rotation;
+				yawRotation = 0;
+			}
+			if (pitchRotation)
+			{
+				transform.rotation *= Quaternion::CreateFromAxisAngle(Vector3::UnitY, pitchRotation);
+				pitchRotation = 0;
+			}
+			inputVector = Vector3::Zero;
+		}
 	}
-	if (yawRotation)
-	{
-		transform.rotation = Quaternion::CreateFromAxisAngle(Vector3::UnitX, yawRotation) * transform.rotation;
-		yawRotation = 0;
-	}
-	if (pitchRotation)
-	{
-		transform.rotation *= Quaternion::CreateFromAxisAngle(Vector3::UnitY, pitchRotation);
-		pitchRotation = 0;
-	}
-	inputVector = Vector3::Zero;
 }
 
 void CameraMoveHelper::LateUpdate()

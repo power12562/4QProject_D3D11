@@ -59,6 +59,25 @@ void SceneManager::AddScene(const wchar_t* scenePath)
 	}
 }
 
+void SceneManager::SubScene(const wchar_t* scenefileName)
+{
+	if (currScene)
+	{
+		auto find = currScene->loadScenesMap.find(scenefileName);
+		if (find != currScene->loadScenesMap.end())
+		{
+			for (auto& weakptr : find->second)
+			{
+				if (!weakptr.expired())
+				{
+					DestroyObject(weakptr.lock().get());
+				}
+			}
+			currScene->loadScenesMap.erase(find);
+		}
+	}
+}
+
 void SceneManager::SaveScene(const wchar_t* savePath)
 {
 	gameObjectFactory.SerializedScene(currScene.get(), savePath);
@@ -161,6 +180,20 @@ ObjectList SceneManager::GetObjectList()
 	else return std::vector<GameObject*>();
 }
 
+std::vector<std::wstring> SceneManager::GetSceneList()
+{
+	std::vector<std::wstring> sceneList;
+	if(currScene)
+	{
+		sceneList.reserve(currScene->loadScenesMap.size());
+		for (auto& [key, objList] : currScene->loadScenesMap)
+		{
+			sceneList.push_back(key);
+		}
+	}
+	return sceneList;
+}
+
 bool SceneManager::IsImGuiActive()
 {
 	if (currScene)
@@ -256,8 +289,10 @@ void SceneManager::RenderScene()
 		Scene::ImGUIEndDraw();
 		d3dRenderer.Present();
 	}
-	else if(Camera::GetMainCamera())
+	else
+	{
 		currScene->Render();
+	}
 }
 
 void SceneManager::AddObjects()

@@ -62,8 +62,10 @@ namespace ImGui
 
 	/*¾À ·Îµå ÆË¾÷ È°¼ºÈ­*/
 	bool ShowLoadScenePopup();
-	/*¾À Ãß°¡ ÆË¾÷ È°¼ºÈ­*/
-	bool ShowAddScenePopup();
 	/*¾À ÀúÀå ÆË¾÷ È°¼ºÈ­*/
 	bool ShowSaveAsScenePopup(Scene* scene);
+	/*¾À Ãß°¡ ÆË¾÷ È°¼ºÈ­*/
+	bool ShowAddScenePopup();
+	/*¾À Á¦°Å ÆË¾÷ È°¼ºÈ­*/
+	bool ShowSubScenePopup();
 };

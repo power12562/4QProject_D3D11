@@ -43,8 +43,9 @@ public:
 	template <typename T>
 	void LoadScene();
 	void LoadScene(const wchar_t* scenePath);
-	void AddScene(const wchar_t* scenePath);
 	void SaveScene(const wchar_t* savePath);
+	void AddScene(const wchar_t* scenePath);
+	void SubScene(const wchar_t* scenefileName);
 
 	/*현재 씬에 오브젝트 추가*/
 	void AddGameObject(std::shared_ptr<GameObject>& object);
@@ -61,6 +62,7 @@ public:
 
 	size_t GetObjectsCount();
 	ObjectList GetObjectList();
+	std::vector<std::wstring> GetSceneList(); //로드된 씬 항목 반환
 	
 	/*현재 씬 Imgui 사용 여부 반환*/
 	bool IsImGuiActive();
