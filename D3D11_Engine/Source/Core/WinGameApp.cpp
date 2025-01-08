@@ -34,8 +34,8 @@ void WinGameApp::Initialize(HINSTANCE hinstance)
 	freopen_s(&_tempFile, "CONOUT$", "w", stdout);
 #endif // _DEBUG
 	WinInit(hinstance);
-	//d3dRenderer.Init();
-	//InitImGUI();
+	d3dRenderer.Init();
+	InitImGUI();
 }
 
 void WinGameApp::Run()
