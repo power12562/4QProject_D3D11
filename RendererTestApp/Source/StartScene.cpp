@@ -3,6 +3,8 @@
 
 void StartScene::Start()
 {
+	Scene::GuizmoSetting.UseImGuizmo = true;
+
 	UseImGUI = true;
 
 	auto mainCamera = NewGameObject<CameraObject>(L"MainCamera");
@@ -21,7 +23,7 @@ void StartScene::ImGUIRender()
 
 	ImGui::Begin("Light");
 	{
-		ImGui::EditLight(&DirectionalLight::DirectionalLights);
+		ImGui::EditLight(DirectionalLight::DirectionalLights.get());
 	}
 	ImGui::End();
 }
