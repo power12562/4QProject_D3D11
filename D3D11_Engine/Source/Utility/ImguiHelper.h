@@ -60,8 +60,10 @@ namespace ImGui
 	/*게임 오브젝트 저장 팝업 활성화*/
 	bool ShowSaveAsGameObjectPopup(GameObject* object);
 
-	/*게임 오브젝트 열기 팝업 활성화*/
+	/*씬 로드 팝업 활성화*/
 	bool ShowLoadScenePopup();
-	/*게임 오브젝트 저장 팝업 활성화*/
+	/*씬 추가 팝업 활성화*/
+	bool ShowAddScenePopup();
+	/*씬 저장 팝업 활성화*/
 	bool ShowSaveAsScenePopup(Scene* scene);
 };

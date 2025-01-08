@@ -18,7 +18,7 @@ public:
 	void SetMaterial(const char* name);
 	inline cb_PBRMaterial& GetMaterial() { return *material; }
 	_declspec (property(get = GetMaterial)) cb_PBRMaterial& Material;
-private:
+protected:
 	std::shared_ptr<cb_PBRMaterial> material;
 	std::string materialName;
 };

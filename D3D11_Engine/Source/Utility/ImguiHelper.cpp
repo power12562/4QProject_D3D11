@@ -772,6 +772,68 @@ bool ImGui::ShowLoadScenePopup()
 		return false;
 }
 
+bool ImGui::ShowAddScenePopup()
+{
+	constexpr float sizeX = 1280;
+	constexpr float halfX = 1280 * 0.5f;
+	constexpr float sizeY = 720;
+	constexpr float halfY = 720 * 0.5f;
+	auto popupFunc = []()
+		{
+			SIZE size = D3D11_GameApp::GetClientSize();
+			static bool first = true;
+			ImGui::OpenPopup("Add Scene");
+			ImGui::SetNextWindowSize({ sizeX, sizeY });
+			ImGui::SetNextWindowPos({ size.cx * 0.5f - halfX, size.cy * 0.5f - halfY });
+			if (ImGui::BeginPopupModal("Add Scene", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove))
+			{
+				if (first)
+				{
+					ImGuiFileDialog::Instance()->OpenDialog(
+						"Open Path Dlg",
+						"Choose Path",
+						".Scene"
+					);
+					first = false;
+				}
+				ImGui::SetNextWindowSize({ sizeX, sizeY });
+				ImGui::SetNextWindowPos({ size.cx * 0.5f - halfX, size.cy * 0.5f - halfY });
+				if (ImGuiFileDialog::Instance()->Display("Open Path Dlg"))
+				{
+					if (ImGuiFileDialog::Instance()->IsOk())
+					{
+						std::string filePath = ImGuiFileDialog::Instance()->GetFilePathName();
+						if (!filePath.empty())
+						{
+							sceneManager.AddScene(utfConvert::utf8_to_wstring(filePath).c_str());
+						}
+						sceneManager.PopImGuiPopupFunc();
+						ImGui::CloseCurrentPopup();
+						ImGuiFileDialog::Instance()->Close();
+						first = true;
+					}
+					else
+					{
+						sceneManager.PopImGuiPopupFunc();
+						ImGui::CloseCurrentPopup();
+						ImGuiFileDialog::Instance()->Close();
+						first = true;
+					}
+				}
+				ImGui::EndPopup();
+			}
+		};
+
+	bool ActiveImgui = sceneManager.IsImGuiActive();
+	if (ActiveImgui)
+	{
+		sceneManager.PushImGuiPopupFunc(popupFunc);
+		return true;
+	}
+	else
+		return false;
+}
+
 bool ImGui::ShowSaveAsScenePopup(Scene* scene)
 {
 	constexpr float sizeX = 1280;

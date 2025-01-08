@@ -52,8 +52,8 @@ void CubeMeshRender::Start()
         4,  6,  5,  4,  7,  6,  // Back face
         8,  9, 10,  8, 10, 11,  // Top face
         12, 14, 13, 12, 15, 14, // Bottom face
-        16, 18, 17, 16, 19, 18, // Left face
-        20, 21, 22, 20, 22, 23  // Right face
+        16, 17, 18, 16, 18, 19, // Left face
+        22, 21, 20, 23, 22, 20  // Right face
     };
 
     CreateMesh();

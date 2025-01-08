@@ -8,4 +8,6 @@ public:
 	CubeObject() = default;
 	virtual ~CubeObject() override = default;
 	virtual void Start();
+	virtual void Serialized(std::ofstream& ofs);
+	virtual void Deserialized(std::ifstream& ifs);
 };

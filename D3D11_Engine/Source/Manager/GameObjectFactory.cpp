@@ -97,7 +97,6 @@ void GameObjectFactory::SerializedScene(Scene* scene, const wchar_t* WritePath, 
 	auto parentObjects = objList | std::views::filter([](GameObject* obj) { return !obj->transform.Parent;});
 	size_t objCount = std::ranges::distance(parentObjects);
 	std::ofstream ofs(path.c_str(), std::ios::binary | std::ios::trunc);
-	Binary::Write::data<size_t>(ofs, objCount);
 	for (const auto& item : parentObjects)
 	{
 		Serialized(item, ofs, 0);
@@ -105,7 +104,7 @@ void GameObjectFactory::SerializedScene(Scene* scene, const wchar_t* WritePath, 
 	ofs.close();
 }
 
-void GameObjectFactory::DeserializedScene(const wchar_t* ReadPath)
+void GameObjectFactory::DeserializedScene(Scene* scene, const wchar_t* ReadPath)
 {
 	std::filesystem::path path(ReadPath);
 	if (!std::filesystem::exists(path))
@@ -120,11 +119,7 @@ void GameObjectFactory::DeserializedScene(const wchar_t* ReadPath)
 	}
 
 	std::ifstream ifs(path.c_str(), std::ios::binary);
-	size_t objCount = Binary::Read::data<size_t>(ifs);
-	for (size_t i = 0; i < objCount; i++)
-	{
-		Deserialized(ifs);
-	}
+	Deserialized(ifs, scene);
 	ifs.close();
 }
 
@@ -253,7 +248,7 @@ void GameObjectFactory::Serialized(GameObject* object, std::ofstream& ofs, size_
 	}
 }
 
-GameObject* GameObjectFactory::Deserialized(std::ifstream& ifs)
+GameObject* GameObjectFactory::Deserialized(std::ifstream& ifs, Scene* scene)
 {
 	static std::map<size_t, Transform*> objectTreeMap;
 	std::vector<TransformAnimation*> transformAnimationVec;
@@ -298,6 +293,11 @@ GameObject* GameObjectFactory::Deserialized(std::ifstream& ifs)
 			object->transform.rotation = Read::Quaternion(ifs);
 			object->transform.scale	   = Read::Vector3(ifs);
 			root = object;
+
+			if (scene)
+			{
+				scene->loadScenesMap[scene->GetSceneName()].emplace_back(object->GetWeakPtr());
+			}
 		}
 		else
 		{

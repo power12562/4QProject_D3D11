@@ -15,7 +15,7 @@ public:
 	void SetMaterial(const char* name);
 	inline cb_BlingPhongMaterial& GetMaterial() { return *material; }
 	_declspec (property(get = GetMaterial)) cb_BlingPhongMaterial& Material;
-private:
+protected:
 	std::shared_ptr<cb_BlingPhongMaterial> material;
 	std::string materialName;
 };

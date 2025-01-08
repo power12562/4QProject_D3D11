@@ -36,17 +36,25 @@ void SceneManager::LoadScene(const wchar_t* scenePath)
 
 	for (auto& obj : destroyList)
 	{
-		DestroyObject(obj.get());
+		DestroyObject(obj.get()); //파괴할 오브젝트 전부 제거
 	}
+
+	currScene->loadScenesMap.clear();
 	currScene->sceneName = std::filesystem::path(scenePath).filename();
-	gameObjectFactory.DeserializedScene(scenePath);
+	gameObjectFactory.DeserializedScene(currScene.get(), scenePath);
 }
 
 void SceneManager::AddScene(const wchar_t* scenePath)
 {
 	if (currScene)
 	{
-		gameObjectFactory.DeserializedScene(scenePath);
+		std::wstring sceneName = std::filesystem::path(scenePath).filename();
+		auto find = currScene->loadScenesMap.find(sceneName);
+		if (find != currScene->loadScenesMap.end())
+		{
+			MessageBox(NULL, L"이미 로드된 Scene 입니다.", sceneName.c_str(), MB_OK);
+		}
+		gameObjectFactory.DeserializedScene(currScene.get(), scenePath);
 	}
 }
 

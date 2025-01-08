@@ -285,6 +285,10 @@ void Scene::ImGuizmoDraw()
 						{
 							ImGui::ShowLoadScenePopup();
 						}
+						if (ImGui::MenuItem("Add Scene"))
+						{
+							ImGui::ShowAddScenePopup();
+						}
 					}
 					ImGui::EndMenu();
 				}
