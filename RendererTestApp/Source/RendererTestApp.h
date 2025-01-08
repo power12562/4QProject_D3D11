@@ -20,4 +20,18 @@ private:
 
 	ComPtr<struct IDXGISwapChain4> swapChain;
 	Texture backBuffer;
+
+private:
+	void DXGIInit();
+
+
+private:
+	///////////////////////////////////////
+	// Begin Test
+
+	void TestInit();
+	VertexShader vertexShader;
+
+	// End Test
+	///////////////////////////////////////
 };

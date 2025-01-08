@@ -1,17 +1,17 @@
 #include "DrawCommand.h"
 #include <d3d11.h>
 
-DrawCommand::DrawCommand() = default;
-DrawCommand::~DrawCommand() = default;
+MeshDrawCommand::MeshDrawCommand() = default;
+MeshDrawCommand::~MeshDrawCommand() = default;
 
 template<>
-void DrawCommand::SetShaderResource<MeshData>(_In_ const MeshData& resource)
+void MeshDrawCommand::SetShaderResource<MeshData>(_In_ const MeshData& resource)
 {
 	meshData = resource;
 }
 
 template<>
-void DrawCommand::SetShaderResource<MaterialData>(_In_ const MaterialData& resource)
+void MeshDrawCommand::SetShaderResource<MaterialData>(_In_ const MaterialData& resource)
 {
 	materialData = resource;
 }

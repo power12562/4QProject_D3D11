@@ -2,6 +2,7 @@
 
 #include <dxgi1_6.h>
 #pragma comment(lib, "dxgi")
+
 RendererTestApp::RendererTestApp()
 {
     this->windowName = L"Renderer Test App";
@@ -11,15 +12,36 @@ RendererTestApp::RendererTestApp()
 
 RendererTestApp::~RendererTestApp()
 {
-
+    backBuffer.~Texture();
+	swapChain.ReleaseAndGetAddressOf();
+    renderer.reset();
 }
 
 void RendererTestApp::Start()
 {
     renderer = std::make_unique<DefferdRenderer>();
-	ID3D11Device* device = RendererUtility::GetDevice();
-	HRESULT result;
-	static constexpr int bufferCount = 2;
+    DXGIInit();
+	TestInit();
+}
+
+void RendererTestApp::Update()
+{
+
+}
+
+void RendererTestApp::Render()
+{
+    renderer << backBuffer;
+	renderer->Render();
+
+	swapChain->Present(0, 0);
+}
+
+void RendererTestApp::DXGIInit()
+{
+    ID3D11Device* device = RendererUtility::GetDevice();
+    HRESULT result;
+
     DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
     swapChainDesc.Width = clientSize.cx;
     swapChainDesc.Height = clientSize.cy;
@@ -27,8 +49,15 @@ void RendererTestApp::Start()
     swapChainDesc.SampleDesc.Count = 1;
     swapChainDesc.SampleDesc.Quality = 0;
     swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    swapChainDesc.BufferCount = bufferCount;
+    swapChainDesc.BufferCount = 2;
     swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+
+    // 비트블릿 방식
+    if (0)
+    {
+        swapChainDesc.BufferCount = 1;
+        swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+    }
 
     ComPtr<IDXGIFactory4> pFactory = nullptr;
     result = CreateDXGIFactory2(0, IID_PPV_ARGS(&pFactory));
@@ -36,13 +65,13 @@ void RendererTestApp::Start()
 
     ComPtr<IDXGISwapChain1> swapChain1 = nullptr;
     result = pFactory->CreateSwapChainForHwnd(device,
-                                              GetHWND(), 
-                                              &swapChainDesc, 
-                                              nullptr, 
-                                              nullptr, 
-                                              &swapChain1);
-	Check(result);
-    
+        GetHWND(),
+        &swapChainDesc,
+        nullptr,
+        nullptr,
+        &swapChain1);
+    Check(result);
+
     result = swapChain1->QueryInterface(IID_PPV_ARGS(&swapChain));
     Check(result);
 
@@ -52,21 +81,18 @@ void RendererTestApp::Start()
     Check(result);
 
     backBuffer.LoadTexture(backBufferTexture.Get(), ETextureUsage::RTV);
-
-    //result = swapChain->GetBuffer(1, IID_PPV_ARGS(&backBufferTexture));
-    //Check(result);
-    
-    int currentBuffer = swapChain->GetCurrentBackBufferIndex();
 }
 
-void RendererTestApp::Update()
-{
-}
+#include <fstream>
 
-void RendererTestApp::Render()
+void RendererTestApp::TestInit()
 {
-	renderer << backBuffer;
-	renderer->Render();
 
-	swapChain->Present(0, 0);
+	std::ifstream file("RendererTestApp/Shader/VertexShader.hlsl");
+    if (file.is_open())
+    {
+		std::string source((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+		file.close();
+		vertexShader.Compile(source.c_str(), source.size());
+    }
 }

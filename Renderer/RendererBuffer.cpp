@@ -4,7 +4,7 @@
 RendererBuffer::RendererBuffer() = default;
 RendererBuffer::~RendererBuffer() = default;
 
-void RendererBuffer::Init(D3D11_BUFFER_DESC bufferDesc, size_t bufferSize, _In_opt_ void* data)
+void RendererBuffer::Init(D3D11_BUFFER_DESC bufferDesc, size_t bufferSize, _In_opt_ const void* data)
 {
 	HRESULT result;
 

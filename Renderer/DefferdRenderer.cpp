@@ -7,6 +7,28 @@
 
 
 
+#ifdef _DEBUG
+#include <dxgidebug.h>
+//https://develop-dream.tistory.com/141
+void list_remaining_d3d_objects()
+{
+	HMODULE dxgidebugdll = GetModuleHandleW(L"dxgidebug.dll");
+	decltype(&DXGIGetDebugInterface) GetDebugInterface = reinterpret_cast<decltype(&DXGIGetDebugInterface)>(GetProcAddress(dxgidebugdll, "DXGIGetDebugInterface"));
+
+	IDXGIDebug* debug;
+
+	GetDebugInterface(IID_PPV_ARGS(&debug));
+
+	OutputDebugStringW(L"Starting Live Direct3D Object Dump:\r\n");
+	debug->ReportLiveObjects(DXGI_DEBUG_D3D11, DXGI_DEBUG_RLO_DETAIL);
+	OutputDebugStringW(L"Completed Live Direct3D Object Dump.\r\n");
+
+	debug->Release();
+}
+#endif
+
+#pragma comment(lib, "dxguid.lib")
+
 
 DefferdRenderer::DefferdRenderer()
 {
@@ -77,55 +99,131 @@ DefferdRenderer::DefferdRenderer()
 	init.CreateNoRenderState(&noRenderState);
 	init.CreateAlphaRenderState(&alphaRenderState);
 
-	struct CameraBufferData
-	{
-		Matrix cameraWorld;
-		Matrix cameraProjection;
-	} cameraData;
 
+	
+	CameraBufferData cameraData{};
 	cameraBuffer.Init(0, &cameraData);
+
 
 }
 
-void DefferdRenderer::AddDrawCommand(_In_ DrawCommand& command)
+DefferdRenderer::~DefferdRenderer()
 {
-	drawCommands.emplace_back(command);
+	RendererUtility::SetDevice(nullptr);
+#ifdef _DEBUG
+	atexit(list_remaining_d3d_objects);
+#endif
+}
+
+void DefferdRenderer::AddDrawCommand(_In_ MeshDrawCommand& command)
+{
+	allDrawCommands.emplace_back(command);
 }
 
 void DefferdRenderer::SetRenderTarget(_In_ Texture& target)
 {
 	renderTarget = &target;
 
-	//width = target.width;
-	//height = target.width;
+	{
+		D3D11_TEXTURE2D_DESC desc{};
+		((ID3D11Texture2D*)target)->GetDesc(&desc);
+		width = desc.Width;
+		height = desc.Height;
+	}
+
+
+	for (size_t i = 0; i < std::size(renderBuffers); i++)
+	{
+		HRESULT result;
+		ComPtr<ID3D11Texture2D> texture;
+		CD3D11_TEXTURE2D_DESC desc = CD3D11_TEXTURE2D_DESC(
+			DXGI_FORMAT_R8G8B8A8_UNORM, 
+			width, 
+			height,
+			1, 
+			0,
+			D3D11_BIND_RENDER_TARGET);
+
+
+		result = device->CreateTexture2D(&desc, nullptr, &texture);
+		Check(result);
+		renderBuffers[i].LoadTexture(texture.Get(), ETextureUsage::RTV);
+	}
+	{
+		HRESULT result;
+		CD3D11_TEXTURE2D_DESC desc = CD3D11_TEXTURE2D_DESC(
+			DXGI_FORMAT_R24G8_TYPELESS,
+			width,
+			height,
+			1,
+			0,
+			D3D11_BIND_DEPTH_STENCIL);
+		ComPtr<ID3D11Texture2D> texture;
+		result = device->CreateTexture2D(&desc, nullptr, &texture);
+		Check(result);
+		depthStencilTexture.LoadTexture(texture.Get(), ETextureUsage::DSV);
+	}
+	
 }
 
 void DefferdRenderer::Render()
 {
+	deferredDrawCommands.clear();
+	forwardDrawCommands.clear();
+	for (auto& drawCommand : allDrawCommands)
+	{
+		if (drawCommand.GetMaterialData().pixelShader.isForward)
+		{
+			forwardDrawCommands.emplace_back(drawCommand);
+		}
+		else
+		{
+			deferredDrawCommands.emplace_back(drawCommand);
+		}
+	}
+
 
 	D3D11_VIEWPORT viewport = CD3D11_VIEWPORT(0.0f, 0.0f, (float)width, (float)height);
 
-
-	immediateContext->OMSetRenderTargets(4, renderRTV[0].GetAddressOf(), depthStencilDSV.Get());
+	ID3D11RenderTargetView* renderBuffersRTV[4];
+	for (size_t i = 0; i < std::size(renderBuffersRTV); i++)
+	{
+		renderBuffersRTV[i] = renderBuffers[i];
+	}
+	immediateContext->OMSetRenderTargets(4, renderBuffersRTV, depthStencilTexture);
 	immediateContext->OMSetDepthStencilState(noWriteDSS.Get(), 0);
 	immediateContext->RSSetViewports(1, &viewport);
 
 
-	for (size_t i = 0; i < std::size(renderRTV); i++)
+	for (size_t i = 0; i < std::size(renderBuffers); i++)
 	{
-		immediateContext->ClearRenderTargetView(renderRTV[i].Get(), DirectX::SimpleMath::Color{ 0.0f,0.0f ,0.0f ,0.0f });
+		immediateContext->ClearRenderTargetView(renderBuffers[i], DirectX::SimpleMath::Color{ 0.0f,0.0f ,0.0f ,0.0f });
 	}
-	immediateContext->ClearDepthStencilView(depthStencilDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+	immediateContext->ClearDepthStencilView(depthStencilTexture, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 
 
-	for (auto& command : drawCommands)
-	{
-		auto mesh = command.GetMeshData();
-		auto material = command.GetMaterialData();
-	}
+	
+	ProcessDrawCommands(allDrawCommands, false);
 
-	drawCommands.clear();
+
+	CameraBufferData cameraData;
+	cameraBuffer.Update(&cameraData);
+	ID3D11Buffer* cameraBuffers[1] = { cameraBuffer };
+	immediateContext->VSSetConstantBuffers(0, std::size(cameraBuffers), cameraBuffers);
+
+
+	ProcessDrawCommands(deferredDrawCommands);
+
+
+
+
+	ProcessDrawCommands(forwardDrawCommands);
+
+
+
+
+	allDrawCommands.clear();
 }
 
 void DefferdRenderer::SetCameraMatricx(const Matrix& world)
@@ -140,4 +238,37 @@ void DefferdRenderer::SetProjection(float fov, float nearZ, float farZ)
 	this->farZ = farZ;
 
 	cameraProjection = DirectX::XMMatrixPerspectiveFovLH(fov, (float)width / (float)height, nearZ, farZ);
+}
+
+void DefferdRenderer::ProcessDrawCommands(std::vector<MeshDrawCommand>& drawCommands, bool isWithMaterial)
+{
+	for (auto& command : drawCommands)
+	{
+		auto mesh = command.GetMeshData();
+		auto material = command.GetMaterialData();
+		ID3D11Buffer* vertexBuffer[1] = { mesh.vertexBuffer };
+		immediateContext->IASetVertexBuffers(0, std::size(vertexBuffer), vertexBuffer, &mesh.vertexStride, 0);
+		immediateContext->IASetIndexBuffer(mesh.indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		immediateContext->VSSetShader(mesh.vertexShader, nullptr, 0);
+		if (isWithMaterial)
+		{
+			immediateContext->PSSetShader(material.pixelShader, nullptr, 0);
+
+			for (auto& resource : material.shaderResources)
+			{
+				ID3D11Buffer* resources[1] = { resource };
+				immediateContext->PSSetConstantBuffers(0, std::size(resources), resources);
+			}
+			for (auto& texture : material.texture)
+			{
+				ID3D11ShaderResourceView* textures[1] = { texture };
+				immediateContext->PSSetShaderResources(0, std::size(textures), textures);
+			}
+		}
+
+
+		immediateContext->DrawIndexed(mesh.indexCounts, 0, 0);
+	}
 }
