@@ -85,7 +85,13 @@ public:
 	inline static void ClearInitFlag() { initFlagSet.clear(); }
 
 	template<typename T>
-	static void UpdateStaticCbuffer(const T& data);
+	static inline void UpdateStaticCbuffer(const T& data) = delete;
+	template<>
+	static inline void UpdateStaticCbuffer(const cb_Transform& data);
+	template<>
+	static inline void UpdateStaticCbuffer(const cb_ShadowMap& data);
+	template<>
+	static inline void UpdateStaticCbuffer(const cb_Camera& data);
 
 	template<typename T>
 	inline static std::shared_ptr<T> GetData(const char* key);
@@ -174,37 +180,6 @@ public:
 
 };
 
-template<typename T>
-inline void D3DConstBuffer::UpdateStaticCbuffer(const T& data)
-{
-	static_assert(false, "T is not static buffer");
-}
-
-template<typename T>
-inline std::shared_ptr<T> D3DConstBuffer::GetData(const char* key)
-{
-	static_assert((sizeof(T) % 16) == 0, "Constant Buffer size must be 16-byte aligned. Ensure that the size of the structure is a multiple of 16 bytes.");
-	static_assert(!std::is_polymorphic_v<T>, "Constant Buffer cannot have virtual functions. The type must be a plain old data (POD) structure.");
-	static_assert(std::is_trivially_destructible_v<T>, "Constant Buffer cannot have a destructor. The type must not be destructible.");
-
-	std::string data_key = make_key_data(sizeof(T), key);
-	std::shared_ptr<char[]> data = GetData(sizeof(T), data_key.c_str());
-
-	// If this is the first reference, create a T object using placement new
-	auto [iter, result] = initFlagSet.insert(data_key);
-	if (result)
-		new(data.get()) T;
-
-	std::shared_ptr<T> ptr = std::reinterpret_pointer_cast<T>(data);
-	
-	return ptr;
-}
-
-inline std::string D3DConstBuffer::make_key_data(size_t size_of, const char* key)
-{
-	return std::format("{}_{}", size_of, key);
-}
-
 template<>
 inline void D3DConstBuffer::UpdateStaticCbuffer(const cb_Transform& data)
 {
@@ -263,6 +238,31 @@ inline void D3DConstBuffer::UpdateStaticCbuffer(const cb_ShadowMap& data)
 	{
 		pDeviceContext->UpdateSubresource(cBufferShadowMap, 0, NULL, &data, 0, 0);
 	}
+}
+
+template<typename T>
+inline std::shared_ptr<T> D3DConstBuffer::GetData(const char* key)
+{
+	static_assert((sizeof(T) % 16) == 0, "Constant Buffer size must be 16-byte aligned. Ensure that the size of the structure is a multiple of 16 bytes.");
+	static_assert(!std::is_polymorphic_v<T>, "Constant Buffer cannot have virtual functions. The type must be a plain old data (POD) structure.");
+	static_assert(std::is_trivially_destructible_v<T>, "Constant Buffer cannot have a destructor. The type must not be destructible.");
+
+	std::string data_key = make_key_data(sizeof(T), key);
+	std::shared_ptr<char[]> data = GetData(sizeof(T), data_key.c_str());
+
+	// If this is the first reference, create a T object using placement new
+	auto [iter, result] = initFlagSet.insert(data_key);
+	if (result)
+		new(data.get()) T;
+
+	std::shared_ptr<T> ptr = std::reinterpret_pointer_cast<T>(data);
+	
+	return ptr;
+}
+
+inline std::string D3DConstBuffer::make_key_data(size_t size_of, const char* key)
+{
+	return std::format("{}_{}", size_of, key);
 }
 
 template<typename T>
