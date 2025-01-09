@@ -40,7 +40,6 @@ void RendererTestApp::Render()
 	renderer->SetProjection(Mathf::PI / 4, 0.1f, 1000.0f);
 	renderer->SetCameraMatrix(DirectX::XMMatrixInverse(nullptr, DirectX::XMMatrixLookAtLH(Vector3(-2, 2, -5), Vector3(0, 0, 0), Vector3::Up)));
     //renderer->SetCameraMatricx(Matrix::CreateTranslation(Vector3(0, 0, 10)));
-
     renderer << testObject->GetComponent<CubeMeshRender>().GetMeshDrawCommand();
 
 	renderer->Render();
@@ -85,6 +84,7 @@ void RendererTestApp::DXGIInit()
 void RendererTestApp::TestInit()
 {
     testObject = NewGameObject<CubeObject>(L"Cube");
+    testObject->GetComponent<CubeMeshRender>().SetPixelShader(L"Resource/Shader/CubeShader.hlsl");
 
     return;
 

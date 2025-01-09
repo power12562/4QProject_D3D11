@@ -72,7 +72,7 @@ GBuffer main(PS_INPUT input)
         ambientOcculusion = specularSample.a;
       
     float3 albedo = albedoSample.rgb * baseColor.rgb;
-	albedo = 1;
+    
     GBuffer final;    
     final.Albedo.rgb = albedo.rgb;
     final.Albedo.a = 1;

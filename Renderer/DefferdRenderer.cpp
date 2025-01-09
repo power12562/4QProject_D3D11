@@ -136,11 +136,11 @@ void DefferdRenderer::SetRenderTarget(_In_ Texture& target)
 	{
 		HRESULT result;
 		ComPtr<ID3D11Texture2D> texture;
-		CD3D11_TEXTURE2D_DESC desc = CD3D11_TEXTURE2D_DESC(
-			DXGI_FORMAT_R8G8B8A8_UNORM, 
-			width, 
+		CD3D11_TEXTURE2D_DESC desc = CD3D11_TEXTURE2D_DESC( 
+			DXGI_FORMAT_R8G8B8A8_UNORM,
+			width,
 			height,
-			1, 
+			1,
 			0,
 			D3D11_BIND_RENDER_TARGET);
 
