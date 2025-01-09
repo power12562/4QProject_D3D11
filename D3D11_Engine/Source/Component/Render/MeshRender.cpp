@@ -83,6 +83,10 @@ void MeshRender::SetPixelShader(const wchar_t* path)
 	SafeRelease(pPixelShader);
 	hlslManager.CreateSharingShader(path, &pPixelShader);
 	pixelShaderPath = path;
+	MaterialData materialData{};
+	materialData.pixelShader.LoadShader(pPixelShader);
+
+	meshDrawCommand << materialData;
 }
 
 void MeshRender::ResetVertexShader()

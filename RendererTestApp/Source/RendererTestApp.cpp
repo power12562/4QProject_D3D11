@@ -84,7 +84,7 @@ void RendererTestApp::DXGIInit()
 void RendererTestApp::TestInit()
 {
     testObject = NewGameObject<CubeObject>(L"Cube");
-    testObject->GetComponent<CubeMeshRender>().SetPixelShader(L"Resource/Shader/CubeShader.hlsl");
+    testObject->GetComponent<CubeMeshRender>().SetPixelShader(L"Resource/EngineShader/CubeShader.hlsl");
 
     return;
 
