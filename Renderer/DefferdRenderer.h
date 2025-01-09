@@ -6,7 +6,6 @@
 
 #include <array>
 
-using Matrix = DirectX::SimpleMath::Matrix;
 
 class DefferdRenderer : public IRenderer
 {
@@ -15,17 +14,18 @@ public:
 	virtual ~DefferdRenderer();
 
 public:
-	virtual void AddDrawCommand(_In_ MeshDrawCommand& command) override;
+	virtual void AddDrawCommand(_In_ const MeshDrawCommand& command) override;
 	virtual void SetRenderTarget(_In_ Texture& target) override;
 	virtual void Render() override;
 
-	void SetCameraMatricx(const Matrix& world);
-	void SetProjection(float fov, float nearZ, float farZ);
+	virtual void SetCameraMatrix(const Matrix& world);
+	virtual void SetProjection(float fov, float nearZ, float farZ);
 
 private:
-	std::vector<MeshDrawCommand> allDrawCommands{};
-	std::vector<MeshDrawCommand> deferredDrawCommands{};
-	std::vector<MeshDrawCommand> forwardDrawCommands{};
+	std::vector<MeshDrawCommand> allDrawCommandsOrigin{};
+	std::vector<MeshDrawCommand*> allDrawCommands{};
+	std::vector<MeshDrawCommand*> deferredDrawCommands{};
+	std::vector<MeshDrawCommand*> forwardDrawCommands{};
 
 	Texture* renderTarget{ nullptr };
 
@@ -70,14 +70,19 @@ private:
 	Matrix cameraWorld;
 	Matrix cameraProjection;
 	ConstantBuffer cameraBuffer;
+
 	struct CameraBufferData
 	{
-		Matrix cameraWorld;
-		Matrix cameraProjection;
+		alignas(16) Vector3 MainCamPos;
+		alignas(16) Matrix View;
+		alignas(16) Matrix Projection;
+		alignas(16) Matrix IVM;
+		alignas(16) Matrix IPM;
 	};
+
 #pragma endregion Camera
 
 private:
-	void ProcessDrawCommands(std::vector<MeshDrawCommand>& drawCommands, bool isWithMaterial = true);
+	void ProcessDrawCommands(std::vector<MeshDrawCommand*>& drawCommands, bool isWithMaterial = true);
 };
 

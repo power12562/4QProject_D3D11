@@ -112,7 +112,7 @@ cbuffer cbuffer_Transform : register(b0)
 {
     Matrix World;
     Matrix WorldInverseTranspose;
-    Matrix WVP;
+    //Matrix WVP;
 }
 
 cbuffer cb_Camera : register(b1)

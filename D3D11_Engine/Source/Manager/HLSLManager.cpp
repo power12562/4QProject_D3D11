@@ -42,26 +42,28 @@ void HLSLManager::ClearSharingShader()
 {
 	if (!sharingInputLayoutMap.empty())
 	{
+		ULONG refcount;
 		for (auto& item : sharingInputLayoutMap)
 		{
-			ULONG refcount = item.second->Release();
-			while (refcount != 0)
-			{
-				refcount = item.second->Release();
-			}		
+			refcount = item.second->Release();
+			//while (refcount != 0)
+			//{
+			//	refcount = item.second->Release();
+			//}
 		}
 		sharingInputLayoutMap.clear();
 	}
 
 	if (!sharingShaderMap.empty())
 	{
+		ULONG refcount;
 		for (auto& item : sharingShaderMap)
 		{
-			ULONG refcount = item.second->Release();
-			while (refcount != 0)
-			{
-				refcount = item.second->Release();
-			}
+			refcount = item.second->Release();
+			//while (refcount != 0)
+			//{
+			//	refcount = item.second->Release();
+			//}
 		}
 		sharingShaderMap.clear();
 	}
@@ -88,6 +90,8 @@ void HLSLManager::CreateSharingShader(const wchar_t* path, ID3D11VertexShader** 
 	else
 	{
 		MakeShader(path, ppOut_VertexShader, ppOut_InputLayout);
+		(*ppOut_VertexShader)->AddRef();
+		(*ppOut_InputLayout)->AddRef();
 		sharingShaderMap[path] = *ppOut_VertexShader;
 		sharingInputLayoutMap[path] = *ppOut_InputLayout;
 	}
@@ -108,6 +112,7 @@ void HLSLManager::CreateSharingShader(const wchar_t* path, ID3D11PixelShader** p
 	else
 	{
 		MakeShader(path, ppOutput);
+		(*ppOutput)->AddRef();
 		sharingShaderMap[path] = *ppOutput;
 	}
 }

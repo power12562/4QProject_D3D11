@@ -21,6 +21,7 @@ public:
 
 	void ChangeSlot(uint32_t newSlot) { registrerSlot = newSlot; }
 	operator ID3D11Buffer* () { return buffer; }
+	operator uint32_t() { return registrerSlot; }
 
 private:
 	RendererBuffer buffer;

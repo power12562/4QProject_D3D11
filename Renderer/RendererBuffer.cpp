@@ -18,11 +18,10 @@ void RendererBuffer::Init(D3D11_BUFFER_DESC bufferDesc, size_t bufferSize, _In_o
 		initData.pSysMem = data;
 		initDataPointer = &initData;
 	}
-	ComPtr<ID3D11Buffer> newBuffer;
-	result = RendererUtility::GetDevice()->CreateBuffer(&bufferDesc, initDataPointer, &newBuffer);
+
+	result = RendererUtility::GetDevice()->CreateBuffer(&bufferDesc, initDataPointer, &buffer);
 	Check(result);
 
-	buffer = newBuffer;
 	RendererUtility::GetDevice()->GetImmediateContext(&immediateContext);
 }
 

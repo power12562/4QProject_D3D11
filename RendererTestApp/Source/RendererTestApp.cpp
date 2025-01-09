@@ -2,6 +2,7 @@
 
 #include <dxgi1_6.h>
 #pragma comment(lib, "dxgi")
+#include <framework.h>
 
 RendererTestApp::RendererTestApp()
 {
@@ -10,18 +11,23 @@ RendererTestApp::RendererTestApp()
     //this->SetOptimalScreenSize();
 }
 
-RendererTestApp::~RendererTestApp()
-{
-    backBuffer.~Texture();
-	swapChain.ReleaseAndGetAddressOf();
-    renderer.reset();
-}
+RendererTestApp::~RendererTestApp() = default;
 
 void RendererTestApp::Start()
 {
     renderer = std::make_unique<DefferdRenderer>();
     DXGIInit();
+
+    if (sceneManager.nextScene == nullptr)
+        sceneManager.LoadScene<Scene>(); //빈 씬 로드
+
+    sceneManager.ChangeScene();
+    sceneManager.AddObjects();
+    
+    gameObjectFactory.InitializeMemoryPool();
 	TestInit();
+
+    renderer << backBuffer;
 }
 
 void RendererTestApp::Update()
@@ -31,50 +37,39 @@ void RendererTestApp::Update()
 
 void RendererTestApp::Render()
 {
-    renderer << backBuffer;
+	renderer->SetProjection(Mathf::PI / 4, 0.1f, 1000.0f);
+	renderer->SetCameraMatrix(DirectX::XMMatrixInverse(nullptr, DirectX::XMMatrixLookAtLH(Vector3(-2, 2, -5), Vector3(0, 0, 0), Vector3::Up)));
+    //renderer->SetCameraMatricx(Matrix::CreateTranslation(Vector3(0, 0, 10)));
+
+    renderer << testObject->GetComponent<CubeMeshRender>().GetMeshDrawCommand();
+
 	renderer->Render();
 
 	swapChain->Present(0, 0);
 }
 
+void RendererTestApp::Uninitialize()
+{
+    sceneManager.AddObjects();
+    sceneManager.currScene.reset();
+    gameObjectFactory.UninitializeMemoryPool();
+
+
+	backBuffer.~Texture();
+	swapChain.ReleaseAndGetAddressOf();
+	renderer.reset();
+    RendererUtility::SetSwapChain(nullptr);
+
+	WinGameApp::Uninitialize();
+}
+
 void RendererTestApp::DXGIInit()
 {
     ID3D11Device* device = RendererUtility::GetDevice();
-    HRESULT result;
+    swapChain = RendererUtility::GetSwapChain();
 
-    DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
-    swapChainDesc.Width = clientSize.cx;
-    swapChainDesc.Height = clientSize.cy;
-    swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-    swapChainDesc.SampleDesc.Count = 1;
-    swapChainDesc.SampleDesc.Quality = 0;
-    swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    swapChainDesc.BufferCount = 2;
-    swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-
-    // 비트블릿 방식
-    if (0)
-    {
-        swapChainDesc.BufferCount = 1;
-        swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-    }
-
-    ComPtr<IDXGIFactory4> pFactory = nullptr;
-    result = CreateDXGIFactory2(0, IID_PPV_ARGS(&pFactory));
-    Check(result);
-
-    ComPtr<IDXGISwapChain1> swapChain1 = nullptr;
-    result = pFactory->CreateSwapChainForHwnd(device,
-        GetHWND(),
-        &swapChainDesc,
-        nullptr,
-        nullptr,
-        &swapChain1);
-    Check(result);
-
-    result = swapChain1->QueryInterface(IID_PPV_ARGS(&swapChain));
-    Check(result);
-
+    
+	HRESULT result;
     ComPtr<ID3D11Texture2D> backBufferTexture;
 
     result = swapChain->GetBuffer(0, IID_PPV_ARGS(&backBufferTexture));
@@ -84,15 +79,39 @@ void RendererTestApp::DXGIInit()
 }
 
 #include <fstream>
+#include <Utility\AssimpUtility.h>
+#include "Manager\GameObjectFactory.h"
 
 void RendererTestApp::TestInit()
 {
+    testObject = NewGameObject<CubeObject>(L"Cube");
 
-	std::ifstream file("RendererTestApp/Shader/VertexShader.hlsl");
+    return;
+
+
+    ShaderHeader header;
+    ShaderHeader header2;
+
+    std::ifstream headerFile("Resource/EngineShader/Shared.hlsli");
+    if (headerFile.is_open())
+    {
+        std::string headerSource((std::istreambuf_iterator<char>(headerFile)), std::istreambuf_iterator<char>());
+        header.Load("Shared.hlsli", headerSource.c_str(), headerSource.size());
+    }
+
+    std::ifstream headerFile2("Resource/EngineShader/VSInput.hlsli");
+	if (headerFile2.is_open())
+	{
+		std::string headerSource2((std::istreambuf_iterator<char>(headerFile2)), std::istreambuf_iterator<char>());
+		header2.Load("VSInput.hlsli", headerSource2.c_str(), headerSource2.size());
+	}
+
+    std::ifstream file("Resource/EngineShader/VertexShader.hlsl");
     if (file.is_open())
     {
 		std::string source((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 		file.close();
 		vertexShader.Compile(source.c_str(), source.size());
     }
+
 }

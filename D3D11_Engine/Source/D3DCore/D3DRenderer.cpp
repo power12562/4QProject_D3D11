@@ -122,6 +122,9 @@ void D3DRenderer::Init()
         CheckHRESULT(swapChain->QueryInterface(IID_PPV_ARGS(&pSwapChain)));
         SafeRelease(swapChain);
 
+		RendererUtility::SetDevice(pDevice);
+		RendererUtility::SetSwapChain(pSwapChain);
+
         //렌더타겟뷰 생성. (백퍼버 이용)
         ID3D11Texture2D* pBackBufferTexture = nullptr; //백버퍼
         CheckHRESULT(pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&pBackBufferTexture)); //스왑체인 백버퍼를 가져온다.
@@ -210,6 +213,13 @@ void D3DRenderer::Uninit()
 	SafeReleaseArray(DXGIAdapters);
     SafeRelease(pDXGIFactory);
      
+    //
+    auto ref = SafeRelease(pShadowInputLayout);
+    ref = SafeRelease(pShadowVertexShader);
+    ref = SafeRelease(pShadowSkinningInputLayout);
+    ref = SafeRelease(pShadowSkinningVertexShader);
+    ref = SafeRelease(pPBRDirectionalLightPS);
+
     //dxd11 개체
     D3DConstBuffer::ReleaseStaticCbuffer();
 	SafeRelease(pPBRDirectionalLightPS);

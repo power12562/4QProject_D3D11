@@ -1,6 +1,7 @@
 #include "RendererCore.h"
 #include <d3d11.h>
 #include <format>
+#include <dxgi1_2.h>
 
 consteval bool IsDebug()
 {
@@ -11,6 +12,7 @@ consteval bool IsDebug()
 }
 
 ComPtr<ID3D11Device> RendererUtility::device{ nullptr };
+ComPtr<IDXGISwapChain1> RendererUtility::swapChain{ nullptr };
 
 void RendererUtility::SetDevice(ComPtr<ID3D11Device> newDevice)
 {
@@ -20,6 +22,16 @@ void RendererUtility::SetDevice(ComPtr<ID3D11Device> newDevice)
 ID3D11Device* RendererUtility::GetDevice()
 {
 	return device.Get();
+}
+
+void RendererUtility::SetSwapChain(ComPtr<struct IDXGISwapChain1> swapChain)
+{
+	RendererUtility::swapChain = swapChain;
+}
+
+ComPtr<struct IDXGISwapChain1> RendererUtility::GetSwapChain()
+{
+	return swapChain;
 }
 
 void Check::operator()(HRESULT result)

@@ -102,7 +102,7 @@ DefferdRenderer::DefferdRenderer()
 
 	
 	CameraBufferData cameraData{};
-	cameraBuffer.Init(0, &cameraData);
+	cameraBuffer.Init(1, &cameraData);
 
 
 }
@@ -115,9 +115,9 @@ DefferdRenderer::~DefferdRenderer()
 #endif
 }
 
-void DefferdRenderer::AddDrawCommand(_In_ MeshDrawCommand& command)
+void DefferdRenderer::AddDrawCommand(_In_ const MeshDrawCommand& command)
 {
-	allDrawCommands.emplace_back(command);
+	allDrawCommandsOrigin.emplace_back(command);
 }
 
 void DefferdRenderer::SetRenderTarget(_In_ Texture& target)
@@ -168,18 +168,17 @@ void DefferdRenderer::SetRenderTarget(_In_ Texture& target)
 
 void DefferdRenderer::Render()
 {
-	deferredDrawCommands.clear();
-	forwardDrawCommands.clear();
-	for (auto& drawCommand : allDrawCommands)
+	for (auto& drawCommand : allDrawCommandsOrigin)
 	{
 		if (drawCommand.GetMaterialData().pixelShader.isForward)
 		{
-			forwardDrawCommands.emplace_back(drawCommand);
+			forwardDrawCommands.emplace_back(&drawCommand);
 		}
 		else
 		{
-			deferredDrawCommands.emplace_back(drawCommand);
+			deferredDrawCommands.emplace_back(&drawCommand);
 		}
+		allDrawCommands.emplace_back(&drawCommand);
 	}
 
 
@@ -202,31 +201,37 @@ void DefferdRenderer::Render()
 	immediateContext->ClearDepthStencilView(depthStencilTexture, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 
-
 	
-	ProcessDrawCommands(allDrawCommands, false);
+	//ProcessDrawCommands(allDrawCommands, false);
 
 
-	CameraBufferData cameraData;
+	CameraBufferData cameraData{};
+	cameraData.IPM = DirectX::XMMatrixTranspose(cameraProjection.Invert());
+	cameraData.IVM = DirectX::XMMatrixTranspose(cameraWorld);
+	cameraData.Projection = DirectX::XMMatrixTranspose(cameraProjection);
+	cameraData.View = DirectX::XMMatrixTranspose(cameraWorld.Invert());
+
 	cameraBuffer.Update(&cameraData);
 	ID3D11Buffer* cameraBuffers[1] = { cameraBuffer };
-	immediateContext->VSSetConstantBuffers(0, std::size(cameraBuffers), cameraBuffers);
+	immediateContext->VSSetConstantBuffers(cameraBuffer, std::size(cameraBuffers), cameraBuffers);
 
+
+	ID3D11RenderTargetView* backBuffersRTV[1] = { *renderTarget };
+	immediateContext->OMSetRenderTargets(std::size(backBuffersRTV), backBuffersRTV, nullptr);
 
 	ProcessDrawCommands(deferredDrawCommands);
-
-
-
-
 	ProcessDrawCommands(forwardDrawCommands);
 
 
 
 
 	allDrawCommands.clear();
+	deferredDrawCommands.clear();
+	forwardDrawCommands.clear();
+	allDrawCommandsOrigin.clear();
 }
 
-void DefferdRenderer::SetCameraMatricx(const Matrix& world)
+void DefferdRenderer::SetCameraMatrix(const Matrix& world)
 {
 	cameraWorld = world;
 }
@@ -240,16 +245,23 @@ void DefferdRenderer::SetProjection(float fov, float nearZ, float farZ)
 	cameraProjection = DirectX::XMMatrixPerspectiveFovLH(fov, (float)width / (float)height, nearZ, farZ);
 }
 
-void DefferdRenderer::ProcessDrawCommands(std::vector<MeshDrawCommand>& drawCommands, bool isWithMaterial)
+void DefferdRenderer::ProcessDrawCommands(std::vector<MeshDrawCommand*>& drawCommands, bool isWithMaterial)
 {
 	for (auto& command : drawCommands)
 	{
-		auto mesh = command.GetMeshData();
-		auto material = command.GetMaterialData();
+		auto mesh = command->GetMeshData();
+		auto material = command->GetMaterialData();
+
 		ID3D11Buffer* vertexBuffer[1] = { mesh.vertexBuffer };
-		immediateContext->IASetVertexBuffers(0, std::size(vertexBuffer), vertexBuffer, &mesh.vertexStride, 0);
+		ID3D11Buffer* transformBuffer[1] = { mesh.transformBuffer };
+		UINT stride = mesh.vertexStride;
+		UINT offset = 0;
+		immediateContext->IASetVertexBuffers(0, std::size(vertexBuffer), vertexBuffer, &mesh.vertexStride, &offset);
 		immediateContext->IASetIndexBuffer(mesh.indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		immediateContext->IASetInputLayout(mesh.vertexShader);
 		immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		immediateContext->VSSetConstantBuffers(mesh.transformBuffer, std::size(transformBuffer), transformBuffer);
+
 
 		immediateContext->VSSetShader(mesh.vertexShader, nullptr, 0);
 		if (isWithMaterial)

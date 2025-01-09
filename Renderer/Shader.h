@@ -7,6 +7,7 @@
 struct ID3D11VertexShader;
 struct ID3D11PixelShader;
 struct ID3D11ComputeShader;
+struct ID3D11InputLayout;
 
 struct ShaderUtillity
 {
@@ -30,6 +31,23 @@ protected:
 	std::string_view shaderModel;
 };
 
+struct ShaderHeader : public ShaderResource
+{
+public:
+	ShaderHeader();
+	~ShaderHeader();
+
+public:
+	void Load(std::string_view newShaderName, const void* data, size_t size);
+
+
+
+private:
+	ComPtr<ID3DBlob> shaderCode;
+	std::shared_ptr<class ShaderInclude> includeInstance;
+	std::string shaderName;
+};
+
 struct VertexShader : public Shader<VertexShader>
 {
 public:
@@ -39,10 +57,17 @@ public:
 
 public:
 	operator ID3D11VertexShader* () { return vertexShader.Get(); }
+	operator ID3D11InputLayout* () { return inputLayout.Get(); }
 	void CreateShader(ID3DBlob* compiledBlob);
+	void LoadShader(ID3D11VertexShader* vertexShader, ID3D11InputLayout* inputLayout) 
+	{ 
+		this->vertexShader = vertexShader; 
+		this->inputLayout = inputLayout;
+	}
 
 private:
 	ComPtr<ID3D11VertexShader> vertexShader;
+	ComPtr<ID3D11InputLayout> inputLayout;
 };
 
 struct PixelShader : public Shader<PixelShader>
@@ -57,6 +82,7 @@ public:
 public:
 	operator ID3D11PixelShader* () { return pixelShader.Get(); }
 	void CreateShader(ID3DBlob* compiledBlob);
+	void LoadShader(ID3D11PixelShader* pixelShader);
 
 
 

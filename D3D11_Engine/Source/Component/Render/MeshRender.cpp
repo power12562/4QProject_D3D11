@@ -39,6 +39,9 @@ MeshRender::~MeshRender()
 		SafeRelease(meshResource->pVertexBuffer);
 	}
 	SafeRelease(pRRState);
+	SafeRelease(pInputLayout);
+	SafeRelease(pVertexShader);
+	SafeRelease(pPixelShader);
 
 	instanceList.erase(myIter);
 }

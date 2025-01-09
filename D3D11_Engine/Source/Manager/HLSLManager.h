@@ -3,6 +3,7 @@
 #include <d3d11.h>
 #include <map>
 #include <string>
+#include <vector>
 
 class HLSLManager;
 extern HLSLManager& hlslManager;   
