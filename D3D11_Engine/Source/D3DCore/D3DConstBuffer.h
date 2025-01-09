@@ -85,7 +85,13 @@ public:
 	inline static void ClearInitFlag() { initFlagSet.clear(); }
 
 	template<typename T>
-	static void UpdateStaticCbuffer(const T& data);
+	static inline void UpdateStaticCbuffer(const T& data);
+	template<>
+	static inline void UpdateStaticCbuffer(const cb_Transform& data);
+	template<>
+	static inline void UpdateStaticCbuffer(const cb_ShadowMap& data);
+	template<>
+	static inline void UpdateStaticCbuffer(const cb_Camera& data);
 
 	template<typename T>
 	inline static std::shared_ptr<T> GetData(const char* key);
