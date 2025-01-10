@@ -27,7 +27,7 @@ void RendererTestApp::Start()
     gameObjectFactory.InitializeMemoryPool();
 	TestInit();
 
-    renderer << backBuffer;
+    renderer->SetRenderTarget(backBuffer);
 }
 
 void RendererTestApp::Update()
@@ -37,6 +37,10 @@ void RendererTestApp::Update()
 
 void RendererTestApp::Render()
 {
+    renderer << Binadble { EShaderType::Pixel, EShaderBindable::ShaderResource, 30, (ID3D11ShaderResourceView*)BRDF_LUT };
+    renderer << Binadble { EShaderType::Pixel, EShaderBindable::ShaderResource, 31, (ID3D11ShaderResourceView*)Diffuse_IBL };
+    renderer << Binadble { EShaderType::Pixel, EShaderBindable::ShaderResource, 32, (ID3D11ShaderResourceView*)Specular_IBL };
+
 	renderer->SetProjection(Mathf::PI / 4, 0.1f, 1000.0f);
 	renderer->SetCameraMatrix(DirectX::XMMatrixInverse(nullptr, DirectX::XMMatrixLookAtLH(Vector3(-2, 2, -5), Vector3(0, 0, 0), Vector3::Up)));
     //renderer->SetCameraMatricx(Matrix::CreateTranslation(Vector3(0, 0, 10)));
@@ -49,6 +53,10 @@ void RendererTestApp::Render()
 
 void RendererTestApp::Uninitialize()
 {
+	BRDF_LUT.~Texture();
+	Diffuse_IBL.~Texture();
+	Specular_IBL.~Texture();
+
     sceneManager.AddObjects();
     sceneManager.currScene.reset();
     gameObjectFactory.UninitializeMemoryPool();
@@ -86,6 +94,19 @@ void RendererTestApp::TestInit()
     testObject = NewGameObject<CubeObject>(L"Cube");
     testObject->GetComponent<CubeMeshRender>().SetPixelShader(L"Resource/EngineShader/CubeShader.hlsl");
     testObject->GetComponent<CubeMeshRender>().SetPixelShader(L"Resource/Shader/TEst.hlsl");
+
+	ComPtr<ID3D11ShaderResourceView> srv;
+	textureManager.CreateSharingTexture(L"Resource/Texture/IBL/Brdf.dds", &srv);
+	BRDF_LUT.LoadTexture(srv.Get());
+
+	textureManager.CreateSharingCubeMap(L"Resource/Texture/IBL/DiffuseIBL.dds", &srv);
+	Diffuse_IBL.LoadTexture(srv.Get());
+
+	textureManager.CreateSharingCubeMap(L"Resource/Texture/IBL/SpecularIBL.dds", &srv);
+	Specular_IBL.LoadTexture(srv.Get());
+
+ //   auto aa = Utility::CreateCompressTexture(d3dRenderer.GetDevice(), L"Resource/Texture/IBL/EnvHDR.dds", nullptr, &srv, Utility::E_COMPRESS::BC6);
+	//Utility::SaveTextureForDDS(L"Resource/Texture/IBL/EnvHDR2.dds", aa);
 
     return;
 

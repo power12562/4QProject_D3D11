@@ -120,6 +120,11 @@ void DefferdRenderer::AddDrawCommand(_In_ const MeshDrawCommand& command)
 	allDrawCommandsOrigin.emplace_back(command);
 }
 
+void DefferdRenderer::AddBinadble(_In_ const Binadble& bindable)
+{
+	bindables.emplace_back(bindable);
+}
+
 void DefferdRenderer::SetRenderTarget(_In_ Texture& target)
 {
 	renderTarget = &target;
@@ -219,6 +224,8 @@ void DefferdRenderer::Render()
 	ID3D11RenderTargetView* backBuffersRTV[1] = { *renderTarget };
 	immediateContext->OMSetRenderTargets(std::size(backBuffersRTV), backBuffersRTV, nullptr);
 
+	BindBinadble(bindables);
+
 	ProcessDrawCommands(deferredDrawCommands);
 	ProcessDrawCommands(forwardDrawCommands);
 
@@ -229,6 +236,8 @@ void DefferdRenderer::Render()
 	deferredDrawCommands.clear();
 	forwardDrawCommands.clear();
 	allDrawCommandsOrigin.clear();
+
+	bindables.clear();
 }
 
 void DefferdRenderer::SetCameraMatrix(const Matrix& world)
@@ -283,4 +292,52 @@ void DefferdRenderer::ProcessDrawCommands(std::vector<MeshDrawCommand*>& drawCom
 
 		immediateContext->DrawIndexed(mesh.indexCounts, 0, 0);
 	}
+}
+
+void DefferdRenderer::BindBinadble(const std::vector<Binadble>& bindables)
+{
+	for (auto& item : bindables)
+	{
+		switch (item.bindableType)
+		{
+		case EShaderBindable::ConstantBuffer:
+		{
+			ComPtr<ID3D11Buffer> buffer;
+			item.bind.As(&buffer);
+
+			ID3D11Buffer* buffers[1] = { buffer.Get() };
+			if (item.shaderType == EShaderType::Pixel)
+			{
+				immediateContext->VSSetConstantBuffers(item.slot, std::size(buffers), buffers);
+			}
+			if (item.shaderType == EShaderType::Vertex)
+			{
+				immediateContext->VSSetConstantBuffers(item.slot, std::size(buffers), buffers);
+			}
+		}
+		break;
+
+		case EShaderBindable::ShaderResource:
+		{
+			ComPtr<ID3D11ShaderResourceView> srv;
+			item.bind.As(&srv);
+
+			ID3D11ShaderResourceView* resources[1] = { srv.Get() };
+			if (item.shaderType == EShaderType::Pixel)
+			{
+				immediateContext->PSSetShaderResources(item.slot, std::size(resources), resources);
+			}
+			if (item.shaderType == EShaderType::Vertex)
+			{
+				immediateContext->VSSetShaderResources(item.slot, std::size(resources), resources);
+			}
+		}
+		break;
+
+		default:
+			break;
+		}
+
+	}
+
 }

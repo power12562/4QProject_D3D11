@@ -9,9 +9,8 @@ std::unique_ptr<IRenderer>& operator<<(std::unique_ptr<IRenderer>& renderer, con
 	return renderer;
 }
 
-std::unique_ptr<IRenderer>& operator<<(std::unique_ptr<IRenderer>& renderer, Texture& drawCommand)
+std::unique_ptr<IRenderer>& operator<<(std::unique_ptr<IRenderer>& renderer, const Binadble& binadble)
 {
-	renderer->SetRenderTarget(drawCommand);
+	renderer->AddBinadble(binadble);
 	return renderer;
 }
-

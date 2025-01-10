@@ -13,6 +13,7 @@ public:
 
 public:
 	virtual void AddDrawCommand(_In_ const MeshDrawCommand& command) = 0;
+	virtual void AddBinadble(_In_ const Binadble& bindable) = 0;
 	virtual void SetRenderTarget(_In_ Texture& target) = 0;
 	virtual void Render() = 0;
 
@@ -21,7 +22,7 @@ public:
 };
 
 std::unique_ptr<IRenderer>& operator<<(std::unique_ptr<IRenderer>& renderer, const MeshDrawCommand& drawCommand);
-std::unique_ptr<IRenderer>& operator<<(std::unique_ptr<IRenderer>& renderer, Texture& drawCommand);
+std::unique_ptr<IRenderer>& operator<<(std::unique_ptr<IRenderer>& renderer, const Binadble& binadble);
 
 
 

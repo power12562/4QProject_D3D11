@@ -15,6 +15,7 @@ public:
 
 public:
 	virtual void AddDrawCommand(_In_ const MeshDrawCommand& command) override;
+	virtual void AddBinadble(_In_ const Binadble& bindable) override;
 	virtual void SetRenderTarget(_In_ Texture& target) override;
 	virtual void Render() override;
 
@@ -29,6 +30,7 @@ private:
 
 	Texture* renderTarget{ nullptr };
 
+	std::vector<Binadble> bindables;
 
 #pragma region RHIDevice
 
@@ -84,5 +86,6 @@ private:
 
 private:
 	void ProcessDrawCommands(std::vector<MeshDrawCommand*>& drawCommands, bool isWithMaterial = true);
+	void BindBinadble(const std::vector<Binadble>& bindables);
 };
 

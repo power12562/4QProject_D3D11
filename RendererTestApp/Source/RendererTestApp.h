@@ -22,6 +22,11 @@ private:
 	ComPtr<struct IDXGISwapChain1> swapChain;
 	Texture backBuffer;
 
+	Texture BRDF_LUT;
+	Texture Diffuse_IBL;
+	Texture Specular_IBL;
+
+
 private:
 	void DXGIInit();
 

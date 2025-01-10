@@ -54,3 +54,23 @@ namespace EShaderType
 		Domain,
 	};
 }
+
+namespace EShaderBindable
+{
+	enum Type
+	{
+		ConstantBuffer,
+		ShaderResource,
+		UnorderedAccess,
+	};
+}
+
+struct Binadble
+{
+	EShaderType::Type shaderType;
+	EShaderBindable::Type bindableType;
+	uint32_t slot;
+
+	ComPtr<IUnknown> bind;
+};
+
