@@ -405,4 +405,5 @@ FodyWeavers.xsd
 # my
 *.user
 EngineShader/
+!D3D11_Engine/Source/EngineShader/
 dumps/

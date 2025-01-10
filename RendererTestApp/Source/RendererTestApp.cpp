@@ -105,8 +105,8 @@ void RendererTestApp::TestInit()
 	textureManager.CreateSharingCubeMap(L"Resource/Texture/IBL/SpecularIBL.dds", &srv);
 	Specular_IBL.LoadTexture(srv.Get());
 
-    auto aa = Utility::CreateCompressTexture(d3dRenderer.GetDevice(), L"Resource/Texture/IBL/EnvHDR.dds", nullptr, &srv, Utility::E_COMPRESS::BC6);
-	Utility::SaveTextureForDDS(L"Resource/Texture/IBL/EnvHDR2.dds", aa);
+ //   auto aa = Utility::CreateCompressTexture(d3dRenderer.GetDevice(), L"Resource/Texture/IBL/EnvHDR.dds", nullptr, &srv, Utility::E_COMPRESS::BC6);
+	//Utility::SaveTextureForDDS(L"Resource/Texture/IBL/EnvHDR2.dds", aa);
 
     return;
 
