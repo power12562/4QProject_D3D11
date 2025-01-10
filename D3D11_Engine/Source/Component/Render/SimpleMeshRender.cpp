@@ -212,12 +212,20 @@ void SimpleMeshRender::CreateMesh()
 	transformData.World = XMMatrixTranspose(gameObject.transform.GetWM());
 	transformData.WorldInverseTranspose = XMMatrixInverse(nullptr, transformData.World);
 
-	transformBuffer.Init(0, &transformData);
+	transformBuffer.Init(&transformData);
 
 	meshData.indexCounts = meshResource->indicesCount;
 	meshData.vertexStride = meshResource->vertexBufferStride;
 	meshData.boundingBox = gameObject.Bounds;
-	meshData.transformBuffer = transformBuffer;
+	meshData.transformBuffer =
+		Binadble
+		{
+			.shaderType = EShaderType::Vertex,
+			.bindableType = EShaderBindable::ConstantBuffer,
+			.slot = 0,
+			.bind = (ID3D11Buffer*)transformBuffer
+		};
+
 	meshData.vertexShader.LoadShader(GetRendererDesc().pVertexShader, GetRendererDesc().pInputLayout);
 	materialData.pixelShader.LoadShader(GetRendererDesc().pPixelShader);
 

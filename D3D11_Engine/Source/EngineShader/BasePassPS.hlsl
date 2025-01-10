@@ -1,4 +1,8 @@
+#ifndef __BASEPASSPS_HLSL__
+#define __BASEPASSPS_HLSL__
+
 #include "../EngineShader/Shared.hlsli"
+#include "../EngineShader/BRDF.hlsli"
 
 /** Shader Flags
  * USE_ALPHA
@@ -6,6 +10,7 @@
  * ALPHA_TEST
  * FORWARD
  */
+
 
 
 
@@ -17,63 +22,65 @@
 #define GetClipAlpha 0.3333
 #endif
 
-
-#ifdef FORWARD
-
-#ifndef GetColor
-#define GetColor 1.0
-#endif
-
-#else // FORWARD
-
 #ifndef GetAlbedo
 #define GetAlbedo 1.0
+#endif
+
+#ifndef GetMetallic
+#define GetMetallic 1.0
 #endif
 
 #ifndef GetSpecular
 #define GetSpecular 1.0
 #endif
 
+#ifndef GetRoughness
+#define GetRoughness 0.0
+#endif
+
+#ifndef GetAmbiatOcclusion
+#define GetAmbiatOcclusion 0.0
+#endif
+
 #ifndef GetNormal
-#define GetNormal 1.0
+#define GetNormal float3(0.0, 0.0, 1.0)
 #endif
 
 #ifndef GetEmissive
-#define GetEmissive 1.0
+#define GetEmissive float3(0.0, 0.0, 0.0)
 #endif
 
-#endif // FORWARD
 
+struct DirectionLight
+{
+	float4 LightColor;
+	float3 LightDir;
+	float LightIntensity;
+};
+
+float3 GetRadiance(DirectionLight light)
+{
+	return light.LightColor.rgb * light.LightIntensity;
+}
+
+float3 GetDirection(DirectionLight light)
+{
+	return normalize(-light.LightDir.xyz);
+}
 
 cbuffer cb_Light : register(b3)
 {
-	struct
-	{
-		float4 LightColor;
-		float3 LightDir;
-		float LightIntensity;
-	}
-    Lights[MAX_LIGHT_COUNT];
 	int LightsCount;
+	DirectionLight lights[MAX_LIGHT_COUNT];
 }
 
-cbuffer cb_PBRMaterial : register(b4)
-{
-	float4 baseColor;
-	float Metalness;
-	float Roughness;
-    
-	bool UseMetalnessMap;
-	bool UseRoughnessMap;
-	bool UseRMACMap;
-};
 
 struct PSResult
 {
 #ifdef FORWARD
-	float4 color : SV_Target0;
+	float4 color : SV_TARGET0;
 #else
-	float4 GBuffer[4] : SV_Target;
+	float4 GBuffer[4] : SV_TARGET;
 #endif
 
 };
@@ -81,7 +88,7 @@ struct PSResult
 #ifdef ALPHA_BLEND
 [earlydepthstencil]
 #endif
-PSResult main(PS_INPUT input) : SV_TARGET
+PSResult main(PS_INPUT input)
 {
 	float opacity = GetAlpha;
 
@@ -92,7 +99,31 @@ PSResult main(PS_INPUT input) : SV_TARGET
 	PSResult result = (PSResult)1;
 	
 #ifdef FORWARD
-	result.color = GetColor;
+	float3 finalColor = 0;
+	float3 emissiveColor = GetEmissive;
+	
+	float3 albedo = GetAlbedo;
+	float metallic = GetMetallic;
+	float specular = GetSpecular;
+	float roughness = GetRoughness;
+	float3 normal = GetNormal;
+	
+	float3x3 TBN = float3x3(input.Tangent, input.BiTangent, input.Normal);	
+	float3 N = normalize(mul(normal, TBN));
+	
+	float3 F0 = lerp(0.04, albedo, metallic) * specular;
+    float3 V = normalize(MainCamPos - input.World);
+	
+	
+	[unroll]
+	for(int i = 0; i < min(LightsCount, MAX_LIGHT_COUNT); ++i)
+	{
+		finalColor += BRDF(albedo, metallic, roughness, F0, N, V, GetDirection(lights[i])) * GetRadiance(lights[i]);
+	}
+	finalColor += BRDF_IBL(albedo, metallic, roughness, F0, N, V) * (1 - GetAmbiatOcclusion);
+	
+	result.color.rgb = LinearToGammaSpace(finalColor + emissiveColor);
+	result.color.a = opacity;
 #else
 	static int AlbedoSlot = 0;
 	static int SpecularSlot = 1;
@@ -100,12 +131,12 @@ PSResult main(PS_INPUT input) : SV_TARGET
 	static int EmissiveSlot = 3;
 	
 	result.GBuffer[AlbedoSlot] = GetAlbedo;
-	result.GBuffer[SpecularSlot] = GetSpecular;
-	result.GBuffer[NormalSlot] = GetNormal;
-	result.GBuffer[EmissiveSlot] = GetEmissive;
+	result.GBuffer[SpecularSlot] = float4(GetMetallic, GetSpecular, GetRoughness, GetAmbiatOcclusion);
+	result.GBuffer[NormalSlot].rgb = GetNormal;
+	result.GBuffer[EmissiveSlot].rgb = GetEmissive;
 #endif
-
 	
 	return result;
 }
 
+#endif // __BASEPASSPS_HLSL__

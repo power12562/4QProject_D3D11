@@ -52,6 +52,7 @@ namespace EShaderType
 		Compute,
 		Hull,
 		Domain,
+		MAX
 	};
 }
 

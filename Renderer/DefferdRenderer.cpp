@@ -1,5 +1,6 @@
 #include "DefferdRenderer.h"
 #include <format>
+#include <functional>
 
 
 #include <d3d11.h>
@@ -102,8 +103,11 @@ DefferdRenderer::DefferdRenderer()
 
 	
 	CameraBufferData cameraData{};
-	cameraBuffer.Init(1, &cameraData);
-
+	cameraBuffer.Init(&cameraData);
+	cameraBinadble.shaderType = EShaderType::Vertex;
+	cameraBinadble.bindableType = EShaderBindable::ConstantBuffer;
+	cameraBinadble.slot = 1;
+	cameraBinadble.bind = cameraBuffer;
 
 }
 
@@ -211,20 +215,23 @@ void DefferdRenderer::Render()
 
 
 	CameraBufferData cameraData{};
+	cameraData.MainCamPos = cameraWorld.Translation();
 	cameraData.IPM = DirectX::XMMatrixTranspose(cameraProjection.Invert());
 	cameraData.IVM = DirectX::XMMatrixTranspose(cameraWorld);
 	cameraData.Projection = DirectX::XMMatrixTranspose(cameraProjection);
 	cameraData.View = DirectX::XMMatrixTranspose(cameraWorld.Invert());
 
 	cameraBuffer.Update(&cameraData);
-	ID3D11Buffer* cameraBuffers[1] = { cameraBuffer };
-	immediateContext->VSSetConstantBuffers(cameraBuffer, std::size(cameraBuffers), cameraBuffers);
-
+	BindBinadble(cameraBinadble);
 
 	ID3D11RenderTargetView* backBuffersRTV[1] = { *renderTarget };
 	immediateContext->OMSetRenderTargets(std::size(backBuffersRTV), backBuffersRTV, nullptr);
+	immediateContext->ClearRenderTargetView(*renderTarget, DirectX::SimpleMath::Color{ 0.0f,1.0f ,0.0f ,0.0f });
 
-	BindBinadble(bindables);
+	for (auto& item : bindables)
+	{
+		BindBinadble(item);
+	}
 
 	ProcessDrawCommands(deferredDrawCommands);
 	ProcessDrawCommands(forwardDrawCommands);
@@ -262,15 +269,14 @@ void DefferdRenderer::ProcessDrawCommands(std::vector<MeshDrawCommand*>& drawCom
 		auto material = command->GetMaterialData();
 
 		ID3D11Buffer* vertexBuffer[1] = { mesh.vertexBuffer };
-		ID3D11Buffer* transformBuffer[1] = { mesh.transformBuffer };
 		UINT stride = mesh.vertexStride;
 		UINT offset = 0;
+
 		immediateContext->IASetVertexBuffers(0, std::size(vertexBuffer), vertexBuffer, &mesh.vertexStride, &offset);
 		immediateContext->IASetIndexBuffer(mesh.indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 		immediateContext->IASetInputLayout(mesh.vertexShader);
 		immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		immediateContext->VSSetConstantBuffers(mesh.transformBuffer, std::size(transformBuffer), transformBuffer);
-
+		BindBinadble(mesh.transformBuffer);
 
 		immediateContext->VSSetShader(mesh.vertexShader, nullptr, 0);
 		if (isWithMaterial)
@@ -279,8 +285,7 @@ void DefferdRenderer::ProcessDrawCommands(std::vector<MeshDrawCommand*>& drawCom
 
 			for (auto& resource : material.shaderResources)
 			{
-				ID3D11Buffer* resources[1] = { resource };
-				immediateContext->PSSetConstantBuffers(0, std::size(resources), resources);
+				BindBinadble(resource);
 			}
 			for (auto& texture : material.texture)
 			{
@@ -294,50 +299,76 @@ void DefferdRenderer::ProcessDrawCommands(std::vector<MeshDrawCommand*>& drawCom
 	}
 }
 
-void DefferdRenderer::BindBinadble(const std::vector<Binadble>& bindables)
+struct BindHelper
 {
-	for (auto& item : bindables)
+	using BindConstantBufferFunction = std::function<void(ID3D11DeviceContext*, UINT, UINT, ID3D11Buffer* const*)>;
+	using BindShaderResourceFunction = std::function<void(ID3D11DeviceContext*, UINT, UINT, ID3D11ShaderResourceView* const*)>;
+	static BindConstantBufferFunction ConstantBufferBindFunction[EShaderType::MAX];
+	static BindShaderResourceFunction ShaderResourceBindFunction[EShaderType::MAX];
+
+	template<EShaderBindable::Type shaderBindable>
+	static auto Get()
 	{
-		switch (item.bindableType)
+		if constexpr (shaderBindable == EShaderBindable::ConstantBuffer)
 		{
-		case EShaderBindable::ConstantBuffer:
-		{
-			ComPtr<ID3D11Buffer> buffer;
-			item.bind.As(&buffer);
-
-			ID3D11Buffer* buffers[1] = { buffer.Get() };
-			if (item.shaderType == EShaderType::Pixel)
-			{
-				immediateContext->VSSetConstantBuffers(item.slot, std::size(buffers), buffers);
-			}
-			if (item.shaderType == EShaderType::Vertex)
-			{
-				immediateContext->VSSetConstantBuffers(item.slot, std::size(buffers), buffers);
-			}
+			return ConstantBufferBindFunction;
 		}
+		else if constexpr (shaderBindable == EShaderBindable::ShaderResource)
+		{
+			return ShaderResourceBindFunction;
+		}
+	}
+};
+
+void DefferdRenderer::BindBinadble(const Binadble& bindable)
+{
+	switch (bindable.bindableType)
+	{
+	case EShaderBindable::ConstantBuffer:
+	{
+		ComPtr<ID3D11Buffer> buffer;
+		bindable.bind.As(&buffer);
+
+		ID3D11Buffer* buffers[1] = { buffer.Get() };
+		auto& function = BindHelper::Get<EShaderBindable::ConstantBuffer>()[bindable.shaderType];
+		std::invoke(function, immediateContext.Get(), bindable.slot, std::size(buffers), buffers);
+	}
+	break;
+
+	case EShaderBindable::ShaderResource:
+	{
+		ComPtr<ID3D11ShaderResourceView> srv;
+		bindable.bind.As(&srv);
+
+		ID3D11ShaderResourceView* resources[1] = { srv.Get() };
+		auto& function = BindHelper::Get<EShaderBindable::ShaderResource>()[bindable.shaderType];
+		std::invoke(function, immediateContext.Get(), bindable.slot, std::size(resources), resources);
+	}
+	break;
+
+	default:
+		
 		break;
-
-		case EShaderBindable::ShaderResource:
-		{
-			ComPtr<ID3D11ShaderResourceView> srv;
-			item.bind.As(&srv);
-
-			ID3D11ShaderResourceView* resources[1] = { srv.Get() };
-			if (item.shaderType == EShaderType::Pixel)
-			{
-				immediateContext->PSSetShaderResources(item.slot, std::size(resources), resources);
-			}
-			if (item.shaderType == EShaderType::Vertex)
-			{
-				immediateContext->VSSetShaderResources(item.slot, std::size(resources), resources);
-			}
-		}
-		break;
-
-		default:
-			break;
-		}
-
 	}
 
 }
+
+BindHelper::BindConstantBufferFunction BindHelper::ConstantBufferBindFunction[EShaderType::MAX] =
+{
+	&ID3D11DeviceContext::VSSetConstantBuffers,
+	&ID3D11DeviceContext::PSSetConstantBuffers,
+	&ID3D11DeviceContext::GSSetConstantBuffers,
+	&ID3D11DeviceContext::CSSetConstantBuffers,
+	&ID3D11DeviceContext::HSSetConstantBuffers,
+	&ID3D11DeviceContext::DSSetConstantBuffers
+};
+
+BindHelper::BindShaderResourceFunction BindHelper::ShaderResourceBindFunction[EShaderType::MAX] =
+{
+	&ID3D11DeviceContext::VSSetShaderResources,
+	&ID3D11DeviceContext::PSSetShaderResources,
+	&ID3D11DeviceContext::GSSetShaderResources,
+	&ID3D11DeviceContext::CSSetShaderResources,
+	&ID3D11DeviceContext::HSSetShaderResources,
+	&ID3D11DeviceContext::DSSetShaderResources
+};

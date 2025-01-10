@@ -19,12 +19,12 @@ struct MeshData
 	VertexShader vertexShader;
 
 	DirectX::BoundingBox boundingBox;
-	ConstantBuffer transformBuffer;
+	Binadble transformBuffer;
 };
 
 struct MaterialData
 {
-	std::vector<ConstantBuffer> shaderResources;
+	std::vector<Binadble> shaderResources;
 	std::vector<Texture> texture;
 	PixelShader pixelShader;
 };

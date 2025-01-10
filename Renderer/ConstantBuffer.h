@@ -15,26 +15,24 @@ public:
 
 public:
 	template<typename T>
-	void Init(uint32_t registrerSlot, _In_opt_ const T* data = nullptr);
+	void Init(_In_opt_ const T* data = nullptr);
 	template<typename T>
 	void Update(_In_opt_ T* data = nullptr);
 
-	void ChangeSlot(uint32_t newSlot) { registrerSlot = newSlot; }
+
 	operator ID3D11Buffer* () { return buffer; }
-	operator uint32_t() { return registrerSlot; }
+
 
 private:
 	RendererBuffer buffer;
 	const std::type_info* typeInfo;
-	uint32_t registrerSlot;
 };
 
 template<typename T>
-inline void ConstantBuffer::Init(uint32_t registrerSlot, _In_opt_ const T* data)
+inline void ConstantBuffer::Init(_In_opt_ const T* data)
 {
 	buffer.Init(D3D11_BUFFER_DESC{ .Usage = D3D11_USAGE_DEFAULT, .BindFlags = D3D11_BIND_CONSTANT_BUFFER }, sizeof(T), data);
 	typeInfo = &typeid(T);
-	this->registrerSlot = registrerSlot;
 }
 
 template<typename T>

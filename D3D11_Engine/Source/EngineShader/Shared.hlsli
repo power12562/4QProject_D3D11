@@ -1,7 +1,26 @@
+#ifndef __SHARED_HLSL__
+#define __SHARED_HLSL__
+
 static const float PI = 3.141592654;
 static const float3 Fdielectric = 0.04f;
 static const float Epsilon = 1e-6;
 static const float MinRoughness = 0.04f;
+
+SamplerState DefaultSampler
+{
+	Filter = MIN_MAG_MIP_LINEAR;
+	AddressU = Wrap;
+	AddressV = Wrap;
+	AddressW = Wrap;
+};
+
+SamplerState ClampSampler
+{
+	Filter = MIN_MAG_MIP_LINEAR;
+	AddressU = Clamp;
+	AddressV = Clamp;
+	AddressW = Clamp;
+};
 #define SHADOW_MAP_SIZE 8192
 
 inline float GammaToLinearSpaceExact(float value)
@@ -142,3 +161,4 @@ struct PS_INPUT
     float4 PositionShadows[MAX_LIGHT_COUNT] : TEXCOORD1;
 };
 
+#endif // __SHARED_HLSL__

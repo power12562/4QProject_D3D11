@@ -72,6 +72,7 @@ private:
 	Matrix cameraWorld;
 	Matrix cameraProjection;
 	ConstantBuffer cameraBuffer;
+	Binadble cameraBinadble;
 
 	struct CameraBufferData
 	{
@@ -86,6 +87,6 @@ private:
 
 private:
 	void ProcessDrawCommands(std::vector<MeshDrawCommand*>& drawCommands, bool isWithMaterial = true);
-	void BindBinadble(const std::vector<Binadble>& bindables);
+	void BindBinadble(const Binadble& bindable);
 };
 

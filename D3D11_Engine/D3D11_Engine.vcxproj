@@ -397,6 +397,7 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Source\EngineShader\BRDF.hlsli" />
     <None Include="Source\EngineShader\SkyBoxShared.hlsli" />
     <None Include="Source\EngineShader\Shared.hlsli" />
     <None Include="Source\EngineShader\VSInput.hlsli" />
