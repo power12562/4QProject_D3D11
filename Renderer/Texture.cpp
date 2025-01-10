@@ -58,6 +58,11 @@ void Texture::LoadTexture(ID3D11Resource* resource, ETextureUsage::Type textureU
 	}
 }
 
+void Texture::LoadTexture(ID3D11ShaderResourceView* srv)
+{
+	shaderResourceView = srv;
+}
+
 Texture::operator ID3D11Texture2D* ()
 {
 	ID3D11Texture2D* texture2D = nullptr;

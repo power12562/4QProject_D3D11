@@ -24,6 +24,7 @@ public:
 public:
 	void CreateTexture(std::unique_ptr<DirectX::ScratchImage>&& image, ETextureUsage::Type textureUsage);
 	void LoadTexture(ID3D11Resource* resource, ETextureUsage::Type textureUsage);
+	void LoadTexture(ID3D11ShaderResourceView* srv);
 
 	operator ID3D11Texture2D* ();
 	operator ID3D11Resource* () { return texture.Get(); }
@@ -39,4 +40,3 @@ private:
 	ComPtr<ID3D11DepthStencilView> depthStencilView{};
 	ComPtr<ID3D11UnorderedAccessView> unorderedAccessView{};
 };
-
