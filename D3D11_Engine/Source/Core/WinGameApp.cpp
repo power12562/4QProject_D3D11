@@ -35,7 +35,7 @@ void WinGameApp::Initialize(HINSTANCE hinstance)
 #endif // _DEBUG
 	WinInit(hinstance);
 	d3dRenderer.Init();
-	//InitImGUI();
+	InitImGUI();
 }
 
 void WinGameApp::Run()
@@ -92,7 +92,7 @@ void WinGameApp::Uninitialize()
 #ifdef _DEBUG
 	FreeConsole();
 #endif // _DEBUG
-	//UninitImGUI();
+	UninitImGUI();
 	d3dRenderer.Uninit();
 }
 

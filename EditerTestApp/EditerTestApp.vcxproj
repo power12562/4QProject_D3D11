@@ -127,7 +127,7 @@
     </Link>
     <PostBuildEvent>
       <Command>rd /s /q "$(ProjectDir)Resource\EngineShader\"
-xcopy /Y /I /E "$(SolutionDir)\D3D11_Engine\Source\Shader\*.*" "$(ProjectDir)Resource\EngineShader\"</Command>
+xcopy /Y /I /E "$(SolutionDir)\D3D11_Engine\Source\EngineShader\*.*" "$(ProjectDir)Resource\EngineShader\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -152,7 +152,7 @@ xcopy /Y /I /E "$(SolutionDir)\D3D11_Engine\Source\Shader\*.*" "$(ProjectDir)Res
     </Link>
     <PostBuildEvent>
       <Command>rd /s /q "$(ProjectDir)Resource\EngineShader\"
-xcopy /Y /I /E "$(SolutionDir)\D3D11_Engine\Source\Shader\*.*" "$(ProjectDir)Resource\EngineShader\"</Command>
+xcopy /Y /I /E "$(SolutionDir)\D3D11_Engine\Source\EngineShader\*.*" "$(ProjectDir)Resource\EngineShader\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

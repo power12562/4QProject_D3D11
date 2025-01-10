@@ -85,6 +85,7 @@ void RendererTestApp::TestInit()
 {
     testObject = NewGameObject<CubeObject>(L"Cube");
     testObject->GetComponent<CubeMeshRender>().SetPixelShader(L"Resource/EngineShader/CubeShader.hlsl");
+    testObject->GetComponent<CubeMeshRender>().SetPixelShader(L"Resource/Shader/TEst.hlsl");
 
     return;
 
@@ -96,7 +97,7 @@ void RendererTestApp::TestInit()
     if (headerFile.is_open())
     {
         std::string headerSource((std::istreambuf_iterator<char>(headerFile)), std::istreambuf_iterator<char>());
-        header.Load("Shared.hlsli", headerSource.c_str(), headerSource.size());
+        header.Load("../EngineShader/Shared.hlsli", headerSource.c_str(), headerSource.size());
     }
 
     std::ifstream headerFile2("Resource/EngineShader/VSInput.hlsli");
