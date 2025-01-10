@@ -39,6 +39,9 @@ MeshRender::~MeshRender()
 		SafeRelease(meshResource->pVertexBuffer);
 	}
 	SafeRelease(pRRState);
+	SafeRelease(pInputLayout);
+	SafeRelease(pVertexShader);
+	SafeRelease(pPixelShader);
 
 	instanceList.erase(myIter);
 }
@@ -69,14 +72,21 @@ void MeshRender::CopyShader(MeshRender& rhs)
 
 void MeshRender::SetVertexShader(const wchar_t* path)
 {
+	SafeRelease(pVertexShader);
+	SafeRelease(pInputLayout);
 	hlslManager.CreateSharingShader(path, &pVertexShader, &pInputLayout);
 	vertexShaderPath = path;
 }
 
 void MeshRender::SetPixelShader(const wchar_t* path)
 {
+	SafeRelease(pPixelShader);
 	hlslManager.CreateSharingShader(path, &pPixelShader);
 	pixelShaderPath = path;
+	MaterialData materialData{};
+	materialData.pixelShader.LoadShader(pPixelShader);
+
+	meshDrawCommand << materialData;
 }
 
 void MeshRender::ResetVertexShader()

@@ -140,6 +140,9 @@ void SimpleMeshRender::Render()
 
 void SimpleMeshRender::CreateMesh()
 {
+	MeshData meshData{};
+	MaterialData materialData{};
+
 	using namespace Utility;
 	if (vertices.empty() || indices.empty())
 		return;
@@ -152,23 +155,32 @@ void SimpleMeshRender::CreateMesh()
 
 	meshResource->vertexBufferOffset = 0;
 	meshResource->vertexBufferStride = sizeof(Vertex);
+
 	D3D11_BUFFER_DESC bd{};
 	bd.ByteWidth = sizeof(Vertex) * vertices.size();
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.CPUAccessFlags = 0;
+
+	meshData.vertexBuffer.Init(bd, sizeof(Vertex) * vertices.size(), vertices.data());
+
 	D3D11_SUBRESOURCE_DATA vbData = {};
 	vbData.pSysMem = vertices.data();
-	CheckHRESULT(d3dRenderer.GetDevice()->CreateBuffer(&bd, &vbData, &meshResource->pVertexBuffer));
 	
+	CheckHRESULT(d3dRenderer.GetDevice()->CreateBuffer(&bd, &vbData, &meshResource->pVertexBuffer));
 	meshResource->indicesCount = indices.size();
+
 	bd = {};
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.ByteWidth = sizeof(UINT) * indices.size();
 	bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	bd.CPUAccessFlags = 0;
+
+	meshData.indexBuffer.Init(bd, sizeof(UINT) * indices.size(), indices.data());
+	
 	D3D11_SUBRESOURCE_DATA ibData = {};
 	ibData.pSysMem = indices.data();
+	
 	CheckHRESULT(d3dRenderer.GetDevice()->CreateBuffer(&bd, &ibData, &meshResource->pIndexBuffer));
 
 	//Create bounding box
@@ -191,7 +203,30 @@ void SimpleMeshRender::CreateMesh()
 		else
 			root->gameObject.Bounds = box;
 	}
+	struct TransformBufferData
+	{
+		alignas(16) Matrix World;
+		alignas(16) Matrix WorldInverseTranspose;
+	} transformData;
+
+	transformData.World = XMMatrixTranspose(gameObject.transform.GetWM());
+	transformData.WorldInverseTranspose = XMMatrixInverse(nullptr, transformData.World);
+
+	transformBuffer.Init(0, &transformData);
+
+	meshData.indexCounts = meshResource->indicesCount;
+	meshData.vertexStride = meshResource->vertexBufferStride;
+	meshData.boundingBox = gameObject.Bounds;
+	meshData.transformBuffer = transformBuffer;
+	meshData.vertexShader.LoadShader(GetRendererDesc().pVertexShader, GetRendererDesc().pInputLayout);
+	materialData.pixelShader.LoadShader(GetRendererDesc().pPixelShader);
+
+	meshDrawCommand << meshData;
+	meshDrawCommand << materialData;
+
 
 	vertices.clear();
 	indices.clear();
+
+
 }

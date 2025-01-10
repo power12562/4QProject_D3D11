@@ -17,6 +17,7 @@ class SceneManager : public TSingleton<SceneManager>
 	friend TSingleton;
 	friend class WinGameApp;
 	friend class D3D11_GameApp;
+	friend class RendererTestApp;
 	friend class GameObject;
 	friend LRESULT CALLBACK ImGUIWndProcDefault(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 

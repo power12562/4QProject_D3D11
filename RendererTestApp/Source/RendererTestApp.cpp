@@ -2,6 +2,8 @@
 
 #include <dxgi1_6.h>
 #pragma comment(lib, "dxgi")
+#include <framework.h>
+
 RendererTestApp::RendererTestApp()
 {
     this->windowName = L"Renderer Test App";
@@ -9,64 +11,108 @@ RendererTestApp::RendererTestApp()
     //this->SetOptimalScreenSize();
 }
 
-RendererTestApp::~RendererTestApp()
-{
-
-}
+RendererTestApp::~RendererTestApp() = default;
 
 void RendererTestApp::Start()
 {
     renderer = std::make_unique<DefferdRenderer>();
-	ID3D11Device* device = RendererUtility::GetDevice();
-	HRESULT result;
-	static constexpr int bufferCount = 2;
-    DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
-    swapChainDesc.Width = clientSize.cx;
-    swapChainDesc.Height = clientSize.cy;
-    swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-    swapChainDesc.SampleDesc.Count = 1;
-    swapChainDesc.SampleDesc.Quality = 0;
-    swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    swapChainDesc.BufferCount = bufferCount;
-    swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+    DXGIInit();
 
-    ComPtr<IDXGIFactory4> pFactory = nullptr;
-    result = CreateDXGIFactory2(0, IID_PPV_ARGS(&pFactory));
-    Check(result);
+    if (sceneManager.nextScene == nullptr)
+        sceneManager.LoadScene<Scene>(); //빈 씬 로드
 
-    ComPtr<IDXGISwapChain1> swapChain1 = nullptr;
-    result = pFactory->CreateSwapChainForHwnd(device,
-                                              GetHWND(), 
-                                              &swapChainDesc, 
-                                              nullptr, 
-                                              nullptr, 
-                                              &swapChain1);
-	Check(result);
+    sceneManager.ChangeScene();
+    sceneManager.AddObjects();
     
-    result = swapChain1->QueryInterface(IID_PPV_ARGS(&swapChain));
-    Check(result);
+    gameObjectFactory.InitializeMemoryPool();
+	TestInit();
 
+    renderer << backBuffer;
+}
+
+void RendererTestApp::Update()
+{
+
+}
+
+void RendererTestApp::Render()
+{
+	renderer->SetProjection(Mathf::PI / 4, 0.1f, 1000.0f);
+	renderer->SetCameraMatrix(DirectX::XMMatrixInverse(nullptr, DirectX::XMMatrixLookAtLH(Vector3(-2, 2, -5), Vector3(0, 0, 0), Vector3::Up)));
+    //renderer->SetCameraMatricx(Matrix::CreateTranslation(Vector3(0, 0, 10)));
+    renderer << testObject->GetComponent<CubeMeshRender>().GetMeshDrawCommand();
+
+	renderer->Render();
+
+	swapChain->Present(0, 0);
+}
+
+void RendererTestApp::Uninitialize()
+{
+    sceneManager.AddObjects();
+    sceneManager.currScene.reset();
+    gameObjectFactory.UninitializeMemoryPool();
+
+
+	backBuffer.~Texture();
+	swapChain.ReleaseAndGetAddressOf();
+	renderer.reset();
+    RendererUtility::SetSwapChain(nullptr);
+
+	WinGameApp::Uninitialize();
+}
+
+void RendererTestApp::DXGIInit()
+{
+    ID3D11Device* device = RendererUtility::GetDevice();
+    swapChain = RendererUtility::GetSwapChain();
+
+    
+	HRESULT result;
     ComPtr<ID3D11Texture2D> backBufferTexture;
 
     result = swapChain->GetBuffer(0, IID_PPV_ARGS(&backBufferTexture));
     Check(result);
 
     backBuffer.LoadTexture(backBufferTexture.Get(), ETextureUsage::RTV);
-
-    //result = swapChain->GetBuffer(1, IID_PPV_ARGS(&backBufferTexture));
-    //Check(result);
-    
-    int currentBuffer = swapChain->GetCurrentBackBufferIndex();
 }
 
-void RendererTestApp::Update()
-{
-}
+#include <fstream>
+#include <Utility\AssimpUtility.h>
+#include "Manager\GameObjectFactory.h"
 
-void RendererTestApp::Render()
+void RendererTestApp::TestInit()
 {
-	renderer << backBuffer;
-	renderer->Render();
+    testObject = NewGameObject<CubeObject>(L"Cube");
+    testObject->GetComponent<CubeMeshRender>().SetPixelShader(L"Resource/EngineShader/CubeShader.hlsl");
+    testObject->GetComponent<CubeMeshRender>().SetPixelShader(L"Resource/Shader/TEst.hlsl");
 
-	swapChain->Present(0, 0);
+    return;
+
+
+    ShaderHeader header;
+    ShaderHeader header2;
+
+    std::ifstream headerFile("Resource/EngineShader/Shared.hlsli");
+    if (headerFile.is_open())
+    {
+        std::string headerSource((std::istreambuf_iterator<char>(headerFile)), std::istreambuf_iterator<char>());
+        header.Load("../EngineShader/Shared.hlsli", headerSource.c_str(), headerSource.size());
+    }
+
+    std::ifstream headerFile2("Resource/EngineShader/VSInput.hlsli");
+	if (headerFile2.is_open())
+	{
+		std::string headerSource2((std::istreambuf_iterator<char>(headerFile2)), std::istreambuf_iterator<char>());
+		header2.Load("VSInput.hlsli", headerSource2.c_str(), headerSource2.size());
+	}
+
+    std::ifstream file("Resource/EngineShader/VertexShader.hlsl");
+    if (file.is_open())
+    {
+		std::string source((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+		file.close();
+		vertexShader.Compile(source.c_str(), source.size());
+    }
+
 }

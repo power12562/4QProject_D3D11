@@ -14,7 +14,7 @@ int APIENTRY wWinMain(
     RendererTestApp app;
     app.Initialize(hInstance);
     app.Run();
-    app.Uninitialize();
+    app.RendererTestApp::Uninitialize();
 
     return 0;
 }

@@ -25,6 +25,8 @@ public:
 	void CreateTexture(std::unique_ptr<DirectX::ScratchImage>&& image, ETextureUsage::Type textureUsage);
 	void LoadTexture(ID3D11Resource* resource, ETextureUsage::Type textureUsage);
 
+	operator ID3D11Texture2D* ();
+	operator ID3D11Resource* () { return texture.Get(); }
 	operator ID3D11ShaderResourceView* () { return shaderResourceView.Get(); }
 	operator ID3D11RenderTargetView* () { return renderTargetView.Get(); }
 	operator ID3D11DepthStencilView* () { return depthStencilView.Get(); }

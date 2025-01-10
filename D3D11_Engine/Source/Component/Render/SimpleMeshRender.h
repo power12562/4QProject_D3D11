@@ -1,6 +1,7 @@
 #pragma once
 #include <Component\Render\MeshRender.h>
 #include <functional>
+#include <ConstantBuffer.h>
 
 class SimpleMaterial;
 class SimpleMeshRender : public MeshRender
@@ -33,5 +34,7 @@ public:
 public:
 	std::vector<Vertex> vertices;	
 	std::vector<UINT> indices;	
+
+	ConstantBuffer transformBuffer;
 
 };

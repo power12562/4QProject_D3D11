@@ -6,27 +6,28 @@
 
 #include <array>
 
-using Matrix = DirectX::SimpleMath::Matrix;
 
 class DefferdRenderer : public IRenderer
 {
 public:
 	DefferdRenderer();
+	virtual ~DefferdRenderer();
 
 public:
-	virtual void AddDrawCommand(_In_ DrawCommand& command) override;
+	virtual void AddDrawCommand(_In_ const MeshDrawCommand& command) override;
 	virtual void SetRenderTarget(_In_ Texture& target) override;
 	virtual void Render() override;
 
-	void SetCameraMatricx(const Matrix& world);
-	void SetProjection(float fov, float nearZ, float farZ);
+	virtual void SetCameraMatrix(const Matrix& world);
+	virtual void SetProjection(float fov, float nearZ, float farZ);
 
 private:
-#pragma region IRenderer
-	std::vector<DrawCommand> drawCommands{};
-	Texture* renderTarget{ nullptr };
+	std::vector<MeshDrawCommand> allDrawCommandsOrigin{};
+	std::vector<MeshDrawCommand*> allDrawCommands{};
+	std::vector<MeshDrawCommand*> deferredDrawCommands{};
+	std::vector<MeshDrawCommand*> forwardDrawCommands{};
 
-#pragma endregion IRenderer
+	Texture* renderTarget{ nullptr };
 
 
 #pragma region RHIDevice
@@ -47,32 +48,41 @@ private:
 
 #pragma region RenderTexture
 	
-	ComPtr<struct ID3D11DepthStencilView> depthStencilDSV{};
-	ComPtr<struct ID3D11ShaderResourceView> depthStencilSRV{};
-	std::array<ComPtr<struct ID3D11RenderTargetView>, 4> renderRTV{};
-	std::array<ComPtr<struct ID3D11ShaderResourceView>, 4> renderSRV{};
+	Texture depthStencilTexture{};
+	std::array<Texture, 4> renderBuffers{};
 
 #pragma endregion RenderTexture
 
 
 #pragma region ViewPort
 	
-	uint32_t width;
-	uint32_t height;
+	uint32_t width{ 0 };
+	uint32_t height{ 0 };
 
 #pragma endregion ViewPort
 
 
 #pragma region Camera
 
-	float fov;
-	float nearZ;
-	float farZ;
+	float fov{ 0.0f };
+	float nearZ{ 0.0f };
+	float farZ{ 0.0f };
 	Matrix cameraWorld;
 	Matrix cameraProjection;
 	ConstantBuffer cameraBuffer;
 
+	struct CameraBufferData
+	{
+		alignas(16) Vector3 MainCamPos;
+		alignas(16) Matrix View;
+		alignas(16) Matrix Projection;
+		alignas(16) Matrix IVM;
+		alignas(16) Matrix IPM;
+	};
+
 #pragma endregion Camera
 
+private:
+	void ProcessDrawCommands(std::vector<MeshDrawCommand*>& drawCommands, bool isWithMaterial = true);
 };
 

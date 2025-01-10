@@ -17,6 +17,9 @@ public:
 	virtual ~MeshRender() override;
 public:
 	virtual void Start() = 0;
+	virtual struct MeshDrawCommand GetMeshDrawCommand() override { return meshDrawCommand; }
+	MeshDrawCommand meshDrawCommand;
+
 protected:
 	virtual void FixedUpdate() = 0;
 	virtual void Update() = 0;

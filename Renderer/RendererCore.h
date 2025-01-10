@@ -3,12 +3,15 @@
 #include <sal.h>
 #include <wrl.h>
 #include <memory>
+#include <directxtk\SimpleMath.h>
 
 using namespace Microsoft::WRL;
 
 template<typename T>
 using SharedPtr = std::shared_ptr<T>;
 
+using Matrix = DirectX::SimpleMath::Matrix;
+using Vector3 = DirectX::SimpleMath::Vector3;
 
 struct ID3D11DeviceContext;
 struct ID3D11Device;
@@ -26,8 +29,12 @@ public:
 	static void SetDevice(ComPtr<ID3D11Device> device);
 	static ID3D11Device* GetDevice();
 
+	static void SetSwapChain(ComPtr<struct IDXGISwapChain1> swapChain);
+	static ComPtr<struct IDXGISwapChain1> GetSwapChain();
+
 private:
 	static ComPtr<ID3D11Device> device;
+	static ComPtr<struct IDXGISwapChain1> swapChain;
 };
 
 static struct Check
