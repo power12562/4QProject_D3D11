@@ -139,7 +139,7 @@ inline T& GameObject::GetComponent()
 	{
 		if (typeid(*component) == typeid(T))
 		{
-			return dynamic_cast<T&>(*component);
+			return static_cast<T&>(*component);
 		}
 	}
 	__debugbreak(); //예외) 존재하지 않는 컴포넌트
@@ -155,7 +155,7 @@ inline T* GameObject::IsComponent()
 	{
 		if (typeid(*component) == typeid(T))
 		{
-			return dynamic_cast<T*>(component.get());
+			return static_cast<T*>(component.get());
 		}
 	}
 	return nullptr;
