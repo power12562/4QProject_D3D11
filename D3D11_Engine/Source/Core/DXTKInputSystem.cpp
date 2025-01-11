@@ -9,7 +9,6 @@ DXTKInputSystem& DXTKinputSystem = DXTKInputSystem::GetInstance();
 
 InputProcesser::InputProcesser()
 {
-	//DXTKinputSystem.inputProcessersList.push_back(dynamic_cast<InputProcesser*>(this));
 	DXTKinputSystem.inputProcessersList.push_back(this);
 }
 
