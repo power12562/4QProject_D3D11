@@ -1,14 +1,16 @@
 ﻿#include "RendererTestApp.h"
-
 #include <dxgi1_6.h>
+#include <filesystem>
 #pragma comment(lib, "dxgi")
 #include <framework.h>
 
+extern LRESULT CALLBACK ImGUIWndProcDefault(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 RendererTestApp::RendererTestApp()
 {
     this->windowName = L"Renderer Test App";
     //this->SetBorderlessWindowed();
     //this->SetOptimalScreenSize();
+    this->customWndProc = ImGUIWndProcDefault;
 }
 
 RendererTestApp::~RendererTestApp() = default;
@@ -32,7 +34,30 @@ void RendererTestApp::Start()
 
 void RendererTestApp::Update()
 {
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
+    ImGui_ImplDX11_NewFrame();
+    ImGui_ImplWin32_NewFrame();
+    ImGui::NewFrame();
+
+    ImGui::Begin("Renderer Test App");
+    if (ImGui::Button("Recompile Shader") || ImGui::IsKeyDown(ImGuiKey_F2))
+    {
+        std::filesystem::path shaderPath = __FILEW__;
+		shaderPath = shaderPath.parent_path().parent_path() / L"Resource/EngineShader/";
+        ShaderUtility::CopyShader(shaderPath);
+        MeshRender::ReloadShaderAll();
+    }
+
+    ImGui::EditTransform(testObject);
+
+    ImGui::End();
+
+    Transform::UpdateMatrix();
+    Transform::ClearUpdateList();
+	
 }
 
 void RendererTestApp::Render()
@@ -44,9 +69,18 @@ void RendererTestApp::Render()
 	renderer->SetProjection(Mathf::PI / 4, 0.1f, 1000.0f);
 	renderer->SetCameraMatrix(DirectX::XMMatrixInverse(nullptr, DirectX::XMMatrixLookAtLH(Vector3(-2, 2, -5), Vector3(0, 0, 0), Vector3::Up)));
     //renderer->SetCameraMatricx(Matrix::CreateTranslation(Vector3(0, 0, 10)));
-    renderer << testObject->GetComponent<CubeMeshRender>().GetMeshDrawCommand();
+
+
+	auto& testComponent = testObject->GetComponent<CubeMeshRender>();
+    testComponent.UpdateMeshDrawCommand();
+    renderer << testComponent.GetMeshDrawCommand();
 
 	renderer->Render();
+
+
+    ImGui::Render();
+    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+    ImGui::ResetGlobalID();
 
 	swapChain->Present(0, 0);
 }

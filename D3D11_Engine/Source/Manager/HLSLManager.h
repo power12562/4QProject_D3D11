@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <filesystem>
 
 class HLSLManager;
 extern HLSLManager& hlslManager;   
@@ -47,3 +48,9 @@ private:
 	~HLSLManager();
 };
 
+struct ShaderUtility
+{
+	static void CopyShader(std::filesystem::path dest, std::filesystem::path sourc);
+	static void CopyShader(std::filesystem::path dest);
+
+};

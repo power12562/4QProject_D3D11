@@ -26,7 +26,6 @@ private:
 	Texture Diffuse_IBL;
 	Texture Specular_IBL;
 
-
 private:
 	void DXGIInit();
 

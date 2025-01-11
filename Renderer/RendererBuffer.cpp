@@ -4,6 +4,12 @@
 RendererBuffer::RendererBuffer() = default;
 RendererBuffer::~RendererBuffer() = default;
 
+void RendererBuffer::Load(ComPtr<ID3D11Buffer> buffer)
+{
+	this->buffer = std::move(buffer);
+	RendererUtility::GetDevice()->GetImmediateContext(&immediateContext);
+}
+
 void RendererBuffer::Init(D3D11_BUFFER_DESC bufferDesc, size_t bufferSize, _In_opt_ const void* data)
 {
 	HRESULT result;
@@ -25,7 +31,7 @@ void RendererBuffer::Init(D3D11_BUFFER_DESC bufferDesc, size_t bufferSize, _In_o
 	RendererUtility::GetDevice()->GetImmediateContext(&immediateContext);
 }
 
-void RendererBuffer::Update(void* data)
+void RendererBuffer::Update(const void* data)
 {
 	immediateContext->UpdateSubresource(buffer.Get(), 0, nullptr, data, 0, 0);
 }

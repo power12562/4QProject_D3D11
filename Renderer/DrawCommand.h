@@ -45,6 +45,8 @@ public:
 
 	const MeshData& GetMeshData() const { return meshData; }
 	const MaterialData& GetMaterialData() const { return materialData; }
+	MeshData& GetMeshData() { return meshData; }
+	MaterialData& GetMaterialData() { return materialData; }
 
 
 private:

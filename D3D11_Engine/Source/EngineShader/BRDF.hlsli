@@ -42,11 +42,11 @@ float3 BRDF_IBL(float3 albedo, float metalic, float roughness, float3 F0, float3
 {
 	float NoV = max(0.0, dot(N, V)); // N¡¤V °è»ê
 	
-	float3 irradiance = Diffuse_IBL.Sample(DefaultSampler, N).rgb;
+	float3 irradiance = Diffuse_IBL.SampleLevel(DefaultSampler, N, 0).rgb;
 	float3 F = FresnelReflection(F0, NoV);
 	float3 kd = lerp(1.0 - F, 0.0, metalic);
 	float3 diffuseIBL = kd * albedo * irradiance;
-	float2 specularBRDF = BRDF_LUT.Sample(ClampSampler, float2(NoV, roughness)).rg;
+	float2 specularBRDF = BRDF_LUT.SampleLevel(ClampSampler, float2(NoV, roughness), 0).rg;
 	
 	uint SpecularTextureLevels, width, height;
 	Specular_IBL.GetDimensions(0, width, height, SpecularTextureLevels);

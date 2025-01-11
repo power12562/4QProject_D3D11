@@ -72,7 +72,8 @@ private:
 	Matrix cameraWorld;
 	Matrix cameraProjection;
 	ConstantBuffer cameraBuffer;
-	Binadble cameraBinadble;
+	Binadble cameraBinadbleVS;
+	Binadble cameraBinadblePS;
 
 	struct CameraBufferData
 	{

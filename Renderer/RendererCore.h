@@ -12,6 +12,7 @@ using SharedPtr = std::shared_ptr<T>;
 
 using Matrix = DirectX::SimpleMath::Matrix;
 using Vector3 = DirectX::SimpleMath::Vector3;
+using Vector4 = DirectX::SimpleMath::Vector4;
 
 struct ID3D11DeviceContext;
 struct ID3D11Device;
@@ -75,3 +76,15 @@ struct Binadble
 	ComPtr<IUnknown> bind;
 };
 
+
+struct FixedMaterialData
+{
+	float Metallic;
+	float Specular;
+	float Roughness;
+	float AmbientOcclusion;
+	Vector3 Albedo;
+	float pad;
+	Vector3 Emissive;
+	float pad3;
+};

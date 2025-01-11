@@ -12,45 +12,6 @@
  */
 
 
-
-
-#ifndef GetAlpha
-#define GetAlpha 1.0
-#endif
-
-#ifndef GetClipAlpha
-#define GetClipAlpha 0.3333
-#endif
-
-#ifndef GetAlbedo
-#define GetAlbedo 1.0
-#endif
-
-#ifndef GetMetallic
-#define GetMetallic 1.0
-#endif
-
-#ifndef GetSpecular
-#define GetSpecular 1.0
-#endif
-
-#ifndef GetRoughness
-#define GetRoughness 0.0
-#endif
-
-#ifndef GetAmbiatOcclusion
-#define GetAmbiatOcclusion 0.0
-#endif
-
-#ifndef GetNormal
-#define GetNormal float3(0.0, 0.0, 1.0)
-#endif
-
-#ifndef GetEmissive
-#define GetEmissive float3(0.0, 0.0, 0.0)
-#endif
-
-
 struct DirectionLight
 {
 	float4 LightColor;
@@ -74,6 +35,58 @@ cbuffer cb_Light : register(b3)
 	DirectionLight lights[MAX_LIGHT_COUNT];
 }
 
+struct FixedMaterial
+{
+	float Metallic;
+	float Specular;
+	float Roughness;
+	float AmbientOcclusion;
+	
+	float3 Albedo;
+	float pad;
+	
+	float3 Emissive;
+	float pad2;
+};
+
+FixedMaterial fixedMaterial : register(b4);
+
+
+#ifndef GetAlpha
+#define GetAlpha 1.0
+#endif
+
+#ifndef GetClipAlpha
+#define GetClipAlpha 0.3333
+#endif
+
+#ifndef GetAlbedo
+#define GetAlbedo 1.0
+#endif
+
+#ifndef GetMetallic
+#define GetMetallic 1.0
+#endif
+
+#ifndef GetSpecular
+#define GetSpecular 1.0
+#endif
+
+#ifndef GetRoughness
+#define GetRoughness 0.5
+#endif
+
+#ifndef GetAmbiatOcclusion
+#define GetAmbiatOcclusion 0.0
+#endif
+
+#ifndef GetNormal
+#define GetNormal float3(0.0, 0.0, 1.0)
+#endif
+
+#ifndef GetEmissive
+#define GetEmissive float3(0.0, 0.0, 0.0)
+#endif
 
 struct PSResult
 {
@@ -98,29 +111,30 @@ PSResult main(PS_INPUT input)
 	
 	PSResult result = (PSResult)1;
 	
-#ifdef FORWARD
-	float3 finalColor = 0;
-	float3 emissiveColor = GetEmissive;
-	
 	float3 albedo = GetAlbedo;
 	float metallic = GetMetallic;
 	float specular = GetSpecular;
 	float roughness = GetRoughness;
 	float3 normal = GetNormal;
+	float3 emissiveColor = GetEmissive;
+	float ambiantOcclusion = GetAmbiatOcclusion;
 	
-	float3x3 TBN = float3x3(input.Tangent, input.BiTangent, input.Normal);	
+	float3x3 TBN = float3x3(input.Tangent, input.BiTangent, input.Normal);
 	float3 N = normalize(mul(normal, TBN));
+	
+	
+#ifdef FORWARD
+	float3 finalColor = 0;
 	
 	float3 F0 = lerp(0.04, albedo, metallic) * specular;
     float3 V = normalize(MainCamPos - input.World);
-	
 	
 	[unroll]
 	for(int i = 0; i < min(LightsCount, MAX_LIGHT_COUNT); ++i)
 	{
 		finalColor += BRDF(albedo, metallic, roughness, F0, N, V, GetDirection(lights[i])) * GetRadiance(lights[i]);
 	}
-	finalColor += BRDF_IBL(albedo, metallic, roughness, F0, N, V) * (1 - GetAmbiatOcclusion);
+	finalColor += BRDF_IBL(albedo, metallic, roughness, F0, N, V) * (1 - ambiantOcclusion);
 	
 	result.color.rgb = LinearToGammaSpace(finalColor + emissiveColor);
 	result.color.a = opacity;
@@ -130,10 +144,10 @@ PSResult main(PS_INPUT input)
 	static int NormalSlot = 2;
 	static int EmissiveSlot = 3;
 	
-	result.GBuffer[AlbedoSlot] = GetAlbedo;
-	result.GBuffer[SpecularSlot] = float4(GetMetallic, GetSpecular, GetRoughness, GetAmbiatOcclusion);
-	result.GBuffer[NormalSlot].rgb = GetNormal;
-	result.GBuffer[EmissiveSlot].rgb = GetEmissive;
+	result.GBuffer[AlbedoSlot].rgb = albedo;
+	result.GBuffer[SpecularSlot] = float4(metallic, specular, roughness, ambiantOcclusion);
+	result.GBuffer[NormalSlot].rgb = N;
+	result.GBuffer[EmissiveSlot].rgb = emissiveColor;
 #endif
 	
 	return result;

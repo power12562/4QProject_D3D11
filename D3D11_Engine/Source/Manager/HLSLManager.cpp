@@ -195,3 +195,39 @@ void HLSLManager::MakeShader(const wchar_t* path, ID3D11PixelShader** ppOutput)
 	*ppOutput = pixelShader;
 	pixelShaderBuffer->Release();
 }
+
+void ShaderUtility::CopyShader(std::filesystem::path dest, std::filesystem::path sourc)
+{// EngineShader 폴더 내 모든 파일을 대상으로 복사
+	if (!std::filesystem::exists(engineShaderPath))
+	{
+		__debugbreak(); //엔진 쉐이더 폴더가 없습니다.
+	}
+	if (!std::filesystem::exists(dest))
+	{
+		__debugbreak(); //엔진 쉐이더 폴더가 없습니다.
+	}
+
+	for (const auto& entry : std::filesystem::directory_iterator(engineShaderPath))
+	{
+		if (entry.is_regular_file())
+		{
+			std::filesystem::path destFile = dest / entry.path().filename();
+
+			// destFile이 없거나 수정 시간이 현재 파일보다 과거면 복사
+			if (!std::filesystem::exists(destFile) ||
+				std::filesystem::last_write_time(destFile) < std::filesystem::last_write_time(entry.path()))
+			{
+				std::filesystem::copy(entry.path(), destFile, std::filesystem::copy_options::overwrite_existing);
+			}
+
+		}
+	}
+}
+
+void ShaderUtility::CopyShader(std::filesystem::path dest)
+{
+	std::filesystem::path engineShaderPath = __FILEW__;
+	engineShaderPath = engineShaderPath.parent_path().parent_path() / L"EngineShader";
+
+	CopyShader(dest, engineShaderPath);
+}

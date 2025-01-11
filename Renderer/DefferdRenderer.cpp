@@ -103,12 +103,16 @@ DefferdRenderer::DefferdRenderer()
 
 	
 	CameraBufferData cameraData{};
-	cameraBuffer.Init(&cameraData);
-	cameraBinadble.shaderType = EShaderType::Vertex;
-	cameraBinadble.bindableType = EShaderBindable::ConstantBuffer;
-	cameraBinadble.slot = 1;
-	cameraBinadble.bind = cameraBuffer;
+	cameraBuffer.Init(cameraData);
+	cameraBinadbleVS.shaderType = EShaderType::Vertex;
+	cameraBinadbleVS.bindableType = EShaderBindable::ConstantBuffer;
+	cameraBinadbleVS.slot = 1;
+	cameraBinadbleVS.bind = cameraBuffer;
 
+	cameraBinadblePS.shaderType = EShaderType::Pixel;
+	cameraBinadblePS.bindableType = EShaderBindable::ConstantBuffer;
+	cameraBinadblePS.slot = 1;
+	cameraBinadblePS.bind = cameraBuffer;
 }
 
 DefferdRenderer::~DefferdRenderer()
@@ -221,8 +225,9 @@ void DefferdRenderer::Render()
 	cameraData.Projection = DirectX::XMMatrixTranspose(cameraProjection);
 	cameraData.View = DirectX::XMMatrixTranspose(cameraWorld.Invert());
 
-	cameraBuffer.Update(&cameraData);
-	BindBinadble(cameraBinadble);
+	cameraBuffer.Update(cameraData);
+	BindBinadble(cameraBinadbleVS);
+	BindBinadble(cameraBinadblePS);
 
 	ID3D11RenderTargetView* backBuffersRTV[1] = { *renderTarget };
 	immediateContext->OMSetRenderTargets(std::size(backBuffersRTV), backBuffersRTV, nullptr);

@@ -46,6 +46,61 @@ MeshRender::~MeshRender()
 	instanceList.erase(myIter);
 }
 
+void MeshRender::UpdateMeshDrawCommand()
+{
+	TransformBufferData transformData
+	{
+		.World = XMMatrixTranspose(gameObject.transform.GetWM()),
+		.WorldInverseTranspose = XMMatrixInverse(nullptr, transformData.World)
+	};
+	transformBuffer.Set(transformData);
+
+
+
+	FixedMaterialData fixedMaterialData
+	{
+		.Metallic = metallic,
+		.Specular = specular,
+		.Roughness = roughness,
+		.AmbientOcclusion = ao,
+		.Albedo = albedo,
+		.Emissive = emissive,
+	};
+	fixedMaterial.Set(fixedMaterialData);
+
+
+	MeshData meshData{};
+	MaterialData materialData{};
+
+	meshData.vertexBuffer.Load(meshResource->pVertexBuffer);
+	meshData.indexBuffer.Load(meshResource->pIndexBuffer);
+
+	meshData.indexCounts = meshResource->indicesCount;
+	meshData.vertexStride = meshResource->vertexBufferStride;
+	meshData.boundingBox = gameObject.Bounds;
+	meshData.transformBuffer =
+		Binadble
+		{
+			.shaderType = EShaderType::Vertex,
+			.bindableType = EShaderBindable::ConstantBuffer,
+			.slot = 0,
+			.bind = (ID3D11Buffer*)transformBuffer
+		};
+
+	meshData.vertexShader.LoadShader(pVertexShader, pInputLayout);
+	materialData.pixelShader.LoadShader(pPixelShader);
+	materialData.shaderResources.clear();
+	materialData.shaderResources.emplace_back(Binadble
+											  {
+												  .shaderType = EShaderType::Pixel,
+												  .bindableType = EShaderBindable::ConstantBuffer,
+												  .slot = 4,
+												  .bind = (ID3D11Buffer*)fixedMaterial
+											  });
+	meshDrawCommand << meshData;
+	meshDrawCommand << materialData;
+}
+
 void MeshRender::SetMeshResource(const wchar_t* path)
 {
 	if (MeshID < 0)
