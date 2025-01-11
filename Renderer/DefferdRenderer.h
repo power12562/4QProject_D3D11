@@ -15,7 +15,8 @@ public:
 
 public:
 	virtual void AddDrawCommand(_In_ const MeshDrawCommand& command) override;
-	virtual void AddBinadble(_In_ const Binadble& bindable) override;
+	virtual void AddBinadble(std::string_view key, const Binadble& bindable) override;
+	virtual void RemoveBinadble(std::string_view key) override;
 	virtual void SetRenderTarget(_In_ Texture& target) override;
 	virtual void Render() override;
 
@@ -30,6 +31,7 @@ private:
 
 	Texture* renderTarget{ nullptr };
 
+	std::vector<std::string> bindablesKey;
 	std::vector<Binadble> bindables;
 
 #pragma region RHIDevice

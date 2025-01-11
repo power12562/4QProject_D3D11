@@ -2,6 +2,7 @@
 #include <Manager/ResourceManager.h>
 #include <Manager/HLSLManager.h>
 #include <Utility/MemoryUtility.h>
+#include <ranges>
 
 using namespace Utility;
 
@@ -51,23 +52,9 @@ void MeshRender::UpdateMeshDrawCommand()
 	TransformBufferData transformData
 	{
 		.World = XMMatrixTranspose(gameObject.transform.GetWM()),
-		.WorldInverseTranspose = XMMatrixInverse(nullptr, transformData.World)
+		.WorldInverseTranspose = gameObject.transform.GetWM().Invert()
 	};
 	transformBuffer.Set(transformData);
-
-
-
-	FixedMaterialData fixedMaterialData
-	{
-		.Metallic = metallic,
-		.Specular = specular,
-		.Roughness = roughness,
-		.AmbientOcclusion = ao,
-		.Albedo = albedo,
-		.Emissive = emissive,
-	};
-	fixedMaterial.Set(fixedMaterialData);
-
 
 	MeshData meshData{};
 	MaterialData materialData{};
@@ -90,13 +77,23 @@ void MeshRender::UpdateMeshDrawCommand()
 	meshData.vertexShader.LoadShader(pVertexShader, pInputLayout);
 	materialData.pixelShader.LoadShader(pPixelShader);
 	materialData.shaderResources.clear();
-	materialData.shaderResources.emplace_back(Binadble
-											  {
-												  .shaderType = EShaderType::Pixel,
-												  .bindableType = EShaderBindable::ConstantBuffer,
-												  .slot = 4,
-												  .bind = (ID3D11Buffer*)fixedMaterial
-											  });
+
+	auto texturesView =
+		std::views::iota(0)
+		| std::views::take(std::min(texturesSlot.size(), texturesV2.size()))
+		| std::views::transform([&](int i) -> Binadble
+								{
+									return Binadble
+									{
+										.shaderType = EShaderType::Pixel,
+										.bindableType = EShaderBindable::ShaderResource,
+										.slot = texturesSlot[i],
+										.bind = (ID3D11ShaderResourceView*)texturesV2[i]
+									};
+								});
+
+	std::ranges::copy(texturesView, std::back_inserter(materialData.shaderResources));
+
 	meshDrawCommand << meshData;
 	meshDrawCommand << materialData;
 }

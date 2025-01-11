@@ -21,10 +21,10 @@ public:
 	void Init();
 
 	template<typename T, std::enable_if_t<!std::is_pointer_v<T>, int> = 0>
-	void Init(const T& data = nullptr);
-	
-	template<typename T>
-	void Update(const T& data = nullptr);
+	void Init(const T& data);
+
+	template<typename T, std::enable_if_t<!std::is_pointer_v<T>, int> = 0>
+	void Update(const T& data);
 
 	operator ID3D11Buffer* () { return buffer; }
 
@@ -67,7 +67,7 @@ inline void ConstantBuffer::Init(_In_opt_ const T& data)
 	typeInfo = &typeid(T);
 }
 
-template<typename T>
+template<typename T, std::enable_if_t<!std::is_pointer_v<T>, int>>
 inline void ConstantBuffer::Update(const T& data)
 {
 	if (*typeInfo == typeid(T))

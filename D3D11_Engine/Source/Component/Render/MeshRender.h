@@ -35,14 +35,9 @@ public:
 	
 	MeshDrawCommand meshDrawCommand;
 	ConstantBuffer transformBuffer;
-	ConstantBuffer fixedMaterial;
-	
-	float metallic;
-	float specular;
-	float roughness;
-	float ao;
-	Vector3 albedo;
-	Vector3 emissive;
+
+	std::vector<uint32_t> texturesSlot;
+	std::vector<Texture> texturesV2;
 
 	/// ~End IRenderer Data
 

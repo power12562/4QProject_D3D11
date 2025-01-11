@@ -130,8 +130,7 @@
       </Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>rd /s /q "$(ProjectDir)Resource\EngineShader\"
-xcopy /Y /I /E "$(SolutionDir)\D3D11_Engine\Source\EngineShader\*.*" "$(ProjectDir)Resource\EngineShader\"</Command>
+      <Command>"$(SolutionDir)$(Platform)\$(Configuration)\CopyShader.exe" $(ProjectDir)Resource\EngineShader\ $(SolutionDir)\D3D11_Engine\Source\EngineShader\ </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -159,8 +158,7 @@ xcopy /Y /I /E "$(SolutionDir)\D3D11_Engine\Source\EngineShader\*.*" "$(ProjectD
       </Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>rd /s /q "$(ProjectDir)Resource\EngineShader\"
-xcopy /Y /I /E "$(SolutionDir)\D3D11_Engine\Source\EngineShader\*.*" "$(ProjectDir)Resource\EngineShader\"</Command>
+      <Command>"$(SolutionDir)$(Platform)\$(Configuration)\CopyShader.exe" $(ProjectDir)Resource\EngineShader\ $(SolutionDir)\D3D11_Engine\Source\EngineShader\ </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -173,6 +171,9 @@ xcopy /Y /I /E "$(SolutionDir)\D3D11_Engine\Source\EngineShader\*.*" "$(ProjectD
     <ClInclude Include="Source\RendererTestScene.h" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CopyShader\CopyShader.vcxproj">
+      <Project>{b3a0df58-9f3a-42f6-a929-b2128adfa8fd}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\Renderer\Renderer.vcxproj">
       <Project>{346bd41a-c6de-4bd7-a7f4-d39c12318347}</Project>
     </ProjectReference>

@@ -25,7 +25,6 @@ struct MeshData
 struct MaterialData
 {
 	std::vector<Binadble> shaderResources;
-	std::vector<Texture> texture;
 	PixelShader pixelShader;
 };
 

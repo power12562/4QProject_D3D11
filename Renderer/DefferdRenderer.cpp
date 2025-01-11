@@ -128,9 +128,21 @@ void DefferdRenderer::AddDrawCommand(_In_ const MeshDrawCommand& command)
 	allDrawCommandsOrigin.emplace_back(command);
 }
 
-void DefferdRenderer::AddBinadble(_In_ const Binadble& bindable)
+void DefferdRenderer::AddBinadble(std::string_view key, const Binadble& bindable)
 {
+	bindablesKey.emplace_back(key);
 	bindables.emplace_back(bindable);
+}
+
+void DefferdRenderer::RemoveBinadble(std::string_view key)
+{
+	auto iter = std::find(bindablesKey.begin(), bindablesKey.end(), key);
+	if (iter != bindablesKey.end())
+	{
+		auto index = std::distance(bindablesKey.begin(), iter);
+		bindables.erase(bindables.begin() + index);
+		bindablesKey.erase(iter);
+	}
 }
 
 void DefferdRenderer::SetRenderTarget(_In_ Texture& target)
@@ -231,7 +243,7 @@ void DefferdRenderer::Render()
 
 	ID3D11RenderTargetView* backBuffersRTV[1] = { *renderTarget };
 	immediateContext->OMSetRenderTargets(std::size(backBuffersRTV), backBuffersRTV, nullptr);
-	immediateContext->ClearRenderTargetView(*renderTarget, DirectX::SimpleMath::Color{ 0.0f,1.0f ,0.0f ,0.0f });
+	immediateContext->ClearRenderTargetView(*renderTarget, DirectX::SimpleMath::Color{ 0.0f, 1.0f ,0.0f ,0.0f });
 
 	for (auto& item : bindables)
 	{
@@ -291,11 +303,6 @@ void DefferdRenderer::ProcessDrawCommands(std::vector<MeshDrawCommand*>& drawCom
 			for (auto& resource : material.shaderResources)
 			{
 				BindBinadble(resource);
-			}
-			for (auto& texture : material.texture)
-			{
-				ID3D11ShaderResourceView* textures[1] = { texture };
-				immediateContext->PSSetShaderResources(0, std::size(textures), textures);
 			}
 		}
 

@@ -1,4 +1,4 @@
-#include "Source\Manager\HLSLManager.h"
+#include "Manager\HLSLManager.h"
 #include <iostream>
 
 
@@ -7,7 +7,16 @@ int main(int argc, char* argv[])
     // 인자 수 확인
     if (argc < 3)
     {
-        std::cerr << "사용법: 프로그램 <dest> <source>\n";
+        std::cerr << "사용법: 프로그램 <dest> <source>" << std::endl;
+        std::cerr << "현재 파라미터" << std::endl;
+		for (int i = 0; i < argc; ++i)
+		{
+			std::cerr << " " << argv[i] << std::endl;
+		}
+        if (argc == 1)
+        {
+            std::cerr << "없음" << std::endl;
+        }
         return 1;
     }
 

@@ -3,6 +3,9 @@
 #include <Manager/SceneManager.h>
 #include <Renderer.h>
 #include <DefferdRenderer.h>
+#include <StructuredBuffer.h>
+
+
 
 class RendererTestApp : public WinGameApp
 {
@@ -25,6 +28,19 @@ private:
 	Texture BRDF_LUT;
 	Texture Diffuse_IBL;
 	Texture Specular_IBL;
+
+
+
+	struct DirectionLight
+	{
+		Vector4 LightColor;
+		Vector3 LightDir;
+		float LightIntensity;
+	};
+	std::vector<DirectionLight> directLight;
+	StructuredBuffer directLightBuffer;
+	
+
 
 private:
 	void DXGIInit();

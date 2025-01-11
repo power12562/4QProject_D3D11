@@ -146,6 +146,7 @@
     <ClInclude Include="RendererCore.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="ShaderResource.h" />
+    <ClInclude Include="StructuredBuffer.h" />
     <ClInclude Include="Texture.h" />
   </ItemGroup>
   <ItemGroup>
@@ -158,6 +159,7 @@
     <ClCompile Include="RendererCore.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="ShaderResource.cpp" />
+    <ClCompile Include="StructuredBuffer.cpp" />
     <ClCompile Include="Texture.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

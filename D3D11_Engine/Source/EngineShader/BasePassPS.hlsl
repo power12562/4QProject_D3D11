@@ -26,31 +26,31 @@ float3 GetRadiance(DirectionLight light)
 
 float3 GetDirection(DirectionLight light)
 {
-	return normalize(-light.LightDir.xyz);
+	return normalize(light.LightDir.xyz);
 }
 
-cbuffer cb_Light : register(b3)
+StructuredBuffer<DirectionLight> DirecLights : register(t16);
+Texture2DArray ShadowMap : register(t20);
+
+
+float3 DefaultLit(float3 albedo, float metallic, float roughness, float3 F0, float3 N, float3 V, float ambiantOcclusion)
 {
-	int LightsCount;
-	DirectionLight lights[MAX_LIGHT_COUNT];
+	float3 finalColor = 0;
+	//uint count, width, height, lod;
+	//ShadowMap.GetDimensions(0, width, height, count, lod);
+	//for (uint i = 0; i < count; i++)
+	//{
+		
+	//}
+	uint LightsCount, stride;
+	DirecLights.GetDimensions(LightsCount, stride);
+	for (uint i = 0; i < LightsCount; ++i)
+	{
+		finalColor += BRDF(albedo, metallic, roughness, F0, N, V, GetDirection(DirecLights[i])) * GetRadiance(DirecLights[i]);
+	}
+	finalColor += BRDF_IBL(albedo, metallic, roughness, F0, N, V) * (1 - ambiantOcclusion);
+	return finalColor;
 }
-
-struct FixedMaterial
-{
-	float Metallic;
-	float Specular;
-	float Roughness;
-	float AmbientOcclusion;
-	
-	float3 Albedo;
-	float pad;
-	
-	float3 Emissive;
-	float pad2;
-};
-
-FixedMaterial fixedMaterial : register(b4);
-
 
 #ifndef GetAlpha
 #define GetAlpha 1.0
@@ -77,7 +77,7 @@ FixedMaterial fixedMaterial : register(b4);
 #endif
 
 #ifndef GetAmbiatOcclusion
-#define GetAmbiatOcclusion 0.0
+#define GetAmbiatOcclusion 0.8
 #endif
 
 #ifndef GetNormal
@@ -122,22 +122,17 @@ PSResult main(PS_INPUT input)
 	float3x3 TBN = float3x3(input.Tangent, input.BiTangent, input.Normal);
 	float3 N = normalize(mul(normal, TBN));
 	
-	
 #ifdef FORWARD
 	float3 finalColor = 0;
 	
 	float3 F0 = lerp(0.04, albedo, metallic) * specular;
     float3 V = normalize(MainCamPos - input.World);
 	
-	[unroll]
-	for(int i = 0; i < min(LightsCount, MAX_LIGHT_COUNT); ++i)
-	{
-		finalColor += BRDF(albedo, metallic, roughness, F0, N, V, GetDirection(lights[i])) * GetRadiance(lights[i]);
-	}
-	finalColor += BRDF_IBL(albedo, metallic, roughness, F0, N, V) * (1 - ambiantOcclusion);
-	
+	finalColor = DefaultLit(albedo, metallic, roughness, F0, N, V, ambiantOcclusion);
 	result.color.rgb = LinearToGammaSpace(finalColor + emissiveColor);
 	result.color.a = opacity;
+	
+	
 #else
 	static int AlbedoSlot = 0;
 	static int SpecularSlot = 1;
