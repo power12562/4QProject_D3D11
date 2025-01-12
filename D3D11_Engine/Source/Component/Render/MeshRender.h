@@ -35,7 +35,7 @@ public:
 	
 	MeshDrawCommand meshDrawCommand;
 	ConstantBuffer transformBuffer;
-
+	bool isForward = false;
 	std::vector<uint32_t> texturesSlot;
 	std::vector<Texture> texturesV2;
 

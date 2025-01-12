@@ -21,6 +21,7 @@ public:
 
 private:
 	std::unique_ptr<IRenderer> renderer;
+	std::vector<ComPtr<IUnknown>> shaders;
 
 	ComPtr<struct IDXGISwapChain1> swapChain;
 	Texture backBuffer;
@@ -41,7 +42,6 @@ private:
 	};
 	std::vector<DirectionLight> directLight;
 	StructuredBuffer directLightBuffer;
-	
 
 
 private:

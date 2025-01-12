@@ -24,12 +24,15 @@ public:
 	virtual void SetProjection(float fov, float nearZ, float farZ);
 	
 	//마음에는 안들지만 방법이없음....
-	ComputeShader postProcessShader;
+	ComputeShader deferredCS;
+	PixelShader deferredPS;
+	VertexShader fullScreenVS;
 private:
 	std::vector<MeshDrawCommand> allDrawCommandsOrigin{};
 	std::vector<MeshDrawCommand*> allDrawCommands{};
 	std::vector<MeshDrawCommand*> deferredDrawCommands{};
 	std::vector<MeshDrawCommand*> forwardDrawCommands{};
+	std::vector<MeshDrawCommand*> alphaDrawCommands{};
 
 	Texture renderTarget{};
 
@@ -48,15 +51,17 @@ private:
 
 	ComPtr<struct ID3D11DepthStencilState> defaultDSS{};
 	ComPtr<struct ID3D11DepthStencilState> noWriteDSS{};
+	ComPtr<struct ID3D11DepthStencilState> deferredDSS{};
 	ComPtr<struct ID3D11BlendState> noRenderState{};
 	ComPtr<struct ID3D11BlendState> alphaRenderState{};
 
 #pragma endregion RenderState
 
 #pragma region RenderTexture
-	
+
 	Texture depthStencilTexture{};
 	std::array<Texture, 4> renderBuffers{};
+	Texture deferredBuffer{};
 	std::array<Texture, 2> PostProcessTexture;
 	int renderBufferIndex{ 0 };
 

@@ -76,6 +76,7 @@ void MeshRender::UpdateMeshDrawCommand()
 
 	meshData.vertexShader.LoadShader(pVertexShader, pInputLayout);
 	materialData.pixelShader.LoadShader(pPixelShader);
+	materialData.pixelShader.isForward = isForward;
 	materialData.shaderResources.clear();
 
 	auto texturesView =

@@ -18,12 +18,27 @@ RendererTestApp::~RendererTestApp() = default;
 void RendererTestApp::Start()
 {
     renderer = std::make_unique<DefferdRenderer>();        
-    std::filesystem::path shaderPath = __FILEW__;
-    shaderPath = shaderPath.parent_path().parent_path() / L"Resource/EngineShader/";
-    ShaderUtility::CopyShader(shaderPath);
-    ComPtr<ID3D11ComputeShader> computeShader = nullptr;
-	hlslManager.CreateSharingShader(L"Resource/EngineShader/DeferredRender.hlsl", &computeShader);
-	static_cast<DefferdRenderer*>(renderer.get())->postProcessShader.LoadShader(computeShader.Get());
+    {
+        std::filesystem::path shaderPath = __FILEW__;
+        shaderPath = shaderPath.parent_path().parent_path() / L"Resource/EngineShader/";
+        ShaderUtility::CopyShader(shaderPath);
+    }
+    {
+        ComPtr<ID3D11ComputeShader> computeShader = nullptr;
+        hlslManager.CreateSharingShader(L"Resource/EngineShader/DeferredRender.hlsl", &computeShader);
+        static_cast<DefferdRenderer*>(renderer.get())->deferredCS.LoadShader(computeShader.Get());
+    }
+    {
+		ComPtr<ID3D11PixelShader> pixelShader = nullptr;
+		hlslManager.CreateSharingShader(L"Resource/EngineShader/DeferredRenderPS.hlsl", &pixelShader);
+		static_cast<DefferdRenderer*>(renderer.get())->deferredPS.LoadShader(pixelShader.Get());
+	}
+    {
+        ComPtr<ID3D11VertexShader> vertexShader = nullptr;
+        ComPtr<ID3D11InputLayout> inputLayout = nullptr;
+        hlslManager.CreateSharingShader(L"Resource/EngineShader/FullScreenTriangle.hlsl", &vertexShader, &inputLayout);
+        static_cast<DefferdRenderer*>(renderer.get())->fullScreenVS.LoadShader(vertexShader.Get(), inputLayout.Get());
+    }
 
     DXGIInit();
 
@@ -52,18 +67,35 @@ void RendererTestApp::Update()
     ImGui::Begin("Renderer Test App");
     if (ImGui::Button("Recompile Shader") || ImGui::IsKeyDown(ImGuiKey_F2))
     {
-        std::filesystem::path shaderPath = __FILEW__;
-		shaderPath = shaderPath.parent_path().parent_path() / L"Resource/EngineShader/";
-        ShaderUtility::CopyShader(shaderPath);
-        MeshRender::ReloadShaderAll();
+        {
+            std::filesystem::path shaderPath = __FILEW__;
+            shaderPath = shaderPath.parent_path().parent_path() / L"Resource/EngineShader/";
+            ShaderUtility::CopyShader(shaderPath);
+            MeshRender::ReloadShaderAll();
+        }
 
-        ComPtr<ID3D11ComputeShader> computeShader = nullptr;
-        hlslManager.CreateSharingShader(L"Resource/EngineShader/DeferredRender.hlsl", &computeShader);
-        static_cast<DefferdRenderer*>(renderer.get())->postProcessShader.LoadShader(computeShader.Get());
+        {
+            ComPtr<ID3D11ComputeShader> computeShader = nullptr;
+            hlslManager.CreateSharingShader(L"Resource/EngineShader/DeferredRender.hlsl", &computeShader);
+            static_cast<DefferdRenderer*>(renderer.get())->deferredCS.LoadShader(computeShader.Get());
+        }
+
+        {
+            ComPtr<ID3D11PixelShader> pixelShader = nullptr;
+            hlslManager.CreateSharingShader(L"Resource/EngineShader/DeferredRenderPS.hlsl", &pixelShader);
+            static_cast<DefferdRenderer*>(renderer.get())->deferredPS.LoadShader(pixelShader.Get());
+        }
+        {
+            ComPtr<ID3D11VertexShader> vertexShader = nullptr;
+            ComPtr<ID3D11InputLayout> inputLayout = nullptr;
+            hlslManager.CreateSharingShader(L"Resource/EngineShader/FullScreenTriangle.hlsl", &vertexShader, &inputLayout);
+            static_cast<DefferdRenderer*>(renderer.get())->fullScreenVS.LoadShader(vertexShader.Get(), inputLayout.Get());
+        }
     }
 
 
     ImGui::EditTransform(testObject);
+	ImGui::Checkbox("isForward", &testObject->GetComponent<CubeMeshRender>().isForward);
 
 	ImGui::BeginGroup();
     ImGui::DragFloat3("Light Direction", &directLight[0].LightDir.x, 0.01f, -1.0f, 1.0f);
@@ -71,7 +103,28 @@ void RendererTestApp::Update()
 	directLight[0].LightDir.Normalize();
 	ImGui::EndGroup();
 
+    using clock = std::chrono::high_resolution_clock;
+    static clock::time_point previousTime = clock::now();
+    static clock::time_point currentTime = clock::now();
+    static int count = 0;
+    static int beforeCount = 0;
+    static std::chrono::nanoseconds elpasTime{};
+    double deltaTime;
+    previousTime = currentTime;
+    currentTime = clock::now();
 
+    auto duration = currentTime - previousTime;
+	elpasTime += duration;
+
+    ++count;
+    //1초
+    if (elpasTime >= std::chrono::seconds(1))
+    {
+        elpasTime -= std::chrono::seconds(1);
+        beforeCount = count;
+        count = 0;
+	}
+	ImGui::Text("fps : %d", beforeCount);
     ImGui::End();
 
     Transform::UpdateMatrix();
