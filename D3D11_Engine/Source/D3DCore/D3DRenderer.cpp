@@ -96,7 +96,8 @@ void D3DRenderer::Init()
         swapDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL; //플립 모드 사용.   
         swapDesc.Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH; //전체 화면 변환시 해상도 및 모니터 설정 자동 변경 플래그
         swapChainWindowed = swapDesc.Windowed;
-
+        swapDesc.BufferCount = 1; //버퍼 개수
+        swapDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD; //플립 모드 사용.   
         //버퍼 사이즈 지정
         SIZE clientSize = WinGameApp::GetClientSize();
         swapDesc.BufferDesc.Width = clientSize.cx;

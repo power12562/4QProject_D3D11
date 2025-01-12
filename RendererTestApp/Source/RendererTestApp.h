@@ -20,28 +20,13 @@ public:
 	void Uninitialize();
 
 private:
-	std::unique_ptr<IRenderer> renderer;
+	std::unique_ptr<DefferdRenderer> renderer;
 	std::vector<ComPtr<IUnknown>> shaders;
 
 	ComPtr<struct IDXGISwapChain1> swapChain;
 	Texture backBuffer;
 
-	Texture BRDF_LUT;
-	Texture Diffuse_IBL;
-	Texture Specular_IBL;
-
-
-
-	struct DirectionLight
-	{
-		Vector4 LightColor;
-		Vector3 LightDir;
-		float LightIntensity;
-
-		Matrix lightVP;
-	};
 	std::vector<DirectionLight> directLight;
-	StructuredBuffer directLightBuffer;
 
 
 private:

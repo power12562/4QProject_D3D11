@@ -4,8 +4,18 @@
 #include "Renderer.h"
 #include <vector>
 
+#include "StructuredBuffer.h"
 #include <array>
 
+
+struct DirectionLight
+{
+	Vector4 LightColor;
+	Vector3 LightDir;
+	float LightIntensity;
+
+	Matrix lightVP;
+};
 
 class DefferdRenderer : public IRenderer
 {
@@ -27,6 +37,12 @@ public:
 	ComputeShader deferredCS;
 	PixelShader deferredPS;
 	VertexShader fullScreenVS;
+
+	Texture BRDF_LUT;
+	Texture Diffuse_IBL;
+	Texture Specular_IBL;
+
+	StructuredBuffer directLightBuffer;
 private:
 	std::vector<MeshDrawCommand> allDrawCommandsOrigin{};
 	std::vector<MeshDrawCommand*> allDrawCommands{};
@@ -51,7 +67,6 @@ private:
 
 	ComPtr<struct ID3D11DepthStencilState> defaultDSS{};
 	ComPtr<struct ID3D11DepthStencilState> noWriteDSS{};
-	ComPtr<struct ID3D11DepthStencilState> deferredDSS{};
 	ComPtr<struct ID3D11BlendState> noRenderState{};
 	ComPtr<struct ID3D11BlendState> alphaRenderState{};
 
@@ -60,6 +75,7 @@ private:
 #pragma region RenderTexture
 
 	Texture depthStencilTexture{};
+	Texture depthStencilTexture2{};
 	std::array<Texture, 4> renderBuffers{};
 	Texture deferredBuffer{};
 	std::array<Texture, 2> PostProcessTexture;

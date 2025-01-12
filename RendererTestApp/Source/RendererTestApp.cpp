@@ -136,12 +136,12 @@ void RendererTestApp::Render()
 {
 	renderer->SetProjection(Mathf::PI / 4, 0.1f, 1000.0f);
 	renderer->SetCameraMatrix(DirectX::XMMatrixInverse(nullptr, DirectX::XMMatrixLookAtLH(Vector3(-2, 2, -5), Vector3(0, 0, 0), Vector3::Up)));
-    
-    directLightBuffer.Update(directLight);
+
+    renderer->directLightBuffer.Update(directLight);
 
 	auto& testComponent = testObject->GetComponent<CubeMeshRender>();
     testComponent.UpdateMeshDrawCommand();
-    renderer << testComponent.GetMeshDrawCommand();
+    renderer->AddDrawCommand(testComponent.GetMeshDrawCommand());
 
 	renderer->Render();
 
@@ -155,12 +155,6 @@ void RendererTestApp::Render()
 
 void RendererTestApp::Uninitialize()
 {
-    directLightBuffer.~StructuredBuffer();
-
-	BRDF_LUT.~Texture();
-	Diffuse_IBL.~Texture();
-	Specular_IBL.~Texture();
-
     sceneManager.AddObjects();
     sceneManager.currScene.reset();
     gameObjectFactory.UninitializeMemoryPool();
@@ -209,6 +203,10 @@ void RendererTestApp::TestInit()
 	testObject->GetComponent<CubeMeshRender>().texturesV2.emplace_back(albedo);
     testObject->GetComponent<CubeMeshRender>().texturesSlot.emplace_back(0);
 
+    Texture BRDF_LUT;
+    Texture Diffuse_IBL;
+    Texture Specular_IBL;
+    StructuredBuffer directLightBuffer;
 
 	textureManager.CreateSharingTexture(L"Resource/Texture/IBL/Brdf.dds", &srv);
 	BRDF_LUT.LoadTexture(srv.Get());
@@ -232,6 +230,12 @@ void RendererTestApp::TestInit()
     renderer->AddBinadble("Diffuse_IBL_CS", Binadble{ EShaderType::Compute, EShaderBindable::ShaderResource, 31, (ID3D11ShaderResourceView*)Diffuse_IBL });
     renderer->AddBinadble("Specular_IBL_CS", Binadble{ EShaderType::Compute, EShaderBindable::ShaderResource, 32, (ID3D11ShaderResourceView*)Specular_IBL });
     renderer->AddBinadble("DirLightBuffer_CS", Binadble{ EShaderType::Compute, EShaderBindable::ShaderResource, 16, (ID3D11ShaderResourceView*)directLightBuffer });
+
+    renderer->BRDF_LUT = BRDF_LUT;
+    renderer->Diffuse_IBL = Diffuse_IBL;
+    renderer->Specular_IBL = Specular_IBL;
+    renderer->directLightBuffer = directLightBuffer;
+
 
     return;
 

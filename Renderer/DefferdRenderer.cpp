@@ -82,16 +82,6 @@ DefferdRenderer::DefferdRenderer()
 			result = device->CreateDepthStencilState(&desc, depthState);
 			Check(result);
 		}
-		void CreateDeferredDepthStencilState(ID3D11DepthStencilState** depthState)
-		{
-			CD3D11_DEPTH_STENCIL_DESC desc(D3D11_DEFAULT);
-			desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-			desc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-
-			HRESULT result;
-			result = device->CreateDepthStencilState(&desc, depthState);
-			Check(result);
-		}
 		void CreateNoRenderState(ID3D11BlendState** depthState)
 		{
 			CD3D11_BLEND_DESC desc(D3D11_DEFAULT);
@@ -120,7 +110,6 @@ DefferdRenderer::DefferdRenderer()
 	Init init{ device };
 	init.CreateDefaultDepthStencilState(&defaultDSS);
 	init.CreateNoWriteDepthStencilState(&noWriteDSS);
-	init.CreateDeferredDepthStencilState(&deferredDSS);
 	init.CreateNoRenderState(&noRenderState);
 	init.CreateAlphaRenderState(&alphaRenderState);
 
@@ -356,16 +345,13 @@ void DefferdRenderer::Render()
 	}
 
 	// Gbuffer 라이팅 처리
-	if (0)
+	if (1)
 	{
-		// 깊이 테스트로 컬링하려햇으나 실패
-		// ps보다 cs가 빠른듯
 		ID3D11RenderTargetView* nullRenderBuffersRTV[std::size(renderBuffersRTV)]{ nullptr, };
 		ID3D11RenderTargetView* deferredBufferRTV[1]{ deferredBuffer };
 		ID3D11ShaderResourceView* depthBuffersSRV[1] = { depthStencilTexture };
 		ID3D11ShaderResourceView* renderBuffersSRV[4];
 		std::ranges::copy(renderBuffers, renderBuffersSRV);
-
 
 		immediateContext->OMSetRenderTargets(std::size(nullRenderBuffersRTV), nullRenderBuffersRTV, nullptr);
 		immediateContext->OMSetRenderTargets(std::size(deferredBufferRTV), deferredBufferRTV, nullptr);
@@ -380,7 +366,6 @@ void DefferdRenderer::Render()
 		immediateContext->PSSetShaderResources(4, std::size(depthBuffersSRV), depthBuffersSRV);
 
 		immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		//immediateContext->OMSetDepthStencilState(deferredDSS.Get(), 0);
 		immediateContext->Draw(3, 0);
 
 		ID3D11ShaderResourceView* nullSRV[5]{};
