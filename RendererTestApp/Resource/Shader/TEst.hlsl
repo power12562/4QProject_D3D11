@@ -1,7 +1,7 @@
 
 #include "../EngineShader/Shared.hlsli"
 
-#define FORWARD
+//#define FORWARD
 #define GetAlbedo albedoTexture.Sample(DefaultSampler, input.Tex).rgb
 #define GetRoughness 0
 #define GetMetallic 0.5

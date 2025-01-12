@@ -25,7 +25,7 @@ void Texture::CreateTexture(std::unique_ptr<DirectX::ScratchImage>&& image, ETex
 	LoadTexture(textureResource.Get(), textureUsage);
 }
 
-void Texture::LoadTexture(ID3D11Resource* resource, ETextureUsage::Type textureUsage)
+void Texture::LoadTexture(ID3D11Resource* resource, ETextureUsage::Type textureUsage, D3D11_SHADER_RESOURCE_VIEW_DESC* srvFormat)
 {
 	HRESULT result;
 	ID3D11Device* device = RendererUtility::GetDevice();
@@ -33,7 +33,7 @@ void Texture::LoadTexture(ID3D11Resource* resource, ETextureUsage::Type textureU
 	texture = resource;
 	if (textureUsage & ETextureUsage::SRV)
 	{
-		result = device->CreateShaderResourceView(texture.Get(), nullptr, &shaderResourceView);
+		result = device->CreateShaderResourceView(texture.Get(), srvFormat, &shaderResourceView);
 		Check(result);
 	}
 	if (textureUsage & ETextureUsage::RTV)

@@ -61,6 +61,17 @@ DefferdRenderer::DefferdRenderer()
 	{
 		ComPtr<ID3D11Device> device;
 
+		void CreateDefaultDepthStencilState(ID3D11DepthStencilState** depthState)
+		{
+			CD3D11_DEPTH_STENCIL_DESC desc(D3D11_DEFAULT);
+			desc.StencilEnable = true;
+			desc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_REPLACE;
+			desc.BackFace.StencilPassOp = D3D11_STENCIL_OP_REPLACE;
+
+			HRESULT result;
+			result = device->CreateDepthStencilState(&desc, depthState);
+			Check(result);
+		}
 		void CreateNoWriteDepthStencilState(ID3D11DepthStencilState** depthState)
 		{
 			CD3D11_DEPTH_STENCIL_DESC desc(D3D11_DEFAULT);
@@ -96,6 +107,7 @@ DefferdRenderer::DefferdRenderer()
 	};
 
 	Init init{ device };
+	init.CreateDefaultDepthStencilState(&defaultDSS);
 	init.CreateNoWriteDepthStencilState(&noWriteDSS);
 	init.CreateNoRenderState(&noRenderState);
 	init.CreateAlphaRenderState(&alphaRenderState);
@@ -113,6 +125,11 @@ DefferdRenderer::DefferdRenderer()
 	cameraBinadblePS.bindableType = EShaderBindable::ConstantBuffer;
 	cameraBinadblePS.slot = 1;
 	cameraBinadblePS.bind = cameraBuffer;
+
+	cameraBinadbleCS.shaderType = EShaderType::Compute;
+	cameraBinadbleCS.bindableType = EShaderBindable::ConstantBuffer;
+	cameraBinadbleCS.slot = 1;
+	cameraBinadbleCS.bind = cameraBuffer;
 }
 
 DefferdRenderer::~DefferdRenderer()
@@ -147,8 +164,9 @@ void DefferdRenderer::RemoveBinadble(std::string_view key)
 
 void DefferdRenderer::SetRenderTarget(_In_ Texture& target)
 {
-	renderTarget = &target;
+	renderTarget = target;
 
+	// 길이 초기화
 	{
 		D3D11_TEXTURE2D_DESC desc{};
 		((ID3D11Texture2D*)target)->GetDesc(&desc);
@@ -156,37 +174,78 @@ void DefferdRenderer::SetRenderTarget(_In_ Texture& target)
 		height = desc.Height;
 	}
 
-
+	// G버퍼
 	for (size_t i = 0; i < std::size(renderBuffers); i++)
 	{
 		HRESULT result;
 		ComPtr<ID3D11Texture2D> texture;
-		CD3D11_TEXTURE2D_DESC desc = CD3D11_TEXTURE2D_DESC( 
-			DXGI_FORMAT_R8G8B8A8_UNORM,
+		ETextureUsage::Type usage = ETextureUsage::SRV | ETextureUsage::RTV;
+
+		CD3D11_TEXTURE2D_DESC desc = CD3D11_TEXTURE2D_DESC
+		{ 
+			DXGI_FORMAT_R16G16B16A16_FLOAT,
 			width,
 			height,
 			1,
-			0,
-			D3D11_BIND_RENDER_TARGET);
+			1,
+			usage 
+		};
 
 
 		result = device->CreateTexture2D(&desc, nullptr, &texture);
 		Check(result);
-		renderBuffers[i].LoadTexture(texture.Get(), ETextureUsage::RTV);
+		renderBuffers[i].LoadTexture(texture.Get(), usage);
 	}
+
+	// 깊이버퍼
 	{
 		HRESULT result;
-		CD3D11_TEXTURE2D_DESC desc = CD3D11_TEXTURE2D_DESC(
+		ComPtr<ID3D11Texture2D> texture;
+		ETextureUsage::Type usage = ETextureUsage::SRV | ETextureUsage::DSV;
+
+		CD3D11_TEXTURE2D_DESC desc = CD3D11_TEXTURE2D_DESC
+		{
 			DXGI_FORMAT_R24G8_TYPELESS,
 			width,
 			height,
 			1,
-			0,
-			D3D11_BIND_DEPTH_STENCIL);
-		ComPtr<ID3D11Texture2D> texture;
+			1,
+			usage 
+		};
+
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = CD3D11_SHADER_RESOURCE_VIEW_DESC
+		{ 
+			D3D11_SRV_DIMENSION_TEXTURE2D,
+			DXGI_FORMAT_R24_UNORM_X8_TYPELESS
+		};
+
 		result = device->CreateTexture2D(&desc, nullptr, &texture);
 		Check(result);
-		depthStencilTexture.LoadTexture(texture.Get(), ETextureUsage::DSV);
+		depthStencilTexture.LoadTexture(texture.Get(), usage, &srvDesc);\
+	}
+
+	// 후처리 텍스처
+	for (size_t i = 0; i < std::size(PostProcessTexture); i++)
+	{
+		HRESULT result;
+		ComPtr<ID3D11Texture2D> texture;
+		ETextureUsage::Type usage = ETextureUsage::SRV | ETextureUsage::UAV;
+
+		CD3D11_TEXTURE2D_DESC desc = CD3D11_TEXTURE2D_DESC
+		{ 
+			DXGI_FORMAT_R8G8B8A8_UNORM,
+			width,
+			height,
+			1,
+			1,
+			usage
+		};
+
+
+		result = device->CreateTexture2D(&desc, nullptr, &texture);
+		Check(result);
+		PostProcessTexture[i].LoadTexture(texture.Get(), usage);
+		
 	}
 	
 }
@@ -210,21 +269,20 @@ void DefferdRenderer::Render()
 	D3D11_VIEWPORT viewport = CD3D11_VIEWPORT(0.0f, 0.0f, (float)width, (float)height);
 
 	ID3D11RenderTargetView* renderBuffersRTV[4];
+	ID3D11RenderTargetView* nullRenderBuffersRTV[std::size(renderBuffersRTV)]{nullptr,};
+
 	for (size_t i = 0; i < std::size(renderBuffersRTV); i++)
 	{
 		renderBuffersRTV[i] = renderBuffers[i];
 	}
-	immediateContext->OMSetRenderTargets(4, renderBuffersRTV, depthStencilTexture);
-	immediateContext->OMSetDepthStencilState(noWriteDSS.Get(), 0);
+	immediateContext->OMSetRenderTargets(std::size(renderBuffersRTV), renderBuffersRTV, depthStencilTexture);
 	immediateContext->RSSetViewports(1, &viewport);
-
 
 	for (size_t i = 0; i < std::size(renderBuffers); i++)
 	{
 		immediateContext->ClearRenderTargetView(renderBuffers[i], DirectX::SimpleMath::Color{ 0.0f,0.0f ,0.0f ,0.0f });
 	}
 	immediateContext->ClearDepthStencilView(depthStencilTexture, D3D11_CLEAR_DEPTH, 1.0f, 0);
-
 
 	
 	//ProcessDrawCommands(allDrawCommands, false);
@@ -240,21 +298,59 @@ void DefferdRenderer::Render()
 	cameraBuffer.Update(cameraData);
 	BindBinadble(cameraBinadbleVS);
 	BindBinadble(cameraBinadblePS);
+	BindBinadble(cameraBinadbleCS);
 
-	ID3D11RenderTargetView* backBuffersRTV[1] = { *renderTarget };
-	immediateContext->OMSetRenderTargets(std::size(backBuffersRTV), backBuffersRTV, nullptr);
-	immediateContext->ClearRenderTargetView(*renderTarget, DirectX::SimpleMath::Color{ 0.0f, 1.0f ,0.0f ,0.0f });
+	//ID3D11RenderTargetView* backBuffersRTV[1] = { renderTarget };
+	//immediateContext->OMSetRenderTargets(std::size(backBuffersRTV), backBuffersRTV, nullptr);
+	//immediateContext->ClearRenderTargetView(renderTarget, DirectX::SimpleMath::Color{ 0.0f, 1.0f ,0.0f ,0.0f });
 
 	for (auto& item : bindables)
 	{
 		BindBinadble(item);
 	}
 
+	immediateContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
+	immediateContext->OMSetDepthStencilState(defaultDSS.Get(), 0xffffffff);
 	ProcessDrawCommands(deferredDrawCommands);
+
+	immediateContext->OMSetBlendState(alphaRenderState.Get(), nullptr, 0xffffffff);
+	immediateContext->OMSetDepthStencilState(noWriteDSS.Get(), 0);
 	ProcessDrawCommands(forwardDrawCommands);
 
 
 
+
+	ID3D11ShaderResourceView* renderBuffersSRV[4];
+	ID3D11ShaderResourceView* depthBuffersSRV[1] = { depthStencilTexture };
+	ID3D11UnorderedAccessView* postProcessUAV[2] =
+	{
+		PostProcessTexture[0],
+		PostProcessTexture[1]
+	};
+	immediateContext->ClearUnorderedAccessViewFloat(PostProcessTexture[0], DirectX::SimpleMath::Color{ 0.0f, 0.0f, 0.0f, 0.0f });
+	immediateContext->ClearUnorderedAccessViewFloat(PostProcessTexture[1], DirectX::SimpleMath::Color{ 0.0f, 0.0f, 0.0f, 0.0f });
+	for (size_t i = 0; i < std::size(renderBuffersSRV); i++)
+	{
+		renderBuffersSRV[i] = renderBuffers[i];
+	}
+
+	
+	immediateContext->CSSetShader(postProcessShader, nullptr, 0);
+	immediateContext->OMSetRenderTargets(std::size(nullRenderBuffersRTV), nullRenderBuffersRTV, nullptr);
+	immediateContext->CSSetShaderResources(0, std::size(renderBuffersSRV), renderBuffersSRV);
+	immediateContext->CSSetShaderResources(4, std::size(depthBuffersSRV), depthBuffersSRV);
+	immediateContext->CSSetUnorderedAccessViews(0, 1, &postProcessUAV[renderBufferIndex], nullptr);
+
+	immediateContext->Dispatch(width / 64 + 1, height, 1);
+
+	ID3D11ShaderResourceView* nullSRV[5]{};
+	ID3D11UnorderedAccessView* nullUAV[1]{};
+	immediateContext->CSSetShaderResources(0, std::size(nullSRV), nullSRV);
+	immediateContext->CSSetUnorderedAccessViews(0, std::size(nullUAV), nullUAV, nullptr);
+
+	immediateContext->CopyResource(renderTarget, PostProcessTexture[renderBufferIndex]);
+	ID3D11RenderTargetView* backBuffersRTV[1] = { renderTarget };
+	immediateContext->OMSetRenderTargets(std::size(backBuffersRTV), backBuffersRTV, nullptr);
 
 	allDrawCommands.clear();
 	deferredDrawCommands.clear();

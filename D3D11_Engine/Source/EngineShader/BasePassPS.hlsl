@@ -2,7 +2,7 @@
 #define __BASEPASSPS_HLSL__
 
 #include "../EngineShader/Shared.hlsli"
-#include "../EngineShader/BRDF.hlsli"
+#include "../EngineShader/Light.hlsli"
 
 /** Shader Flags
  * USE_ALPHA
@@ -11,46 +11,6 @@
  * FORWARD
  */
 
-
-struct DirectionLight
-{
-	float4 LightColor;
-	float3 LightDir;
-	float LightIntensity;
-};
-
-float3 GetRadiance(DirectionLight light)
-{
-	return light.LightColor.rgb * light.LightIntensity;
-}
-
-float3 GetDirection(DirectionLight light)
-{
-	return normalize(light.LightDir.xyz);
-}
-
-StructuredBuffer<DirectionLight> DirecLights : register(t16);
-Texture2DArray ShadowMap : register(t20);
-
-
-float3 DefaultLit(float3 albedo, float metallic, float roughness, float3 F0, float3 N, float3 V, float ambiantOcclusion)
-{
-	float3 finalColor = 0;
-	//uint count, width, height, lod;
-	//ShadowMap.GetDimensions(0, width, height, count, lod);
-	//for (uint i = 0; i < count; i++)
-	//{
-		
-	//}
-	uint LightsCount, stride;
-	DirecLights.GetDimensions(LightsCount, stride);
-	for (uint i = 0; i < LightsCount; ++i)
-	{
-		finalColor += BRDF(albedo, metallic, roughness, F0, N, V, GetDirection(DirecLights[i])) * GetRadiance(DirecLights[i]);
-	}
-	finalColor += BRDF_IBL(albedo, metallic, roughness, F0, N, V) * (1 - ambiantOcclusion);
-	return finalColor;
-}
 
 #ifndef GetAlpha
 #define GetAlpha 1.0
@@ -128,7 +88,7 @@ PSResult main(PS_INPUT input)
 	float3 F0 = lerp(0.04, albedo, metallic) * specular;
     float3 V = normalize(MainCamPos - input.World);
 	
-	finalColor = DefaultLit(albedo, metallic, roughness, F0, N, V, ambiantOcclusion);
+	finalColor = DefaultLit(albedo, metallic, roughness, F0, input.World, N, V, ambiantOcclusion);
 	result.color.rgb = LinearToGammaSpace(finalColor + emissiveColor);
 	result.color.a = opacity;
 	
@@ -140,7 +100,7 @@ PSResult main(PS_INPUT input)
 	static int EmissiveSlot = 3;
 	
 	result.GBuffer[AlbedoSlot].rgb = albedo;
-	result.GBuffer[SpecularSlot] = float4(metallic, specular, roughness, ambiantOcclusion);
+	result.GBuffer[SpecularSlot] = float4(specular, metallic, roughness, ambiantOcclusion);
 	result.GBuffer[NormalSlot].rgb = N;
 	result.GBuffer[EmissiveSlot].rgb = emissiveColor;
 #endif

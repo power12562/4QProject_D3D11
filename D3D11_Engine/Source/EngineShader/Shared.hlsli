@@ -21,6 +21,24 @@ SamplerState ClampSampler
 	AddressV = Clamp;
 	AddressW = Clamp;
 };
+
+SamplerState BorderSampler
+{
+	Filter = MIN_MAG_MIP_LINEAR;
+	AddressU = Border;
+	AddressV = Border;
+	AddressW = Border;
+	BorderColor = float4(1.0, 1.0, 1.0, 1.0);
+};
+
+SamplerState PointSampler
+{
+	Filter = MIN_MAG_MIP_POINT;
+	AddressU = Clamp;
+	AddressV = Clamp;
+	AddressW = Clamp;
+};
+
 #define SHADOW_MAP_SIZE 8192
 
 inline float GammaToLinearSpaceExact(float value)

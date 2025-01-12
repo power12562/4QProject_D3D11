@@ -22,14 +22,16 @@ public:
 
 	virtual void SetCameraMatrix(const Matrix& world);
 	virtual void SetProjection(float fov, float nearZ, float farZ);
-
+	
+	//마음에는 안들지만 방법이없음....
+	ComputeShader postProcessShader;
 private:
 	std::vector<MeshDrawCommand> allDrawCommandsOrigin{};
 	std::vector<MeshDrawCommand*> allDrawCommands{};
 	std::vector<MeshDrawCommand*> deferredDrawCommands{};
 	std::vector<MeshDrawCommand*> forwardDrawCommands{};
 
-	Texture* renderTarget{ nullptr };
+	Texture renderTarget{};
 
 	std::vector<std::string> bindablesKey;
 	std::vector<Binadble> bindables;
@@ -43,7 +45,8 @@ private:
 
 
 #pragma region RenderState
-	
+
+	ComPtr<struct ID3D11DepthStencilState> defaultDSS{};
 	ComPtr<struct ID3D11DepthStencilState> noWriteDSS{};
 	ComPtr<struct ID3D11BlendState> noRenderState{};
 	ComPtr<struct ID3D11BlendState> alphaRenderState{};
@@ -54,6 +57,9 @@ private:
 	
 	Texture depthStencilTexture{};
 	std::array<Texture, 4> renderBuffers{};
+	std::array<Texture, 2> PostProcessTexture;
+	int renderBufferIndex{ 0 };
+
 
 #pragma endregion RenderTexture
 
@@ -76,6 +82,7 @@ private:
 	ConstantBuffer cameraBuffer;
 	Binadble cameraBinadbleVS;
 	Binadble cameraBinadblePS;
+	Binadble cameraBinadbleCS;
 
 	struct CameraBufferData
 	{

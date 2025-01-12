@@ -17,7 +17,14 @@ RendererTestApp::~RendererTestApp() = default;
 
 void RendererTestApp::Start()
 {
-    renderer = std::make_unique<DefferdRenderer>();
+    renderer = std::make_unique<DefferdRenderer>();        
+    std::filesystem::path shaderPath = __FILEW__;
+    shaderPath = shaderPath.parent_path().parent_path() / L"Resource/EngineShader/";
+    ShaderUtility::CopyShader(shaderPath);
+    ComPtr<ID3D11ComputeShader> computeShader = nullptr;
+	hlslManager.CreateSharingShader(L"Resource/EngineShader/DeferredRender.hlsl", &computeShader);
+	static_cast<DefferdRenderer*>(renderer.get())->postProcessShader.LoadShader(computeShader.Get());
+
     DXGIInit();
 
     if (sceneManager.nextScene == nullptr)
@@ -49,6 +56,10 @@ void RendererTestApp::Update()
 		shaderPath = shaderPath.parent_path().parent_path() / L"Resource/EngineShader/";
         ShaderUtility::CopyShader(shaderPath);
         MeshRender::ReloadShaderAll();
+
+        ComPtr<ID3D11ComputeShader> computeShader = nullptr;
+        hlslManager.CreateSharingShader(L"Resource/EngineShader/DeferredRender.hlsl", &computeShader);
+        static_cast<DefferdRenderer*>(renderer.get())->postProcessShader.LoadShader(computeShader.Get());
     }
 
 
@@ -134,8 +145,9 @@ void RendererTestApp::TestInit()
 
 
     testObject = NewGameObject<CubeObject>(L"Cube");
-    testObject->GetComponent<CubeMeshRender>().SetPixelShader(L"Resource/EngineShader/CubeShader.hlsl");
     testObject->GetComponent<CubeMeshRender>().SetPixelShader(L"Resource/Shader/TEst.hlsl");
+
+	//testObject2 = Utility::LoadFBX(L"Resource/char/char.fbx", false, SURFACE_TYPE::PBR);
 
     Texture albedo;
     textureManager.CreateSharingTexture(L"Resource/Texture/1735656899.jpg", &srv);
@@ -154,17 +166,19 @@ void RendererTestApp::TestInit()
 	textureManager.CreateSharingCubeMap(L"Resource/Texture/IBL/SpecularIBL.dds", &srv);
 	Specular_IBL.LoadTexture(srv.Get());
 
-    //auto aa = Utility::CreateCompressTexture(d3dRenderer.GetDevice(), L"Resource/Texture/IBL/EnvHDR.dds", nullptr, &srv, Utility::E_COMPRESS::BC6);
-    //Utility::SaveTextureForDDS(L"Resource/Texture/IBL/EnvHDR2.dds", aa);
-
 	directLight.emplace_back(DirectionLight{ Vector4(1, 1, 1, 1), Vector3(0, 0, -1), 1 });
     directLightBuffer.Init(directLight);
     
 	
-    renderer->AddBinadble("BRDF_LUT", Binadble{ EShaderType::Pixel, EShaderBindable::ShaderResource, 30, (ID3D11ShaderResourceView*)BRDF_LUT });
-    renderer->AddBinadble("Diffuse_IBL", Binadble{ EShaderType::Pixel, EShaderBindable::ShaderResource, 31, (ID3D11ShaderResourceView*)Diffuse_IBL });
-    renderer->AddBinadble("Specular_IBL", Binadble{ EShaderType::Pixel, EShaderBindable::ShaderResource, 32, (ID3D11ShaderResourceView*)Specular_IBL });
-	renderer->AddBinadble("DirLightBuffer", Binadble{ EShaderType::Pixel, EShaderBindable::ShaderResource, 16, (ID3D11ShaderResourceView*)directLightBuffer });
+    renderer->AddBinadble("BRDF_LUT_PS", Binadble{ EShaderType::Pixel, EShaderBindable::ShaderResource, 30, (ID3D11ShaderResourceView*)BRDF_LUT });
+    renderer->AddBinadble("Diffuse_IBL_PS", Binadble{ EShaderType::Pixel, EShaderBindable::ShaderResource, 31, (ID3D11ShaderResourceView*)Diffuse_IBL });
+    renderer->AddBinadble("Specular_IBL_PS", Binadble{ EShaderType::Pixel, EShaderBindable::ShaderResource, 32, (ID3D11ShaderResourceView*)Specular_IBL });
+    renderer->AddBinadble("DirLightBuffer_PS", Binadble{ EShaderType::Pixel, EShaderBindable::ShaderResource, 16, (ID3D11ShaderResourceView*)directLightBuffer });
+   
+    renderer->AddBinadble("BRDF_LUT_CS", Binadble{ EShaderType::Compute, EShaderBindable::ShaderResource, 30, (ID3D11ShaderResourceView*)BRDF_LUT });
+    renderer->AddBinadble("Diffuse_IBL_CS", Binadble{ EShaderType::Compute, EShaderBindable::ShaderResource, 31, (ID3D11ShaderResourceView*)Diffuse_IBL });
+    renderer->AddBinadble("Specular_IBL_CS", Binadble{ EShaderType::Compute, EShaderBindable::ShaderResource, 32, (ID3D11ShaderResourceView*)Specular_IBL });
+    renderer->AddBinadble("DirLightBuffer_CS", Binadble{ EShaderType::Compute, EShaderBindable::ShaderResource, 16, (ID3D11ShaderResourceView*)directLightBuffer });
 
     return;
 

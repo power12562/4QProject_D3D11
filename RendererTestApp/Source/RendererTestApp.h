@@ -36,6 +36,8 @@ private:
 		Vector4 LightColor;
 		Vector3 LightDir;
 		float LightIntensity;
+
+		Matrix lightVP;
 	};
 	std::vector<DirectionLight> directLight;
 	StructuredBuffer directLightBuffer;
@@ -53,6 +55,7 @@ private:
 	void TestInit();
 	VertexShader vertexShader;
 	class CubeObject* testObject;
+	class GameObject* testObject2;
 
 	// End Test
 	///////////////////////////////////////
