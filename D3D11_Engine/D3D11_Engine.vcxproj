@@ -153,6 +153,16 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Component\Rigidbody\Rigidbody.h" />
+    <ClInclude Include="Source\Physics\enum\CollisionDetectionMode.h" />
+    <ClInclude Include="Source\Physics\enum\ForceMode.h" />
+    <ClInclude Include="Source\Physics\PhysicsActor\PhysicsActor.h" />
+    <ClInclude Include="Source\Physics\PhysicsMaterial\PhysicsMaterial.h" />
+    <ClInclude Include="Source\Physics\PhysicsScene\PhysicsScene.h" />
+    <ClInclude Include="Source\Physics\PhysicsManager.h" />
+    <ClInclude Include="Source\Component\Collider\BoxCollider.h" />
+    <ClInclude Include="Source\Component\Collider\CapsuleCollider.h" />
+    <ClInclude Include="Source\Component\Collider\Collider.h" />
     <ClInclude Include="Source\Component\Render\BlingPhongBoneMeshRender.h" />
     <ClInclude Include="Source\Component\Render\BlingPhongMeshRender.h" />
     <ClInclude Include="Source\Component\Render\CubeMeshRender.h" />
@@ -197,6 +207,8 @@
     <ClInclude Include="Source\D3DCore\D3DRenderer.h" />
     <ClInclude Include="Source\Core\DXTKInputSystem.h" />
     <ClInclude Include="Source\Manager\HLSLManager.h" />
+    <ClInclude Include="Source\Physics\Struct\CollisionInfo.h" />
+    <ClInclude Include="Source\Physics\Struct\RaycastResult.h" />
     <ClInclude Include="Source\Utility\ExceptionUtility.h" />
     <ClInclude Include="Source\Utility\FileSystemUtility.h" />
     <ClInclude Include="Source\Utility\ImguiHelper.h" />
@@ -221,8 +233,16 @@
     <ClInclude Include="Source\Utility\SerializedUtility.h" />
     <ClInclude Include="Source\Utility\SpinLock.h" />
     <ClInclude Include="Source\Utility\utfConvert.h" />
+    <ClInclude Include="Source\Component\Collider\SphereCollider.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Component\Rigidbody\Rigidbody.cpp" />
+    <ClCompile Include="Source\Physics\PhysicsActor\PhysicsActor.cpp" />
+    <ClCompile Include="Source\Physics\PhysicsScene\PhysicsScene.cpp" />
+    <ClCompile Include="Source\Physics\PhysicsManager.cpp" />
+    <ClCompile Include="Source\Component\Collider\BoxCollider.cpp" />
+    <ClCompile Include="Source\Component\Collider\CapsuleCollider.cpp" />
+    <ClCompile Include="Source\Component\Collider\Collider.cpp" />
     <ClCompile Include="Source\Component\Render\BlingPhongBoneMeshRender.cpp" />
     <ClCompile Include="Source\Component\Render\BlingPhongMeshRender.cpp" />
     <ClCompile Include="Source\Component\Render\CubeMeshRender.cpp" />
@@ -281,6 +301,7 @@
     <ClCompile Include="Source\Utility\SerializedUtility.cpp" />
     <ClCompile Include="Source\Utility\SpinLock.cpp" />
     <ClCompile Include="Source\Utility\utfConvert.cpp" />
+    <ClCompile Include="Source\Component\Collider\SphereCollider.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\EngineShader\BasePassPS.hlsl">
@@ -436,6 +457,9 @@
     <None Include="Source\EngineShader\SkyBoxShared.hlsli" />
     <None Include="Source\EngineShader\Shared.hlsli" />
     <None Include="Source\EngineShader\VSInput.hlsli" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Source\Physics\readme.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
