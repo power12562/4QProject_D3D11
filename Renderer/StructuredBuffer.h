@@ -26,7 +26,7 @@ public:
 	template<typename Container, std::enable_if_t<!std::is_pointer_v<Container>, int> = 0>
 	void Update(const Container& contaioner);
 
-	operator ID3D11ShaderResourceView* () { return srv.Get(); }
+	operator ID3D11ShaderResourceView* () const { return srv.Get(); }
 
 	void CreateView(int newSize);
 

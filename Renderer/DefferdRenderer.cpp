@@ -2,11 +2,9 @@
 #include <format>
 #include <functional>
 #include <ranges>
-
-
+#include <numeric>
 #include <d3d11.h>
 #pragma comment(lib, "d3d11.lib")
-
 
 
 #ifdef _DEBUG
@@ -270,55 +268,92 @@ void DefferdRenderer::SetRenderTarget(_In_ Texture& target)
 
 void DefferdRenderer::Render()
 {
-	//초기화 셋업
-	{
-		for (auto& drawCommand : allDrawCommandsOrigin)
-		{
-			if (drawCommand.GetMaterialData().pixelShader.isForward)
-			{
-				forwardDrawCommands.emplace_back(&drawCommand);
-			}
-			else
-			{
-				deferredDrawCommands.emplace_back(&drawCommand);
-			}
-			allDrawCommands.emplace_back(&drawCommand);
-		}
-	}
+	DirectX::BoundingFrustum frustum(cameraProjection);
+	frustum.Transform(frustum, cameraWorld);
 
+	auto culledDrawCommands = 
+		allDrawCommandsOrigin 
+		| std::views::filter([frustum](const MeshDrawCommand& item) { return frustum.Intersects(item.meshData.boundingBox); })
+		| std::views::transform([](MeshDrawCommand& item) -> MeshDrawCommand* { return &item; });
 
+	std::ranges::copy(culledDrawCommands, std::back_inserter(allDrawCommands));
+	std::ranges::copy(culledDrawCommands | std::views::filter([](MeshDrawCommand* item) { return item->materialData.pixelShader.isForward; }), std::back_inserter(forwardDrawCommands));
+	std::ranges::copy(culledDrawCommands | std::views::filter([](MeshDrawCommand* item) { return !item->materialData.pixelShader.isForward; }), std::back_inserter(deferredDrawCommands));
+
+	auto boundingBoxs =
+		allDrawCommands
+		| std::views::transform([](MeshDrawCommand* item) { return item->meshData.boundingBox; })
+		| std::views::filter([frustum](const BoundingOrientedBox& item) { return frustum.Intersects(item); });
+
+	auto visibilityBox = std::accumulate(boundingBoxs.begin(), boundingBoxs.end(), BoundingBox{},
+										 [](const BoundingBox& a, const BoundingOrientedBox& b)
+										 {
+											 XMFLOAT3 boxCorners[8];
+											 b.GetCorners(boxCorners);
+											 BoundingBox tempBoundingBox;
+											 BoundingBox::CreateFromPoints(tempBoundingBox, std::size(boxCorners), std::data(boxCorners), sizeof(XMFLOAT3));
+											 BoundingBox box;
+											 BoundingBox::CreateMerged(box, a, tempBoundingBox);
+											 return box;
+										 });
+
+	immediateContext->OMSetDepthStencilState(nullptr, 0);
 	
-	D3D11_VIEWPORT viewport = CD3D11_VIEWPORT(0.0f, 0.0f, (float)width, (float)height);
-
-	ID3D11RenderTargetView* renderBuffersRTV[4];
-
-	for (size_t i = 0; i < std::size(renderBuffersRTV); i++)
+	// 쉐도우맵 생성
+	for (size_t i = 0; i < directLight.size(); i++)
 	{
-		renderBuffersRTV[i] = renderBuffers[i];
+		DirectionLightData& lightData = directLight.GetLight(i);
+		
+		XMMATRIX view;
+		XMMATRIX projection;
+		DirectionLightBuffer::ComputeLightMatrix(visibilityBox,
+												 -lightData.Directoin,
+												 view, 
+												 projection);
+		CameraBufferData cameraData{};
+		cameraData.View = DirectX::XMMatrixTranspose(view);
+		cameraData.Projection = DirectX::XMMatrixTranspose(projection);
+		directLight.GetLightCamera(i).Set(cameraData);
+
+		Matrix VPMatrix = view * projection;
+		lightData.VP = DirectX::XMMatrixTranspose(VPMatrix);
+
+		D3D11_VIEWPORT viewport = CD3D11_VIEWPORT(0.0f, 0.0f, (float)4096, (float)4096);
+		ID3D11Buffer* cameraBufferPtr[1] = { (ID3D11Buffer*)directLight.GetLightCamera(i) };
+
+		immediateContext->OMSetRenderTargets(0, { nullptr }, directLight.GetShadowMapDS(i));
+		immediateContext->ClearDepthStencilView(directLight.GetShadowMapDS(i), D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+		immediateContext->OMSetBlendState(noRenderState.Get(), nullptr, 0xffffffff);
+		immediateContext->PSSetShader(nullptr, nullptr, 0);
+		immediateContext->RSSetViewports(1, &viewport);
+		immediateContext->VSSetConstantBuffers(1, std::size(cameraBufferPtr), cameraBufferPtr);
+
+		ProcessDrawCommands(allDrawCommands, false);
+		immediateContext->OMSetRenderTargets(0, { nullptr }, nullptr);
 	}
 
-	
-	// 그림자
-	{
-		//ProcessDrawCommands(allDrawCommands, false);
-	}
-	
-	//ID3D11RenderTargetView* backBuffersRTV[1] = { renderTarget };
-	//immediateContext->OMSetRenderTargets(std::size(backBuffersRTV), backBuffersRTV, nullptr);
-	//immediateContext->ClearRenderTargetView(renderTarget, DirectX::SimpleMath::Color{ 0.0f, 1.0f ,0.0f ,0.0f });
 
-
-	immediateContext->OMSetRenderTargets(std::size(renderBuffersRTV), renderBuffersRTV, depthStencilTexture);
-	immediateContext->RSSetViewports(1, &viewport);
-
-	for (size_t i = 0; i < std::size(renderBuffers); i++)
-	{
-		immediateContext->ClearRenderTargetView(renderBuffers[i], DirectX::SimpleMath::Color{ 0.0f, 0.0f, 0.0f, 0.0f });
-	}
-	immediateContext->ClearDepthStencilView(depthStencilTexture, D3D11_CLEAR_DEPTH, 1.0f, 0);
-	immediateContext->ClearRenderTargetView(deferredBuffer, DirectX::SimpleMath::Color{ 0.0f, 0.0f, 0.0f, 0.0f });
 	// 데이터 바인딩
 	{
+		D3D11_VIEWPORT viewport = CD3D11_VIEWPORT(0.0f, 0.0f, (float)width, (float)height);
+		ID3D11RenderTargetView* renderBuffersRTV[4];
+		for (size_t i = 0; i < std::size(renderBuffersRTV); i++)
+		{
+			renderBuffersRTV[i] = renderBuffers[i];
+		}
+
+		immediateContext->OMSetRenderTargets(std::size(renderBuffersRTV), renderBuffersRTV, depthStencilTexture);
+		immediateContext->RSSetViewports(1, &viewport);
+
+		for (size_t i = 0; i < std::size(renderBuffers); i++)
+		{
+			immediateContext->ClearRenderTargetView(renderBuffers[i], DirectX::SimpleMath::Color{ 0.0f, 0.0f, 0.0f, 0.0f });
+		}
+		immediateContext->ClearDepthStencilView(depthStencilTexture, D3D11_CLEAR_DEPTH, 1.0f, 0);
+		immediateContext->ClearRenderTargetView(deferredBuffer, DirectX::SimpleMath::Color{ 0.0f, 0.0f, 0.0f, 0.0f });
+
+
 		CameraBufferData cameraData{};
 		cameraData.MainCamPos = cameraWorld.Translation();
 		cameraData.IPM = DirectX::XMMatrixTranspose(cameraProjection.Invert());
@@ -330,6 +365,20 @@ void DefferdRenderer::Render()
 		BindBinadble(cameraBinadbleVS);
 		BindBinadble(cameraBinadblePS);
 		BindBinadble(cameraBinadbleCS);
+
+		//for (const auto& bindable : directLight.GetBindables())
+		//{
+		//	BindBinadble(bindable);
+		//}
+		ID3D11ShaderResourceView* ShadowMapPtr[1] = { directLight.GetShadowMapArray() };
+		immediateContext->PSSetShaderResources(20, 1, ShadowMapPtr);
+		immediateContext->CSSetShaderResources(20, 1, ShadowMapPtr);
+
+		directLight.UpdateBuffer();
+		ID3D11ShaderResourceView* LightBufferPtr[1] = { directLight.GetDirectLightBuffer() };
+		immediateContext->PSSetShaderResources(16, 1, LightBufferPtr);
+		immediateContext->CSSetShaderResources(16, 1, LightBufferPtr);
+
 
 		for (auto& item : bindables)
 		{
@@ -345,9 +394,9 @@ void DefferdRenderer::Render()
 	}
 
 	// Gbuffer 라이팅 처리
-	if (1)
+	if (0)
 	{
-		ID3D11RenderTargetView* nullRenderBuffersRTV[std::size(renderBuffersRTV)]{ nullptr, };
+		ID3D11RenderTargetView* nullRenderBuffersRTV[4]{ nullptr, };
 		ID3D11RenderTargetView* deferredBufferRTV[1]{ deferredBuffer };
 		ID3D11ShaderResourceView* depthBuffersSRV[1] = { depthStencilTexture };
 		ID3D11ShaderResourceView* renderBuffersSRV[4];
@@ -369,13 +418,11 @@ void DefferdRenderer::Render()
 		immediateContext->Draw(3, 0);
 
 		ID3D11ShaderResourceView* nullSRV[5]{};
-		ID3D11UnorderedAccessView* nullUAV[1]{};
-		immediateContext->CSSetShaderResources(0, std::size(nullSRV), nullSRV);
-		immediateContext->CSSetUnorderedAccessViews(0, std::size(nullUAV), nullUAV, nullptr);
+		immediateContext->PSSetShaderResources(0, std::size(nullSRV), nullSRV);
 	}
 	else
 	{
-		ID3D11RenderTargetView* nullRenderBuffersRTV[std::size(renderBuffersRTV)]{ nullptr, };
+		ID3D11RenderTargetView* nullRenderBuffersRTV[4]{ nullptr, };
 		ID3D11ShaderResourceView* renderBuffersSRV[4];
 		ID3D11ShaderResourceView* depthBuffersSRV[1] = { depthStencilTexture };
 		ID3D11UnorderedAccessView* deferredBufferUAV[1] = { deferredBuffer };
@@ -460,8 +507,8 @@ void DefferdRenderer::ProcessDrawCommands(std::vector<MeshDrawCommand*>& drawCom
 {
 	for (auto& command : drawCommands)
 	{
-		auto mesh = command->GetMeshData();
-		auto material = command->GetMaterialData();
+		auto& mesh = command->meshData;
+		auto& material = command->materialData;
 
 		ID3D11Buffer* vertexBuffer[1] = { mesh.vertexBuffer };
 		UINT stride = mesh.vertexStride;
@@ -471,7 +518,10 @@ void DefferdRenderer::ProcessDrawCommands(std::vector<MeshDrawCommand*>& drawCom
 		immediateContext->IASetIndexBuffer(mesh.indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 		immediateContext->IASetInputLayout(mesh.vertexShader);
 		immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		BindBinadble(mesh.transformBuffer);
+		for (auto& resource : mesh.shaderResources)
+		{
+			BindBinadble(resource);
+		}
 
 		immediateContext->VSSetShader(mesh.vertexShader, nullptr, 0);
 		if (isWithMaterial)
@@ -493,8 +543,11 @@ struct BindHelper
 {
 	using BindConstantBufferFunction = std::function<void(ID3D11DeviceContext*, UINT, UINT, ID3D11Buffer* const*)>;
 	using BindShaderResourceFunction = std::function<void(ID3D11DeviceContext*, UINT, UINT, ID3D11ShaderResourceView* const*)>;
+	using BindSamplerFunction = std::function<void(ID3D11DeviceContext*, UINT, UINT, ID3D11SamplerState* const*)>;
+
 	static BindConstantBufferFunction ConstantBufferBindFunction[EShaderType::MAX];
 	static BindShaderResourceFunction ShaderResourceBindFunction[EShaderType::MAX];
+	static BindSamplerFunction SamplerBindFunction[EShaderType::MAX];
 
 	template<EShaderBindable::Type shaderBindable>
 	static auto Get()
@@ -506,6 +559,14 @@ struct BindHelper
 		else if constexpr (shaderBindable == EShaderBindable::ShaderResource)
 		{
 			return ShaderResourceBindFunction;
+		}
+		else if constexpr (shaderBindable == EShaderBindable::Sampler)
+		{
+			return SamplerBindFunction;
+		}
+		else
+		{
+			static_assert(false);
 		}
 	}
 };
@@ -536,8 +597,19 @@ void DefferdRenderer::BindBinadble(const Binadble& bindable)
 	}
 	break;
 
+	case EShaderBindable::Sampler:
+	{
+		ComPtr<ID3D11SamplerState> sampler;
+		bindable.bind.As(&sampler);
+
+		ID3D11SamplerState* resources[1] = { sampler.Get() };
+		auto& function = BindHelper::Get<EShaderBindable::Sampler>()[bindable.shaderType];
+		std::invoke(function, immediateContext.Get(), bindable.slot, std::size(resources), resources);
+	}
+	break;
+
 	default:
-		
+		assert(false);
 		break;
 	}
 
@@ -561,4 +633,14 @@ BindHelper::BindShaderResourceFunction BindHelper::ShaderResourceBindFunction[ES
 	&ID3D11DeviceContext::CSSetShaderResources,
 	&ID3D11DeviceContext::HSSetShaderResources,
 	&ID3D11DeviceContext::DSSetShaderResources
+};
+
+BindHelper::BindSamplerFunction BindHelper::SamplerBindFunction[EShaderType::MAX] =
+{
+	&ID3D11DeviceContext::VSSetSamplers,
+	&ID3D11DeviceContext::PSSetSamplers,
+	&ID3D11DeviceContext::GSSetSamplers,
+	&ID3D11DeviceContext::CSSetSamplers,
+	&ID3D11DeviceContext::HSSetSamplers,
+	&ID3D11DeviceContext::DSSetSamplers
 };

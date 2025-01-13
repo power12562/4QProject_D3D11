@@ -2,20 +2,12 @@
 
 #include "RendererCore.h"
 #include "Renderer.h"
+#include "Light.h"
 #include <vector>
 
-#include "StructuredBuffer.h"
 #include <array>
 
 
-struct DirectionLight
-{
-	Vector4 LightColor;
-	Vector3 LightDir;
-	float LightIntensity;
-
-	Matrix lightVP;
-};
 
 class DefferdRenderer : public IRenderer
 {
@@ -42,7 +34,7 @@ public:
 	Texture Diffuse_IBL;
 	Texture Specular_IBL;
 
-	StructuredBuffer directLightBuffer;
+	DirectionLightBuffer directLight;
 private:
 	std::vector<MeshDrawCommand> allDrawCommandsOrigin{};
 	std::vector<MeshDrawCommand*> allDrawCommands{};
@@ -104,15 +96,6 @@ private:
 	Binadble cameraBinadbleVS;
 	Binadble cameraBinadblePS;
 	Binadble cameraBinadbleCS;
-
-	struct CameraBufferData
-	{
-		alignas(16) Vector3 MainCamPos;
-		alignas(16) Matrix View;
-		alignas(16) Matrix Projection;
-		alignas(16) Matrix IVM;
-		alignas(16) Matrix IPM;
-	};
 
 #pragma endregion Camera
 

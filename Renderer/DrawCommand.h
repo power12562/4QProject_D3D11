@@ -17,15 +17,15 @@ struct MeshData
 	uint32_t indexCounts;
 	uint32_t vertexStride;
 	VertexShader vertexShader;
+	std::vector<Binadble> shaderResources;
 
-	DirectX::BoundingBox boundingBox;
-	Binadble transformBuffer;
+	DirectX::BoundingOrientedBox boundingBox;
 };
 
 struct MaterialData
 {
-	std::vector<Binadble> shaderResources;
 	PixelShader pixelShader;
+	std::vector<Binadble> shaderResources;
 };
 
 
@@ -36,32 +36,6 @@ public:
 	~MeshDrawCommand();
 
 public:
-	template<typename T>
-	void SetShaderResource(_In_ const T& resource)
-	{
-		static_assert(0);
-	}
-
-	const MeshData& GetMeshData() const { return meshData; }
-	const MaterialData& GetMaterialData() const { return materialData; }
-	MeshData& GetMeshData() { return meshData; }
-	MaterialData& GetMaterialData() { return materialData; }
-
-
-private:
 	MeshData meshData;
 	MaterialData materialData;
 };
-
-template<>
-void MeshDrawCommand::SetShaderResource<MeshData>(_In_ const MeshData& resource);
-
-template<>
-void MeshDrawCommand::SetShaderResource<MaterialData>(_In_ const MaterialData& resource);
-
-template<typename T>
-MeshDrawCommand& operator<<(MeshDrawCommand& drawCommand, const T& meshBuffer)
-{
-	drawCommand.SetShaderResource(meshBuffer);
-	return drawCommand;
-}

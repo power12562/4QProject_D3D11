@@ -21,13 +21,11 @@ public:
 
 private:
 	std::unique_ptr<DefferdRenderer> renderer;
-	std::vector<ComPtr<IUnknown>> shaders;
 
 	ComPtr<struct IDXGISwapChain1> swapChain;
 	Texture backBuffer;
 
-	std::vector<DirectionLight> directLight;
-
+	std::vector<class PBRMeshRender*> charList;
 
 private:
 	void DXGIInit();

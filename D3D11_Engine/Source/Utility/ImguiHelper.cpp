@@ -341,6 +341,9 @@ namespace CompressPopupField
 
 bool ImGui::ShowCompressPopup(const wchar_t* path, D3DTexture2D* texture2D, int texType)
 {
+	if(!sceneManager.IsImGuiActive())
+		return false;
+
 	std::filesystem::path originPath = path;
 	originPath.replace_extension(L".dds");
 	constexpr wchar_t textuers[] = L"Textures";
@@ -356,6 +359,7 @@ bool ImGui::ShowCompressPopup(const wchar_t* path, D3DTexture2D* texture2D, int 
 	wstr_queue.push(path);
 	savePath_Queue.push(savePath.c_str());
 	ReloadTextureCompressEnd(savePath.c_str(), texture2D, texType);
+
 	
 	/*추천 포멧!!
 	Albedo		BC1/BC3/BC7	 알파 채널 유무에 따라 선택. 색상 데이터의 높은 품질 유지 필요시 BC7 //생각보다 압축티 많이남..
@@ -546,14 +550,7 @@ bool ImGui::ShowCompressPopup(const wchar_t* path, D3DTexture2D* texture2D, int 
 			}
 		};
 
-	bool ActiveImgui = sceneManager.IsImGuiActive();
-	if (ActiveImgui)
-	{
 		sceneManager.PushImGuiPopupFunc(popupFunc);
-		return true;
-	}	
-	else
-		return false;
 }
 
 bool ImGui::ReloadTextureCompressEnd(const wchar_t* path, D3DTexture2D* texture2D, int texType)

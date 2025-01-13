@@ -13,6 +13,10 @@ using SharedPtr = std::shared_ptr<T>;
 using Matrix = DirectX::SimpleMath::Matrix;
 using Vector3 = DirectX::SimpleMath::Vector3;
 using Vector4 = DirectX::SimpleMath::Vector4;
+using XMFLOAT3 = DirectX::XMFLOAT3;
+using XMMATRIX = DirectX::XMMATRIX;
+using BoundingBox = DirectX::BoundingBox;
+using BoundingOrientedBox = DirectX::BoundingOrientedBox;
 
 struct ID3D11DeviceContext;
 struct ID3D11Device;
@@ -64,6 +68,7 @@ namespace EShaderBindable
 		ConstantBuffer,
 		ShaderResource,
 		UnorderedAccess,
+		Sampler
 	};
 }
 
@@ -77,14 +82,11 @@ struct Binadble
 };
 
 
-struct FixedMaterialData
+struct CameraBufferData
 {
-	float Metallic;
-	float Specular;
-	float Roughness;
-	float AmbientOcclusion;
-	Vector3 Albedo;
-	float pad;
-	Vector3 Emissive;
-	float pad3;
+	alignas(16) Vector3 MainCamPos;
+	alignas(16) Matrix View;
+	alignas(16) Matrix Projection;
+	alignas(16) Matrix IVM;
+	alignas(16) Matrix IPM;
 };

@@ -6,6 +6,7 @@
 struct ETextureUsage
 {
 	using Type = uint32_t;
+	static constexpr Type NONE = 0x0L;		// D3D11_BIND_SHADER_RESOURCE
 	static constexpr Type SRV = 0x8L;		// D3D11_BIND_SHADER_RESOURCE
 	static constexpr Type RTV = 0x20L;		// D3D11_BIND_RENDER_TARGET
 	static constexpr Type DSV = 0x40L;		// D3D11_BIND_DEPTH_STENCIL
@@ -26,12 +27,12 @@ public:
 	void LoadTexture(ID3D11Resource* resource, ETextureUsage::Type textureUsage, _In_opt_ struct D3D11_SHADER_RESOURCE_VIEW_DESC *srvFormat = nullptr);
 	void LoadTexture(ID3D11ShaderResourceView* srv);
 
-	operator ID3D11Texture2D* ();
-	operator ID3D11Resource* () { return texture.Get(); }
-	operator ID3D11ShaderResourceView* () { return shaderResourceView.Get(); }
-	operator ID3D11RenderTargetView* () { return renderTargetView.Get(); }
-	operator ID3D11DepthStencilView* () { return depthStencilView.Get(); }
-	operator ID3D11UnorderedAccessView* () { return unorderedAccessView.Get(); }
+	operator ID3D11Texture2D* () const;
+	operator ID3D11Resource* () const { return texture.Get(); }
+	operator ID3D11ShaderResourceView* () const { return shaderResourceView.Get(); }
+	operator ID3D11RenderTargetView* () const { return renderTargetView.Get(); }
+	operator ID3D11DepthStencilView* () const { return depthStencilView.Get(); }
+	operator ID3D11UnorderedAccessView* () const { return unorderedAccessView.Get(); }
 
 private:
 	ComPtr<ID3D11Resource> texture{};

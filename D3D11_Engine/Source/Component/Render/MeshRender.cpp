@@ -3,6 +3,7 @@
 #include <Manager/HLSLManager.h>
 #include <Utility/MemoryUtility.h>
 #include <ranges>
+#include <Material/PBRMaterial.h>
 
 using namespace Utility;
 
@@ -55,6 +56,10 @@ void MeshRender::UpdateMeshDrawCommand()
 		.WorldInverseTranspose = gameObject.transform.GetWM().Invert()
 	};
 	transformBuffer.Set(transformData);
+	std::string MaterialKey = gameObject.GetNameToString();
+	auto tempData = constBuffer.GetData<cb_PBRMaterial>(MaterialKey.c_str());
+
+	pbrMaterial.Set(*tempData);
 
 	MeshData meshData{};
 	MaterialData materialData{};
@@ -64,20 +69,66 @@ void MeshRender::UpdateMeshDrawCommand()
 
 	meshData.indexCounts = meshResource->indicesCount;
 	meshData.vertexStride = meshResource->vertexBufferStride;
-	meshData.boundingBox = gameObject.Bounds;
-	meshData.transformBuffer =
+	BoundingOrientedBox::CreateFromBoundingBox(meshData.boundingBox, gameObject.Bounds);
+	meshData.boundingBox.Transform(meshData.boundingBox, gameObject.transform.GetWM());
+
+	meshData.shaderResources.emplace_back(
 		Binadble
 		{
 			.shaderType = EShaderType::Vertex,
 			.bindableType = EShaderBindable::ConstantBuffer,
 			.slot = 0,
 			.bind = (ID3D11Buffer*)transformBuffer
-		};
+		});
 
 	meshData.vertexShader.LoadShader(pVertexShader, pInputLayout);
 	materialData.pixelShader.LoadShader(pPixelShader);
 	materialData.pixelShader.isForward = isForward;
 	materialData.shaderResources.clear();
+
+	///
+	// 으음...... 마음에 들지는 않음.... 호환성을 위해....
+	// Begin Temp
+	auto texturesView2 =
+		std::views::iota(0)
+		| std::views::take(textures.size())
+		| std::views::transform([&](uint32_t i) -> Binadble
+								{
+									return Binadble
+									{
+										.shaderType = EShaderType::Pixel,
+										.bindableType = EShaderBindable::ShaderResource,
+										.slot = i,
+										.bind = textures[i]
+									};
+								});
+
+	std::ranges::copy(texturesView2, std::back_inserter(materialData.shaderResources));
+
+	auto samplersView =
+		std::views::iota(0)
+		| std::views::take(samplerState.size())
+		| std::views::transform([&](uint32_t i) -> Binadble
+								{
+									return Binadble
+									{
+										.shaderType = EShaderType::Pixel,
+										.bindableType = EShaderBindable::Sampler,
+										.slot = i,
+										.bind = samplerState[i]
+									};
+								});
+	std::ranges::copy(samplersView, std::back_inserter(materialData.shaderResources));
+	materialData.shaderResources.emplace_back(Binadble
+											  {
+												  .shaderType = EShaderType::Pixel,
+												  .bindableType = EShaderBindable::ConstantBuffer,
+												  .slot = 4,
+												  .bind = (ID3D11Buffer*)pbrMaterial
+											  });
+
+
+	// End Temp
 
 	auto texturesView =
 		std::views::iota(0)
@@ -95,8 +146,8 @@ void MeshRender::UpdateMeshDrawCommand()
 
 	std::ranges::copy(texturesView, std::back_inserter(materialData.shaderResources));
 
-	meshDrawCommand << meshData;
-	meshDrawCommand << materialData;
+	meshDrawCommand.meshData = std::move(meshData);
+	meshDrawCommand.materialData = std::move(materialData);
 }
 
 void MeshRender::SetMeshResource(const wchar_t* path)
@@ -136,10 +187,6 @@ void MeshRender::SetPixelShader(const wchar_t* path)
 	SafeRelease(pPixelShader);
 	hlslManager.CreateSharingShader(path, &pPixelShader);
 	pixelShaderPath = path;
-	MaterialData materialData{};
-	materialData.pixelShader.LoadShader(pPixelShader);
-
-	meshDrawCommand << materialData;
 }
 
 void MeshRender::ResetVertexShader()

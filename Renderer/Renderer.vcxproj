@@ -140,6 +140,7 @@
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="DefferdRenderer.h" />
     <ClInclude Include="DrawCommand.h" />
+    <ClInclude Include="Light.h" />
     <ClInclude Include="MeshBuffer.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="RendererBuffer.h" />
@@ -153,6 +154,7 @@
     <ClCompile Include="ConstantBuffer.cpp" />
     <ClCompile Include="DefferdRenderer.cpp" />
     <ClCompile Include="DrawCommand.cpp" />
+    <ClCompile Include="Light.cpp" />
     <ClCompile Include="MeshBuffer.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="RendererBuffer.cpp" />

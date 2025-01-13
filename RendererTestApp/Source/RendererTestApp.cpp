@@ -95,12 +95,22 @@ void RendererTestApp::Update()
 
 
     ImGui::EditTransform(testObject);
-	ImGui::Checkbox("isForward", &testObject->GetComponent<CubeMeshRender>().isForward);
+    ImGui::Checkbox("isForward", &testObject->GetComponent<CubeMeshRender>().isForward);
+    ImGui::EditTransform(testObject2);
+
 
 	ImGui::BeginGroup();
-    ImGui::DragFloat3("Light Direction", &directLight[0].LightDir.x, 0.01f, -1.0f, 1.0f);
-	ImGui::ColorEdit4("Light Color", &directLight[0].LightColor.x);
-	directLight[0].LightDir.Normalize();
+
+    //빛 정보
+	ImGui::Text("Direct Light");
+    for (size_t i = 0; i < std::size(renderer->directLight); i++)
+    {
+        auto& lightData = renderer->directLight.GetLight(i);
+        ImGui::ColorEdit4("light Color", &lightData.Color);
+        ImGui::DragFloat3("light Direction", (float*)&lightData.Directoin, 0.01f, -1.f, 1.f);
+		lightData.Directoin.Normalize();
+    }
+
 	ImGui::EndGroup();
 
     using clock = std::chrono::high_resolution_clock;
@@ -134,14 +144,20 @@ void RendererTestApp::Update()
 
 void RendererTestApp::Render()
 {
-	renderer->SetProjection(Mathf::PI / 4, 0.1f, 1000.0f);
+	renderer->SetProjection(Mathf::PI / 4, 0.1f, 10000.0f);
 	renderer->SetCameraMatrix(DirectX::XMMatrixInverse(nullptr, DirectX::XMMatrixLookAtLH(Vector3(-2, 2, -5), Vector3(0, 0, 0), Vector3::Up)));
 
-    renderer->directLightBuffer.Update(directLight);
 
 	auto& testComponent = testObject->GetComponent<CubeMeshRender>();
     testComponent.UpdateMeshDrawCommand();
     renderer->AddDrawCommand(testComponent.GetMeshDrawCommand());
+
+	for (auto& chara : charList)
+	{
+		chara->UpdateMeshDrawCommand();
+		renderer->AddDrawCommand(chara->GetMeshDrawCommand());
+	}
+   
 
 	renderer->Render();
 
@@ -194,8 +210,12 @@ void RendererTestApp::TestInit()
     testObject = NewGameObject<CubeObject>(L"Cube");
     testObject->GetComponent<CubeMeshRender>().SetPixelShader(L"Resource/Shader/TEst.hlsl");
 
-	//testObject2 = Utility::LoadFBX(L"Resource/char/char.fbx", false, SURFACE_TYPE::PBR);
-
+	auto init = [this](MeshRender* mesh)
+		{
+			charList.emplace_back(reinterpret_cast<PBRMeshRender*>(mesh));
+		};
+	testObject2 = Utility::LoadFBX(L"Resource/char/char.fbx", init, false, SURFACE_TYPE::PBR);
+	testObject2->transform.scale = Vector3(0.01f, 0.01f, 0.01f);
     Texture albedo;
     textureManager.CreateSharingTexture(L"Resource/Texture/1735656899.jpg", &srv);
     albedo.LoadTexture(srv.Get());
@@ -206,7 +226,6 @@ void RendererTestApp::TestInit()
     Texture BRDF_LUT;
     Texture Diffuse_IBL;
     Texture Specular_IBL;
-    StructuredBuffer directLightBuffer;
 
 	textureManager.CreateSharingTexture(L"Resource/Texture/IBL/Brdf.dds", &srv);
 	BRDF_LUT.LoadTexture(srv.Get());
@@ -217,24 +236,27 @@ void RendererTestApp::TestInit()
 	textureManager.CreateSharingCubeMap(L"Resource/Texture/IBL/SpecularIBL.dds", &srv);
 	Specular_IBL.LoadTexture(srv.Get());
 
-	directLight.emplace_back(DirectionLight{ Vector4(1, 1, 1, 1), Vector3(0, 0, -1), 1 });
-    directLightBuffer.Init(directLight);
+    renderer->directLight.PushLight("1", 
+                                    DirectionLightData
+                                    {
+                                        .Color = Vector4(1, 1, 1, 1), 
+                                        .Directoin = Vector3(0, 0, -1),
+										.Intensity = 1
+                                    });
+
     
 	
     renderer->AddBinadble("BRDF_LUT_PS", Binadble{ EShaderType::Pixel, EShaderBindable::ShaderResource, 30, (ID3D11ShaderResourceView*)BRDF_LUT });
     renderer->AddBinadble("Diffuse_IBL_PS", Binadble{ EShaderType::Pixel, EShaderBindable::ShaderResource, 31, (ID3D11ShaderResourceView*)Diffuse_IBL });
     renderer->AddBinadble("Specular_IBL_PS", Binadble{ EShaderType::Pixel, EShaderBindable::ShaderResource, 32, (ID3D11ShaderResourceView*)Specular_IBL });
-    renderer->AddBinadble("DirLightBuffer_PS", Binadble{ EShaderType::Pixel, EShaderBindable::ShaderResource, 16, (ID3D11ShaderResourceView*)directLightBuffer });
    
     renderer->AddBinadble("BRDF_LUT_CS", Binadble{ EShaderType::Compute, EShaderBindable::ShaderResource, 30, (ID3D11ShaderResourceView*)BRDF_LUT });
     renderer->AddBinadble("Diffuse_IBL_CS", Binadble{ EShaderType::Compute, EShaderBindable::ShaderResource, 31, (ID3D11ShaderResourceView*)Diffuse_IBL });
     renderer->AddBinadble("Specular_IBL_CS", Binadble{ EShaderType::Compute, EShaderBindable::ShaderResource, 32, (ID3D11ShaderResourceView*)Specular_IBL });
-    renderer->AddBinadble("DirLightBuffer_CS", Binadble{ EShaderType::Compute, EShaderBindable::ShaderResource, 16, (ID3D11ShaderResourceView*)directLightBuffer });
 
     renderer->BRDF_LUT = BRDF_LUT;
     renderer->Diffuse_IBL = Diffuse_IBL;
     renderer->Specular_IBL = Specular_IBL;
-    renderer->directLightBuffer = directLightBuffer;
 
 
     return;
