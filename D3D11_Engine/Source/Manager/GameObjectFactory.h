@@ -58,6 +58,7 @@ private:
 public:
 	void InitializeMemoryPool();
 	void UninitializeMemoryPool();
+	void CompactObjectMemoryPool();
 
 	void* GameObjectAlloc(size_t id);
 	std::function<GameObject*(const wchar_t* name)>& NewGameObjectToKey(const char* key);

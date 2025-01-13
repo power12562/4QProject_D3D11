@@ -15,6 +15,9 @@ public:
 
 	/**메모리를 반납합니다. */
 	void Free(size_t blockIndex);
+
+	/** 메모리 페이지를 정리합니다.*/
+	void CompactMemoryPage();
 private:
 	size_t memoryBlockSize;
 	size_t memoryPageSize;

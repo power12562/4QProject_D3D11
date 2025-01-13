@@ -1,4 +1,6 @@
 #include "InstanceIDManager.h"
+#include <ranges>
+#include <algorithm>
 
 InstanceIDManager& instanceIDManager = InstanceIDManager::GetInstance();
 
@@ -17,7 +19,7 @@ unsigned int InstanceIDManager::getUniqueID()
     if (!availableIDs.empty())
     {
         unsigned int id = availableIDs.front();
-        availableIDs.pop();
+        availableIDs.pop_front();
         activeIDs.insert(id);
         return id;
     }
@@ -33,10 +35,15 @@ void InstanceIDManager::returnID(unsigned int id)
     if (activeIDs.find(id) != activeIDs.end()) 
     {
         activeIDs.erase(id);
-        availableIDs.push(id);
+        availableIDs.push_back(id);
     }
     else
     {
         __debugbreak(); //인스턴스 아이디 오류.
     }
+}
+
+void InstanceIDManager::SortReturnID()
+{
+    std::ranges::sort(availableIDs, [](unsigned int a, unsigned int b) {return a < b;});
 }

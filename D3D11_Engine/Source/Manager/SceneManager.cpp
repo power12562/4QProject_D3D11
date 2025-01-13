@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <ranges>
 #include <algorithm>
+#include <Manager/InstanceIDManager.h>
 
 SceneManager& sceneManager = SceneManager::GetInstance();
 
@@ -41,7 +42,9 @@ void SceneManager::LoadScene(const wchar_t* scenePath)
 
 	currScene->loadScenesMap.clear();
 	currScene->sceneName = std::filesystem::path(scenePath).filename();
+
 	gameObjectFactory.DeserializedScene(currScene.get(), scenePath);
+	gameObjectFactory.CompactObjectMemoryPool();
 }
 
 void SceneManager::AddScene(const wchar_t* scenePath)
@@ -330,6 +333,7 @@ void SceneManager::EraseObjects()
 		}
 		eraseComponentSet.clear();
 	}
+	instanceIDManager.SortReturnID();
 }
 
 void SceneManager::ChangeScene()
@@ -361,6 +365,7 @@ void SceneManager::ChangeScene()
 				}
 			}
 			currScene.reset();
+			gameObjectFactory.CompactObjectMemoryPool();
 			MeshRender::ReloadShaderAll(); //유효한 메시 객체들 셰이더 다시 생성
 		}
 		currScene = std::move(nextScene);

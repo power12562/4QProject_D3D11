@@ -22,12 +22,17 @@ void GameObjectFactory::GameObjectDeleter(GameObject* pObj)
 
 void GameObjectFactory::InitializeMemoryPool()
 {
-	gameObjectMemoryPool.Initialize(MaxGameObjectClassSize, MaxGameObjectClassSize * 1000);
+	gameObjectMemoryPool.Initialize(MaxGameObjectClassSize, MaxGameObjectClassSize * 500);
 }
 
 void GameObjectFactory::UninitializeMemoryPool()
 {
 	gameObjectMemoryPool.Uninitialize();
+}
+
+void GameObjectFactory::CompactObjectMemoryPool()
+{
+	gameObjectMemoryPool.CompactMemoryPage();
 }
 
 void* GameObjectFactory::GameObjectAlloc(size_t id)
