@@ -56,7 +56,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 	float ambientOcclusion = SMRAO.a;
 	
 	float3 F0 = lerp(0.04, albedo, metallic) * specular;	
-	float3 OutputColor = DefaultLit(albedo, metallic, roughness, F0, worldPosition, normal, view, ambientOcclusion);
+	float3 OutputColor = emisive + DefaultLit(albedo, metallic, roughness, F0, worldPosition, normal, view, ambientOcclusion);
 	T_Output[DTid.xy] = float4(LinearToGammaSpace(OutputColor), 1);
 	//T_Output[DTid.xy] = float4(worldPosition, 1);
 	//T_Output[DTid.xy] = float4(0, (depth - 0.98) * 50, 0, 1);

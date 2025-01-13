@@ -39,6 +39,7 @@ private:
 	VertexShader vertexShader;
 	class CubeObject* testObject;
 	class GameObject* testObject2;
+	class GameObject* testObject3;
 
 	// End Test
 	///////////////////////////////////////

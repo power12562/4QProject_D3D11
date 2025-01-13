@@ -92,11 +92,18 @@ void RendererTestApp::Update()
             static_cast<DefferdRenderer*>(renderer.get())->fullScreenVS.LoadShader(vertexShader.Get(), inputLayout.Get());
         }
     }
+    
 
-
+    ImGui::BeginGroup();
     ImGui::EditTransform(testObject);
     ImGui::Checkbox("isForward", &testObject->GetComponent<CubeMeshRender>().isForward);
+    ImGui::EndGroup();
+    ImGui::BeginGroup();
     ImGui::EditTransform(testObject2);
+    ImGui::EndGroup();
+    ImGui::BeginGroup();
+    ImGui::EditTransform(testObject3);
+    ImGui::EndGroup();
 
 
 	ImGui::BeginGroup();
@@ -145,7 +152,7 @@ void RendererTestApp::Update()
 void RendererTestApp::Render()
 {
 	renderer->SetProjection(Mathf::PI / 4, 0.1f, 10000.0f);
-	renderer->SetCameraMatrix(DirectX::XMMatrixInverse(nullptr, DirectX::XMMatrixLookAtLH(Vector3(-2, 2, -5), Vector3(0, 0, 0), Vector3::Up)));
+	renderer->SetCameraMatrix(DirectX::XMMatrixInverse(nullptr, DirectX::XMMatrixLookAtLH(Vector3(-0, 0, -5), Vector3(0, 0, 0), Vector3::Up)));
 
 
 	auto& testComponent = testObject->GetComponent<CubeMeshRender>();
@@ -213,9 +220,20 @@ void RendererTestApp::TestInit()
 	auto init = [this](MeshRender* mesh)
 		{
 			charList.emplace_back(reinterpret_cast<PBRMeshRender*>(mesh));
+			mesh->SetPixelShader(L"Resource/Shader/Effect.hlsl");
 		};
 	testObject2 = Utility::LoadFBX(L"Resource/char/char.fbx", init, false, SURFACE_TYPE::PBR);
+    testObject2->transform.position = Vector3(-2.0f, 0.0f, 0.0f);
 	testObject2->transform.scale = Vector3(0.01f, 0.01f, 0.01f);
+
+    testObject3 = Utility::LoadFBX(L"Resource/char/char.fbx", init, false, SURFACE_TYPE::PBR);
+    testObject3->transform.position = Vector3(2.0f, 0.0f, 0.0f);
+    testObject3->transform.scale = Vector3(0.01f, 0.01f, 0.01f);
+
+
+
+
+
     Texture albedo;
     textureManager.CreateSharingTexture(L"Resource/Texture/1735656899.jpg", &srv);
     albedo.LoadTexture(srv.Get());

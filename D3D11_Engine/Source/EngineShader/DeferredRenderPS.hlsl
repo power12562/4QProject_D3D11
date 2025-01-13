@@ -50,6 +50,6 @@ float4 main(VS_OUTPUT input) : SV_TARGET
 	float ambientOcclusion = SMRAO.a;
 	float3 F0 = lerp(0.04, albedo, metallic) * specular;
 
-	float3 OutputColor = DefaultLit(albedo, metallic, roughness, F0, worldPosition, normal, view, ambientOcclusion);	
+	float3 OutputColor = emisive + DefaultLit(albedo, metallic, roughness, F0, worldPosition, normal, view, ambientOcclusion);
 	return float4(LinearToGammaSpace(OutputColor), 1);
 }
