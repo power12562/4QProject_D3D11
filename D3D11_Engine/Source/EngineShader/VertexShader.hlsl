@@ -11,7 +11,8 @@ cbuffer MatrixPallete : register(b3)
 PS_INPUT main(VS_INPUT input)
 {
     PS_INPUT output;
-	Matrix matWorld;
+	Matrix matWorld = World;
+	Matrix WIT = WorldInverseTranspose;
 	Matrix VP = mul(View, Projection);
 	float3 normal;
 	float3 tangent;
@@ -21,23 +22,17 @@ PS_INPUT main(VS_INPUT input)
     matWorld += mul(input.BlendWeights.y, MatrixPalleteArray[input.BlendIndecses.y]);
     matWorld += mul(input.BlendWeights.z, MatrixPalleteArray[input.BlendIndecses.z]);
     matWorld += mul(input.BlendWeights.w, MatrixPalleteArray[input.BlendIndecses.w]);
-#else
-    matWorld = World;
-#endif   
-       
-#ifdef VERTEX_SKINNING
-    Matrix WIT;
+    
     WIT = mul(input.BlendWeights.x, boneWIT[input.BlendIndecses.x]);
     WIT += mul(input.BlendWeights.y, boneWIT[input.BlendIndecses.y]);
     WIT += mul(input.BlendWeights.z, boneWIT[input.BlendIndecses.z]);
     WIT += mul(input.BlendWeights.w, boneWIT[input.BlendIndecses.w]);
-    
-	normal = normalize(mul(input.Normal, (float3x3) WIT));
-	tangent = normalize(mul(input.Tangent, (float3x3) WIT));
-#else
-	normal = normalize(mul(input.Normal, (float3x3) WorldInverseTranspose));
-	tangent = normalize(mul(input.Tangent, (float3x3) WorldInverseTranspose));
 #endif  
+    
+    
+	normal = normalize(mul(input.Normal, (float3x3) WIT).xyz);
+	tangent = normalize(mul(input.Tangent, (float3x3) WIT).xyz);
+    
     
 	float4 worldPos = mul(input.Pos, matWorld);
 	output.World = (float3) worldPos;

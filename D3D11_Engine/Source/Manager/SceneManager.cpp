@@ -392,6 +392,7 @@ void SceneManager::ChangeScene()
 
 void SceneManager::AddObjectCurrScene(std::shared_ptr<GameObject>& obj)
 {
+	if (!currScene) return;
 	unsigned int id = obj->GetInstanceID();
 	objectFindMap[obj->Name].insert(id);
 	if (id >= currScene->objectList.size())

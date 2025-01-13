@@ -35,6 +35,5 @@ public:
 	std::vector<Vertex> vertices;	
 	std::vector<UINT> indices;	
 
-	ConstantBuffer transformBuffer;
 
 };

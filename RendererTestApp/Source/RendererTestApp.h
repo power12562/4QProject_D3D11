@@ -3,6 +3,9 @@
 #include <Manager/SceneManager.h>
 #include <Renderer.h>
 #include <DefferdRenderer.h>
+#include <StructuredBuffer.h>
+
+
 
 class RendererTestApp : public WinGameApp
 {
@@ -17,15 +20,12 @@ public:
 	void Uninitialize();
 
 private:
-	std::unique_ptr<IRenderer> renderer;
+	std::unique_ptr<DefferdRenderer> renderer;
 
 	ComPtr<struct IDXGISwapChain1> swapChain;
 	Texture backBuffer;
 
-	Texture BRDF_LUT;
-	Texture Diffuse_IBL;
-	Texture Specular_IBL;
-
+	std::vector<class PBRMeshRender*> charList;
 
 private:
 	void DXGIInit();
@@ -38,6 +38,7 @@ private:
 	void TestInit();
 	VertexShader vertexShader;
 	class CubeObject* testObject;
+	class GameObject* testObject2;
 
 	// End Test
 	///////////////////////////////////////

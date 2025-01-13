@@ -65,7 +65,7 @@ namespace Utility
 	{
 		if (FAILED(hr))
 		{
-			com_exception ex(hr);
+			com_exception ex(hr);	
 			__debugbreak(); //예외 발생
 			throw ex;
 		}

@@ -8,9 +8,3 @@ std::unique_ptr<IRenderer>& operator<<(std::unique_ptr<IRenderer>& renderer, con
 	renderer->AddDrawCommand(drawCommand);
 	return renderer;
 }
-
-std::unique_ptr<IRenderer>& operator<<(std::unique_ptr<IRenderer>& renderer, const Binadble& binadble)
-{
-	renderer->AddBinadble(binadble);
-	return renderer;
-}

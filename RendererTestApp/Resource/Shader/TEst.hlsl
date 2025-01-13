@@ -1,8 +1,15 @@
 
-#define FORWARD
-#define GetAlbedo float3(1.0f, 1.0f, 0.0f)
+#include "../EngineShader/Shared.hlsli"
+
+Texture2D albedoTexture : register(t0);
+
+//#define FORWARD
+#define GetAlbedo albedoTexture.Sample(DefaultSampler, input.Tex).rgb
+#define GetRoughness 0
+#define GetMetallic 0.5
 
 
 
 
 #include "../EngineShader/BasePassPS.hlsl"
+

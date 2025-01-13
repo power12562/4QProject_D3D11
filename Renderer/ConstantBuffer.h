@@ -15,33 +15,63 @@ public:
 
 public:
 	template<typename T>
-	void Init(uint32_t registrerSlot, _In_opt_ const T* data = nullptr);
-	template<typename T>
-	void Update(_In_opt_ T* data = nullptr);
+	void Set(const T& data);
 
-	void ChangeSlot(uint32_t newSlot) { registrerSlot = newSlot; }
+	template<typename T>
+	void Init();
+
+	template<typename T, std::enable_if_t<!std::is_pointer_v<T>, int> = 0>
+	void Init(const T& data);
+
+	template<typename T, std::enable_if_t<!std::is_pointer_v<T>, int> = 0>
+	void Update(const T& data);
+
 	operator ID3D11Buffer* () { return buffer; }
-	operator uint32_t() { return registrerSlot; }
+
 
 private:
-	RendererBuffer buffer;
-	const std::type_info* typeInfo;
-	uint32_t registrerSlot;
+	RendererBuffer buffer{};
+	const std::type_info* typeInfo{ nullptr };
+	uint8_t isInit : 1 { false };
+
+
+private:
+
 };
 
 template<typename T>
-inline void ConstantBuffer::Init(uint32_t registrerSlot, _In_opt_ const T* data)
+inline void ConstantBuffer::Set(const T& data)
 {
-	buffer.Init(D3D11_BUFFER_DESC{ .Usage = D3D11_USAGE_DEFAULT, .BindFlags = D3D11_BIND_CONSTANT_BUFFER }, sizeof(T), data);
-	typeInfo = &typeid(T);
-	this->registrerSlot = registrerSlot;
+	if (!isInit || *typeInfo != typeid(T))
+	{
+		Init(data);
+		isInit = true;
+	}
+	else
+	{
+		Update(data);
+	}
 }
 
 template<typename T>
-inline void ConstantBuffer::Update(T* data)
+inline void ConstantBuffer::Init()
+{
+	buffer.Init(D3D11_BUFFER_DESC{ .Usage = D3D11_USAGE_DEFAULT, .BindFlags = D3D11_BIND_CONSTANT_BUFFER }, sizeof(T));
+	typeInfo = &typeid(T);
+}
+
+template<typename T, std::enable_if_t<!std::is_pointer_v<T>, int>>
+inline void ConstantBuffer::Init(_In_opt_ const T& data)
+{
+	buffer.Init(D3D11_BUFFER_DESC{ .Usage = D3D11_USAGE_DEFAULT, .BindFlags = D3D11_BIND_CONSTANT_BUFFER }, sizeof(T), &data);
+	typeInfo = &typeid(T);
+}
+
+template<typename T, std::enable_if_t<!std::is_pointer_v<T>, int>>
+inline void ConstantBuffer::Update(const T& data)
 {
 	if (*typeInfo == typeid(T))
 	{
-		buffer.Update(data);
+		buffer.Update(&data);
 	}
 }

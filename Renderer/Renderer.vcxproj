@@ -126,6 +126,7 @@
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -139,24 +140,28 @@
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="DefferdRenderer.h" />
     <ClInclude Include="DrawCommand.h" />
+    <ClInclude Include="Light.h" />
     <ClInclude Include="MeshBuffer.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="RendererBuffer.h" />
     <ClInclude Include="RendererCore.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="ShaderResource.h" />
+    <ClInclude Include="StructuredBuffer.h" />
     <ClInclude Include="Texture.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ConstantBuffer.cpp" />
     <ClCompile Include="DefferdRenderer.cpp" />
     <ClCompile Include="DrawCommand.cpp" />
+    <ClCompile Include="Light.cpp" />
     <ClCompile Include="MeshBuffer.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="RendererBuffer.cpp" />
     <ClCompile Include="RendererCore.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="ShaderResource.cpp" />
+    <ClCompile Include="StructuredBuffer.cpp" />
     <ClCompile Include="Texture.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

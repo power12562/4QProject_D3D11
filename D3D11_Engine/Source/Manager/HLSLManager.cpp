@@ -117,6 +117,26 @@ void HLSLManager::CreateSharingShader(const wchar_t* path, ID3D11PixelShader** p
 	}
 }
 
+void HLSLManager::CreateSharingShader(const wchar_t* path, ID3D11ComputeShader** ppOutput)
+{
+	auto findIter = sharingShaderMap.find(path);
+	if (findIter != sharingShaderMap.end())
+	{
+		HRESULT hr = findIter->second->QueryInterface(__uuidof(ID3D11ComputeShader), reinterpret_cast<void**>(ppOutput));
+		if (FAILED(hr))
+		{
+			*ppOutput = nullptr;
+		}
+		return;
+	}
+	else
+	{
+		MakeShader(path, ppOutput);
+		(*ppOutput)->AddRef();
+		sharingShaderMap[path] = *ppOutput;
+	}
+}
+
 void HLSLManager::MakeShader(const wchar_t* path, ID3D11VertexShader** ppOut_VertexShader, ID3D11InputLayout** ppOut_InputLayout)
 {
 	ID3D10Blob* vertexShaderBuffer = nullptr;	// 정점 셰이더 코드가 저장될 버퍼.
@@ -174,13 +194,37 @@ void HLSLManager::MakeShader(const wchar_t* path, ID3D11VertexShader** ppOut_Ver
 
 void HLSLManager::MakeShader(const wchar_t* path, ID3D11PixelShader** ppOutput)
 {
-	ID3D10Blob* pixelShaderBuffer = nullptr;	// 픽셀 셰이더 코드가 저장될 버퍼.
-	ID3D11PixelShader* pixelShader = nullptr;	// 픽셀 셰이더가 저장될 곳.
+	ID3D10Blob* computeShaderBuffer = nullptr;	// 픽셀 셰이더 코드가 저장될 버퍼.
+	ID3D11PixelShader* computeShader = nullptr;	// 픽셀 셰이더가 저장될 곳.
 	EXTENSION_TYPE type = ChackShaderFile(path);
 	switch (type)
 	{
 	case HLSLManager::EXTENSION_TYPE::hlsl:
-		CheckHRESULT(CompileShaderFromFile(path, "main", PS_MODEL, &pixelShaderBuffer));
+		CheckHRESULT(CompileShaderFromFile(path, "main", PS_MODEL, &computeShaderBuffer));
+		break;
+	case HLSLManager::EXTENSION_TYPE::cso:
+		CheckHRESULT(LoadShadeFormFile(path, &computeShaderBuffer));
+		break;
+	case HLSLManager::EXTENSION_TYPE::null:
+		__debugbreak(); //not shader file
+		*ppOutput = nullptr;
+	}
+	CheckHRESULT(d3dRenderer.GetDevice()->CreatePixelShader(computeShaderBuffer->GetBufferPointer(), computeShaderBuffer->GetBufferSize(), NULL, &computeShader));
+	D3D_SET_OBJECT_NAME(computeShader, path);
+
+	*ppOutput = computeShader;
+	computeShaderBuffer->Release();
+}
+
+void HLSLManager::MakeShader(const wchar_t* path, ID3D11ComputeShader** ppOutput)
+{
+	ID3D10Blob* pixelShaderBuffer = nullptr;	// 픽셀 셰이더 코드가 저장될 버퍼.
+	ID3D11ComputeShader* pixelShader = nullptr;	// 픽셀 셰이더가 저장될 곳.
+	EXTENSION_TYPE type = ChackShaderFile(path);
+	switch (type)
+	{
+	case HLSLManager::EXTENSION_TYPE::hlsl:
+		CheckHRESULT(CompileShaderFromFile(path, "main", CS_MODEL, &pixelShaderBuffer));
 		break;
 	case HLSLManager::EXTENSION_TYPE::cso:
 		CheckHRESULT(LoadShadeFormFile(path, &pixelShaderBuffer));
@@ -189,9 +233,45 @@ void HLSLManager::MakeShader(const wchar_t* path, ID3D11PixelShader** ppOutput)
 		__debugbreak(); //not shader file
 		*ppOutput = nullptr;
 	}
-	CheckHRESULT(d3dRenderer.GetDevice()->CreatePixelShader(pixelShaderBuffer->GetBufferPointer(), pixelShaderBuffer->GetBufferSize(), NULL, &pixelShader));
+	CheckHRESULT(d3dRenderer.GetDevice()->CreateComputeShader(pixelShaderBuffer->GetBufferPointer(), pixelShaderBuffer->GetBufferSize(), NULL, &pixelShader));
 	D3D_SET_OBJECT_NAME(pixelShader, path);
 
 	*ppOutput = pixelShader;
 	pixelShaderBuffer->Release();
+}
+
+void ShaderUtility::CopyShader(std::filesystem::path dest, std::filesystem::path sourc)
+{// EngineShader 폴더 내 모든 파일을 대상으로 복사
+	if (!std::filesystem::exists(sourc))
+	{
+		__debugbreak(); //엔진 쉐이더 폴더가 없습니다.
+	}
+	if (!std::filesystem::exists(dest))
+	{
+		__debugbreak(); //엔진 쉐이더 폴더가 없습니다.
+	}
+
+	for (const auto& entry : std::filesystem::directory_iterator(sourc))
+	{
+		if (entry.is_regular_file())
+		{
+			std::filesystem::path destFile = dest / entry.path().filename();
+
+			// destFile이 없거나 수정 시간이 현재 파일보다 과거면 복사
+			if (!std::filesystem::exists(destFile) ||
+				std::filesystem::last_write_time(destFile) < std::filesystem::last_write_time(entry.path()))
+			{
+				std::filesystem::copy(entry.path(), destFile, std::filesystem::copy_options::overwrite_existing);
+			}
+
+		}
+	}
+}
+
+void ShaderUtility::CopyShader(std::filesystem::path dest)
+{
+	std::filesystem::path engineShaderPath = __FILEW__;
+	engineShaderPath = engineShaderPath.parent_path().parent_path() / L"EngineShader";
+
+	CopyShader(dest, engineShaderPath);
 }
