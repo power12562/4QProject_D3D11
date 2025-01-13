@@ -1,7 +1,8 @@
 #include "CameraMoveHelper.h"
 #include <Core/TimeSystem.h>
 #include <Component/Camera/Camera.h>
-#include <Math\Mathf.h>
+#include <Math/Mathf.h>
+#include <Core/GameInputSystem.h>
 
 CameraMoveHelper::CameraMoveHelper()
 {
@@ -51,54 +52,54 @@ void CameraMoveHelper::LateUpdate()
 
 }
 
-void CameraMoveHelper::OnInputProcess(DXTKInputSystem::InputSystem& Input)
+void CameraMoveHelper::OnInputProcess(InputManager::Input& Input)
 {
 	if (Input.IsKey(MouseKeys::rightButton))
 	{
 		Vector3 forward = transform.Forward;
 		Vector3 right = transform.Right;
 
-		if (Input.IsKeyDown(Keyboard::Keys::R))
+		if (gameInputSystem.IsKey(KeyboardKeys::R))
 		{
 			Reset();
 		}
 
-		if (Input.IsKey(Keyboard::Keys::W))
+		if (gameInputSystem.IsKey(KeyboardKeys::W))
 		{
 			inputVector += forward;
 		}
-		else if (Input.IsKey(Keyboard::Keys::S))
+		else if (gameInputSystem.IsKey(KeyboardKeys::S))
 		{
 			inputVector += -forward;
 		}
 
-		if (Input.IsKey(Keyboard::Keys::A))
+		if (gameInputSystem.IsKey(KeyboardKeys::A))
 		{
 			inputVector += -right;
 		}
-		else if (Input.IsKey(Keyboard::Keys::D))
+		else if (gameInputSystem.IsKey(KeyboardKeys::D))
 		{
 			inputVector += right;
 		}
 
-		if (Input.IsKey(Keyboard::Keys::E))
+		if (gameInputSystem.IsKey(KeyboardKeys::Q))
 		{
-			inputVector += -Vector3::Up;
+			inputVector += -transform.Up;
 		}
-		else if (Input.IsKey(Keyboard::Keys::Q))
+		else if (gameInputSystem.IsKey(KeyboardKeys::E))
 		{
-			inputVector += Vector3::Up;
+			inputVector += transform.Up;
 		}
 
-		if (Input.IsKeyDown(Keyboard::Keys::F1))
+		if (Input.IsKeyDown(KeyboardKeys::F1))
 		{
 			moveSpeed = 10;
 		}
-		else if (Input.IsKeyDown(Keyboard::Keys::F2))
+		else if (Input.IsKeyDown(KeyboardKeys::F2))
 		{
 			moveSpeed = 100;
 		}
-		else if (Input.IsKeyDown(Keyboard::Keys::F3))
+		else if (Input.IsKeyDown(KeyboardKeys::F3))
 		{
 			moveSpeed = 1000;
 		}

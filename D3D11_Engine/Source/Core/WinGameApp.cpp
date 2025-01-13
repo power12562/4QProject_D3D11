@@ -136,7 +136,7 @@ void WinGameApp::WinClientResize(HWND hwnd, int width, int height)
 {
 	SIZE size{ width , height };
 	RECT clientRect = { 0, 0, width, height };
-	AdjustWindowRect(&clientRect, d3dRenderer.swapChainWindowed ? RunApp->windowStyleEX : WS_POPUP, FALSE);
+	AdjustWindowRect(&clientRect, d3dRenderer.IsSwapChainWindowed() ? RunApp->windowStyleEX : WS_POPUP, FALSE);
 	SIZE windowSize{ clientRect.right - clientRect.left , clientRect.bottom - clientRect.top };
 	SIZE windowClientOffset{ windowSize.cx - size.cx, windowSize.cy - size.cy };
 	ClampScreenMaxSize(windowSize);

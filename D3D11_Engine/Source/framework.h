@@ -2,7 +2,6 @@
 //frameworks headers
 
 //Core
-#include <Core/DXTKInputSystem.h>
 #include <Core/TimeSystem.h>
 
 //D3DCore
@@ -14,6 +13,7 @@
 #include <Manager/SceneManager.h>
 #include <Manager/TextureManager.h>
 #include <Manager/GameObjectFactory.h>
+#include <Manager/InputManager.h>
 
 //gameObjects
 #include <GameObject/Base/CameraObject.h>

@@ -269,7 +269,6 @@ void SceneManager::FixedUpdateScene()
 
 void SceneManager::UpdateScene()
 {
-	DXTKinputSystem.Update();
 	currScene->Update();
 }
 

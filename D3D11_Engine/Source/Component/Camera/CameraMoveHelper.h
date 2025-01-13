@@ -1,6 +1,6 @@
 #pragma once
 #include <Component\Base\Component.h>
-#include <Core/DXTKInputSystem.h>
+#include <Manager/InputManager.h>	
 
 class CameraMoveHelper : public Component, public InputProcesser 
 {
@@ -16,7 +16,7 @@ protected:
 	virtual void LateUpdate()	override;
 
 public:
-	virtual void OnInputProcess(DXTKInputSystem::InputSystem& Input) override;
+	virtual void OnInputProcess(InputManager::Input& input) override;
 
 public:
 	void SetDefaultTransform(Transform& defaultTransform);
