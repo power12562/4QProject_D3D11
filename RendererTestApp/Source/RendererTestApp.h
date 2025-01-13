@@ -7,6 +7,14 @@
 
 
 
+// Å×½ºÆ®!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#include <../ImguiNodeEditor/imgui_node_editor.h>
+namespace ImGui
+{
+	namespace Node = ax::NodeEditor;
+}
+
+
 class RendererTestApp : public WinGameApp
 {
 public:
@@ -40,6 +48,10 @@ private:
 	class CubeObject* testObject;
 	class GameObject* testObject2;
 	class GameObject* testObject3;
+
+
+
+	ImGui::Node::EditorContext* m_Context = nullptr;
 
 	// End Test
 	///////////////////////////////////////
