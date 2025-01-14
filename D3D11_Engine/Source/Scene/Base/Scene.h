@@ -47,6 +47,7 @@ private:
 private:
 	//Update
 	void FixedUpdate();
+	void PhysicsUpdate(float fixed_delta_time);
 	void Update();
 	void LateUpdate();
 

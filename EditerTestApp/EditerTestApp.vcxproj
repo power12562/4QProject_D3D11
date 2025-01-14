@@ -156,11 +156,13 @@ xcopy /Y /I /E "$(SolutionDir)\D3D11_Engine\Source\EngineShader\*.*" "$(ProjectD
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="PhysicsTestController.cpp" />
     <ClCompile Include="Source\MainEntry.cpp" />
     <ClCompile Include="Source\EditerTestApp.cpp" />
     <ClCompile Include="Source\EditerTestScene.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="PhysicsTestController.h" />
     <ClInclude Include="Source\EditerTestApp.h" />
     <ClInclude Include="Source\EditerTestScene.h" />
   </ItemGroup>

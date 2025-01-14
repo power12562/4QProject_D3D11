@@ -15,6 +15,8 @@
 #include <Utility/Console.h>
 #include <Utility/ExceptionUtility.h>
 
+#include <Physics/PhysicsManager.h>
+
 LRESULT CALLBACK DefaultWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 void WinGameApp::Initialize(HINSTANCE hinstance)
@@ -36,6 +38,7 @@ void WinGameApp::Initialize(HINSTANCE hinstance)
 	WinInit(hinstance);
 	d3dRenderer.Init();
 	InitImGUI();
+	PhysicsManager::GetInstance();
 }
 
 void WinGameApp::Run()

@@ -164,6 +164,9 @@ const Vector3& Transform::SetScale(const Vector3& value)
 		_scale = value;
 	}
 	PushUpdateList();
+
+	PhysicsManager::OnChangeScale(this);
+
 	return _scale;
 }
 
@@ -189,6 +192,9 @@ const Vector3& Transform::SetLocalScale(const Vector3& value)
 		_localScale = value;
 	}
 	PushUpdateList();
+
+	PhysicsManager::OnChangeScale(this);
+
 	return _localScale;
 }
 

@@ -38,10 +38,7 @@ public:
 
 public:
 	template<typename T>
-	void SetShaderResource(_In_ const T& resource)
-	{
-		static_assert(0);
-	}
+	void SetShaderResource(_In_ const T& resource) = delete;
 
 	const MeshData& GetMeshData() const { return meshData; }
 	const MaterialData& GetMaterialData() const { return materialData; }

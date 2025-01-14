@@ -19,6 +19,10 @@
 #include <imgui_internal.h>
 #include <D3DCore/D3DConstBuffer.h>
 
+#include <Physics/PhysicsManager.h>
+#include <Physics/PhysicsScene/PhysicsScene.h>
+#include <Physics/PhysicsActor/PhysicsActor.h>
+
 
 Scene::Scene()
 {
@@ -42,6 +46,33 @@ void Scene::FixedUpdate()
 	{
 		if (obj && obj->Active)
 			obj->FixedUpdate();
+	}
+}
+
+void Scene::PhysicsUpdate(float fixed_delta_time)
+{
+	for (auto& obj : objectList)
+	{
+		if (obj && obj->Active)
+		{
+			if (PhysicsActor* actor = obj->GetPhysicsActor(); actor != nullptr)
+			{
+				actor->PropagateTransform(&obj->transform);
+			}
+		}
+	}
+
+	PhysicsManager::GetInstance().GetPhysicsScene()->Update(fixed_delta_time);
+	
+	for (auto& obj : objectList)
+	{
+		if (obj && obj->Active)
+		{
+			if (PhysicsActor* actor = obj->GetPhysicsActor(); actor != nullptr)
+			{
+				actor->UpdateTransform(&obj->transform);
+			}
+		}
 	}
 }
 

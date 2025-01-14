@@ -15,6 +15,19 @@
 #include <Manager/TextureManager.h>
 #include <Manager/GameObjectFactory.h>
 
+//PhysX
+#include <Physics/PhysXFramework.h>
+#include <Physics/enum/ForceMode.h>
+#include <Physics/enum/CollisionDetectionMode.h>
+#include <Physics/Struct/CollisionInfo.h>
+#include <Physics/Struct/RaycastResult.h>
+#include <Physics/PhysicsManager.h>
+#include <Physics/PhysicsLayerManager/PhysicsLayerManager.h>
+#include <Physics/PhysicsMaterial/PhysicsMaterial.h>
+#include <Physics/PhysicsActor/PhysicsActor.h>
+#include <Physics/PhysicsScene/PhysicsScene.h>
+
+
 //gameObjects
 #include <GameObject/Base/CameraObject.h>
 #include <GameObject/Bone/BoneObject.h>
@@ -35,6 +48,13 @@
 #include <Component/Render/PBRMeshRender.h>
 #include <Component/Render/SkyBoxRender.h>
 #include <Component/Render/CubeMeshRender.h>
+
+#include <Component/Rigidbody/Rigidbody.h>
+#include <Component/Collider/BoxCollider.h>
+#include <Component/Collider/CapsuleCollider.h>
+#include <Component/Collider/SphereCollider.h>
+
+
 
 //Lights
 #include <Light/PBRDirectionalLight.h>

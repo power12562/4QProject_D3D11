@@ -153,11 +153,14 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Physics\PhysicsLayerManager\PhysicsLayerManager.h" />
+    <ClInclude Include="Source\Physics\PhysicsScene\PhysicsSceneEventCallback.h" />
     <ClInclude Include="Source\Component\Rigidbody\Rigidbody.h" />
     <ClInclude Include="Source\Physics\enum\CollisionDetectionMode.h" />
     <ClInclude Include="Source\Physics\enum\ForceMode.h" />
     <ClInclude Include="Source\Physics\PhysicsActor\PhysicsActor.h" />
     <ClInclude Include="Source\Physics\PhysicsMaterial\PhysicsMaterial.h" />
+    <ClInclude Include="Source\Physics\PhysicsMaterial\PhysicsMaterialCombineMode.h" />
     <ClInclude Include="Source\Physics\PhysicsScene\PhysicsScene.h" />
     <ClInclude Include="Source\Physics\PhysicsManager.h" />
     <ClInclude Include="Source\Component\Collider\BoxCollider.h" />
@@ -207,6 +210,7 @@
     <ClInclude Include="Source\D3DCore\D3DRenderer.h" />
     <ClInclude Include="Source\Core\DXTKInputSystem.h" />
     <ClInclude Include="Source\Manager\HLSLManager.h" />
+    <ClInclude Include="Source\Physics\PhysXFramework.h" />
     <ClInclude Include="Source\Physics\Struct\CollisionInfo.h" />
     <ClInclude Include="Source\Physics\Struct\RaycastResult.h" />
     <ClInclude Include="Source\Utility\ExceptionUtility.h" />
@@ -236,8 +240,11 @@
     <ClInclude Include="Source\Component\Collider\SphereCollider.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Physics\PhysicsLayerManager\PhysicsLayerManager.cpp" />
+    <ClCompile Include="Source\Physics\PhysicsScene\PhysicsSceneEventCallback.cpp" />
     <ClCompile Include="Source\Component\Rigidbody\Rigidbody.cpp" />
     <ClCompile Include="Source\Physics\PhysicsActor\PhysicsActor.cpp" />
+    <ClCompile Include="Source\Physics\PhysicsMaterial\PhysicsMaterial.cpp" />
     <ClCompile Include="Source\Physics\PhysicsScene\PhysicsScene.cpp" />
     <ClCompile Include="Source\Physics\PhysicsManager.cpp" />
     <ClCompile Include="Source\Component\Collider\BoxCollider.cpp" />
