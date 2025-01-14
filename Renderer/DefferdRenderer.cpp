@@ -141,7 +141,32 @@ DefferdRenderer::~DefferdRenderer()
 
 void DefferdRenderer::AddDrawCommand(_In_ const MeshDrawCommand& command)
 {
-	allDrawCommandsOrigin.emplace_back(command);
+	int vsShaderResourcesStart = drawCommandBindable.size();
+	{
+		std::ranges::copy(command.materialData.shaderResources, std::back_inserter(drawCommandBindable));
+	}
+	int vsShaderResourcesEnd = drawCommandBindable.size();
+	int psShaderResourcesStart = vsShaderResourcesEnd;
+	{
+		std::ranges::copy(command.meshData.shaderResources, std::back_inserter(drawCommandBindable));
+	}
+	int psShaderResourcesEnd = drawCommandBindable.size();
+
+	allDrawCommandsOrigin.emplace_back(MeshDrawCommand2
+									   {
+										   command.meshData.vertexBuffer,
+										   command.meshData.indexBuffer,
+										   command.meshData.indexCounts,
+										   command.meshData.vertexStride,
+										   command.meshData.vertexShader,
+										   vsShaderResourcesStart,
+										   vsShaderResourcesEnd,
+										   command.meshData.boundingBox,
+										   command.materialData.pixelShader,
+										   psShaderResourcesStart,
+										   psShaderResourcesEnd
+									   });
+	
 }
 
 void DefferdRenderer::AddBinadble(std::string_view key, const Binadble& bindable)
@@ -273,16 +298,16 @@ void DefferdRenderer::Render()
 
 	auto culledDrawCommands = 
 		allDrawCommandsOrigin 
-		| std::views::filter([frustum](const MeshDrawCommand& item) { return frustum.Intersects(item.meshData.boundingBox); })
-		| std::views::transform([](MeshDrawCommand& item) -> MeshDrawCommand* { return &item; });
+		| std::views::filter([frustum](const MeshDrawCommand2& item) { return frustum.Intersects(item.boundingBox); })
+		| std::views::transform([](MeshDrawCommand2& item) -> MeshDrawCommand2* { return &item; });
 
 	std::ranges::copy(culledDrawCommands, std::back_inserter(allDrawCommands));
-	std::ranges::copy(culledDrawCommands | std::views::filter([](MeshDrawCommand* item) { return item->materialData.pixelShader.isForward; }), std::back_inserter(forwardDrawCommands));
-	std::ranges::copy(culledDrawCommands | std::views::filter([](MeshDrawCommand* item) { return !item->materialData.pixelShader.isForward; }), std::back_inserter(deferredDrawCommands));
+	std::ranges::copy(culledDrawCommands | std::views::filter([](MeshDrawCommand2* item) { return item->pixelShader.isForward; }), std::back_inserter(forwardDrawCommands));
+	std::ranges::copy(culledDrawCommands | std::views::filter([](MeshDrawCommand2* item) { return !item->pixelShader.isForward; }), std::back_inserter(deferredDrawCommands));
 
 	auto boundingBoxs =
 		allDrawCommands
-		| std::views::transform([](MeshDrawCommand* item) { return item->meshData.boundingBox; })
+		| std::views::transform([](MeshDrawCommand2* item) { return item->boundingBox; })
 		| std::views::filter([frustum](const BoundingOrientedBox& item) { return frustum.Intersects(item); });
 
 	auto visibilityBox = std::accumulate(boundingBoxs.begin(), boundingBoxs.end(), BoundingBox{},
@@ -484,8 +509,10 @@ void DefferdRenderer::Render()
 	allDrawCommands.clear();
 	deferredDrawCommands.clear();
 	forwardDrawCommands.clear();
+	alphaDrawCommands.clear();
 	allDrawCommandsOrigin.clear();
 
+	drawCommandBindable.clear();
 	bindables.clear();
 }
 
@@ -503,39 +530,34 @@ void DefferdRenderer::SetProjection(float fov, float nearZ, float farZ)
 	cameraProjection = DirectX::XMMatrixPerspectiveFovLH(fov, (float)width / (float)height, nearZ, farZ);
 }
 
-void DefferdRenderer::ProcessDrawCommands(std::vector<MeshDrawCommand*>& drawCommands, bool isWithMaterial)
+void DefferdRenderer::ProcessDrawCommands(std::vector<MeshDrawCommand2*>& drawCommands, bool isWithMaterial)
 {
 	for (auto& command : drawCommands)
 	{
-		auto& mesh = command->meshData;
-		auto& material = command->materialData;
-
-		ID3D11Buffer* vertexBuffer[1] = { mesh.vertexBuffer };
-		UINT stride = mesh.vertexStride;
+		ID3D11Buffer* vertexBuffer[1] = { command->vertexBuffer };
+		UINT stride = command->vertexStride;
 		UINT offset = 0;
 
-		immediateContext->IASetVertexBuffers(0, std::size(vertexBuffer), vertexBuffer, &mesh.vertexStride, &offset);
-		immediateContext->IASetIndexBuffer(mesh.indexBuffer, DXGI_FORMAT_R32_UINT, 0);
-		immediateContext->IASetInputLayout(mesh.vertexShader);
+		immediateContext->IASetVertexBuffers(0, std::size(vertexBuffer), vertexBuffer, &command->vertexStride, &offset);
+		immediateContext->IASetIndexBuffer(command->indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		immediateContext->IASetInputLayout(command->vertexShader);
 		immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		for (auto& resource : mesh.shaderResources)
+		for (size_t i = command->vsShaderResourcesStart; i < command->vsShaderResourcesEnd; i++)
 		{
-			BindBinadble(resource);
+			BindBinadble(drawCommandBindable[i]);
 		}
 
-		immediateContext->VSSetShader(mesh.vertexShader, nullptr, 0);
+		immediateContext->VSSetShader(command->vertexShader, nullptr, 0);
 		if (isWithMaterial)
 		{
-			immediateContext->PSSetShader(material.pixelShader, nullptr, 0);
-
-			for (auto& resource : material.shaderResources)
+			immediateContext->PSSetShader(command->pixelShader, nullptr, 0);
+			for (size_t i = command->psShaderResourcesStart; i < command->psShaderResourcesEnd; i++)
 			{
-				BindBinadble(resource);
+				BindBinadble(drawCommandBindable[i]);
 			}
 		}
 
-
-		immediateContext->DrawIndexed(mesh.indexCounts, 0, 0);
+		immediateContext->DrawIndexed(command->indexCounts, 0, 0);
 	}
 }
 
