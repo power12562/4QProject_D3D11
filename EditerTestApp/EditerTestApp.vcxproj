@@ -126,9 +126,12 @@
       <AdditionalDependencies>D3D11_Engine.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>rd /s /q "$(ProjectDir)Resource\EngineShader\"
-xcopy /Y /I /E "$(SolutionDir)\D3D11_Engine\Source\EngineShader\*.*" "$(ProjectDir)Resource\EngineShader\"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>"$(SolutionDir)$(Platform)\$(Configuration)\CopyShader.exe" $(ProjectDir)Resource\EngineShader\ $(SolutionDir)\D3D11_Engine\Source\EngineShader\ </Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -151,9 +154,12 @@ xcopy /Y /I /E "$(SolutionDir)\D3D11_Engine\Source\EngineShader\*.*" "$(ProjectD
       <AdditionalDependencies>D3D11_Engine.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>rd /s /q "$(ProjectDir)Resource\EngineShader\"
-xcopy /Y /I /E "$(SolutionDir)\D3D11_Engine\Source\EngineShader\*.*" "$(ProjectDir)Resource\EngineShader\"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>"$(SolutionDir)$(Platform)\$(Configuration)\CopyShader.exe" $(ProjectDir)Resource\EngineShader\ $(SolutionDir)\D3D11_Engine\Source\EngineShader\ </Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\MainEntry.cpp" />
