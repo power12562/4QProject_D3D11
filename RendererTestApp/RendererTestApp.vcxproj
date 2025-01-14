@@ -126,9 +126,12 @@
       <AdditionalDependencies>D3D11_Engine.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>rd /s /q "$(ProjectDir)Resource\EngineShader\"
-xcopy /Y /I /E "$(SolutionDir)\D3D11_Engine\Source\EngineShader\*.*" "$(ProjectDir)Resource\EngineShader\"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>"$(SolutionDir)$(Platform)\$(Configuration)\CopyShader.exe" $(ProjectDir)Resource\EngineShader\ $(SolutionDir)\D3D11_Engine\Source\EngineShader\ </Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -151,9 +154,12 @@ xcopy /Y /I /E "$(SolutionDir)\D3D11_Engine\Source\EngineShader\*.*" "$(ProjectD
       <AdditionalDependencies>D3D11_Engine.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>rd /s /q "$(ProjectDir)Resource\EngineShader\"
-xcopy /Y /I /E "$(SolutionDir)\D3D11_Engine\Source\EngineShader\*.*" "$(ProjectDir)Resource\EngineShader\"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>"$(SolutionDir)$(Platform)\$(Configuration)\CopyShader.exe" $(ProjectDir)Resource\EngineShader\ $(SolutionDir)\D3D11_Engine\Source\EngineShader\ </Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\MainEntry.cpp" />
@@ -165,11 +171,22 @@ xcopy /Y /I /E "$(SolutionDir)\D3D11_Engine\Source\EngineShader\*.*" "$(ProjectD
     <ClInclude Include="Source\RendererTestScene.h" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CopyShader\CopyShader.vcxproj">
+      <Project>{b3a0df58-9f3a-42f6-a929-b2128adfa8fd}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\Renderer\Renderer.vcxproj">
       <Project>{346bd41a-c6de-4bd7-a7f4-d39c12318347}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Resource\Shader\Effect.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
     <FxCompile Include="Resource\Shader\TEst.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>

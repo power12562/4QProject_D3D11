@@ -1,74 +1,27 @@
 #include "DXTKInputSystem.h"
 #include <Utility\D3D11Utility.h>
-
+#include <Core/GameInputSystem.h>
 
 using namespace DirectX;
 using namespace DirectX::SimpleMath;
 
 DXTKInputSystem& DXTKinputSystem = DXTKInputSystem::GetInstance();
 
-InputProcesser::InputProcesser()
-{
-	DXTKinputSystem.inputProcessersList.push_back(this);
-}
-
-InputProcesser::~InputProcesser()
-{
-   auto& inputList = DXTKinputSystem.inputProcessersList;
-   if(!inputList.empty())
-	inputList.erase(std::find(inputList.begin(), inputList.end(), this));
-}
-
-DXTKInputSystem::DXTKInputSystem()
-{
-	
-}
-
 void DXTKInputSystem::Update()
 {
-	Input.mouseState = Input.mouse->GetState(); 
-	Input.mouseStateTracker.Update(Input.mouseState);
-
-	Input.keyboardState = Input.keyboard->GetState();
-	Input.keyboardStateTracker.Update(Input.keyboardState);
-
-	if (!inputProcessersList.empty())
-	{
-		int count = (int)inputProcessersList.size();
-		for (int i = 0; i < count; ++i)
-		{
-			inputProcessersList[i]->OnInputProcess(Input);
-		}
-	}
+	mouseState = mouse->GetState(); 
+	mouseStateTracker.Update(mouseState);
 }
 
 void DXTKInputSystem::Initialize(HWND hWnd)
 {
-	Input.hWnd = hWnd;
-	Input.keyboard = std::make_unique<Keyboard>();
-	Input.mouse = std::make_unique<Mouse>();
-	Input.mouse->SetWindow(hWnd);
-	Input.mouse->SetMode(Mouse::MODE_ABSOLUTE);
+	hWnd = hWnd;
+	mouse = std::make_unique<Mouse>();
+	mouse->SetWindow(hWnd);
+	mouse->SetMode(Mouse::MODE_ABSOLUTE);
 }
 
-
-
-bool DXTKInputSystem::InputSystem::IsKeyDown(KeyboardKeys key) const
-{
-	return keyboardStateTracker.IsKeyPressed(key);
-}
-
-bool DXTKInputSystem::InputSystem::IsKey(KeyboardKeys key) const
-{
-	return keyboardState.IsKeyDown(key);
-}
-
-bool DXTKInputSystem::InputSystem::IsKeyUp(KeyboardKeys key) const
-{
-	return keyboardStateTracker.IsKeyReleased(key);
-}
-
-bool DXTKInputSystem::InputSystem::IsKeyDown(MouseKeys key) const
+bool DXTKInputSystem::IsKeyDown(MouseKeys key) const
 {
 	switch (key)
 	{
@@ -87,7 +40,7 @@ bool DXTKInputSystem::InputSystem::IsKeyDown(MouseKeys key) const
 	}
 }
 
-bool  DXTKInputSystem::InputSystem::IsKey(MouseKeys key) const
+bool  DXTKInputSystem::IsKey(MouseKeys key) const
 {
 	switch (key)
 	{
@@ -106,7 +59,7 @@ bool  DXTKInputSystem::InputSystem::IsKey(MouseKeys key) const
 	}
 }
 
-bool  DXTKInputSystem::InputSystem::IsKeyUp(MouseKeys key) const
+bool  DXTKInputSystem::IsKeyUp(MouseKeys key) const
 {
 	switch (key)
 	{
@@ -125,12 +78,12 @@ bool  DXTKInputSystem::InputSystem::IsKeyUp(MouseKeys key) const
 	}
 }
 
-void DXTKInputSystem::InputSystem::SetMouseMode(DirectX::Mouse::Mode mode)
+void DXTKInputSystem::SetMouseMode(DirectX::Mouse::Mode mode)
 {
 	mouse->SetMode(mode);
 }
 
-const DirectX::Mouse::State& DXTKInputSystem::InputSystem::GetMouseState()
+const DirectX::Mouse::State& DXTKInputSystem::GetMouseState()
 {
 	return mouseState;
 }

@@ -73,9 +73,7 @@ private:
 	bool WinInit(HINSTANCE hInstance);
 
 protected:
-	virtual void InitImGUI();
-
-private:
+	void InitImGUI();
 	void UninitImGUI();
 
 private:

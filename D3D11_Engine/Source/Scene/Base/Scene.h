@@ -5,9 +5,9 @@
 #include <unordered_map>
 #include <map>
 #include <Utility/AssimpUtility.h>
-#include <directxtk/Keyboard.h>
 #include <functional>
 #include <queue>
+#include <Manager/InputManager.h>
 
 class GameObject;
 class Scene
@@ -63,11 +63,11 @@ public:
 		int mode = 1;			//ImGuizmo::WORLD
 		struct 
 		{
-			DirectX::Keyboard::Keys TRANSLATE = DirectX::Keyboard::Keys::W;
-			DirectX::Keyboard::Keys ROTATE = DirectX::Keyboard::Keys::E;
-			DirectX::Keyboard::Keys SCALE = DirectX::Keyboard::Keys::R;
-			DirectX::Keyboard::Keys UNIVERSAL = DirectX::Keyboard::Keys::T;
-			DirectX::Keyboard::Keys MODE = DirectX::Keyboard::Keys::X;
+			KeyboardKeys TRANSLATE	= KeyboardKeys::W;
+			KeyboardKeys ROTATE		= KeyboardKeys::E;
+			KeyboardKeys SCALE		= KeyboardKeys::R;
+			KeyboardKeys UNIVERSAL	= KeyboardKeys::T;
+			KeyboardKeys MODE		= KeyboardKeys::X;
 		}KeySetting;
 	}
 	GuizmoSetting;

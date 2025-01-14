@@ -13,7 +13,6 @@
 #include <D3DCore/D3D11_GameApp.h>
 #include <Math/Mathf.h>
 #include <GameObject/Base/CameraObject.h>
-#include <Core/DXTKInputSystem.h>
 #include <algorithm>
 #include <ImGuizmo/ImGuizmo.h>
 #include <imgui_internal.h>
@@ -154,7 +153,7 @@ void Scene::ImGuizmoDraw()
 			const Matrix& cameraVM = mainCamera->GetVM();
 			const Matrix& cameraPM = mainCamera->GetPM();
 
-			DXTKInputSystem::InputSystem& Input = DXTKinputSystem.Input;
+			InputManager::Input& Input = inputManager.input;
 			bool isNotRightClickHELD = !Input.IsKey(MouseKeys::rightButton);
 			bool isHoveredWindow = imGuiContext.HoveredWindow != nullptr;
 			if (Input.IsKeyDown(MouseKeys::leftButton))
@@ -189,7 +188,7 @@ void Scene::ImGuizmoDraw()
 							if (obj->Active && obj->GetOBBToWorld().Intersects(ray.position, ray.direction, Dist))
 							{
 								if (obj->transform.RootParent)
-									GuizmoSetting.SelectObject = Input.IsKey(KeyboardKeys::LeftControl) ? obj : &obj->transform.RootParent->gameObject;
+									GuizmoSetting.SelectObject = Input.IsKey(KeyboardKeys::LeftCtrl) ? obj : &obj->transform.RootParent->gameObject;
 								else
 									GuizmoSetting.SelectObject = obj;
 								break;
@@ -223,14 +222,14 @@ void Scene::ImGuizmoDraw()
 				}
 				
 				static float dummyMatrix[16]{};
-				if (Input.IsKeyDown(Keyboard::Keys::Escape))
+				if (Input.IsKeyDown(KeyboardKeys::Escape))
 				{
 					ImGuizmo::Enable(false);
 					ImGuizmo::Enable(true);
 					ImGuizmo::Manipulate(dummyMatrix, dummyMatrix, ImGuizmo::OPERATION(0), ImGuizmo::WORLD, dummyMatrix);
 					GuizmoSetting.SelectObject = nullptr;
 				}
-				else if (GuizmoSetting.SelectObject && Input.IsKeyDown(Keyboard::Keys::Delete))
+				else if (GuizmoSetting.SelectObject && Input.IsKeyDown(KeyboardKeys::Delete))
 				{
 					if (GuizmoSetting.SelectObject != static_cast<GameObject*>(&mainCamera->gameObject))
 					{

@@ -79,6 +79,28 @@ void StaticBlockMemoryPool::Free(size_t blockIndex)
 	ReturnID(blockIndex);
 }
 
+void StaticBlockMemoryPool::CompactMemoryPage()
+{
+	size_t counter = 0;
+	for (long long i = blockMaxCount * memoryPage.size() - 1; i >= 0; --i)
+	{
+		if (i < activeIDs.size() && activeIDs[i])
+		{
+			break;
+		}
+			
+		counter++;
+		if (counter == blockMaxCount)
+		{
+			counter = 0;
+			size_t lastIndex = memoryPage.size() - 1;
+			free(memoryPage[lastIndex]);
+			memoryPage.resize(lastIndex);
+			activeIDs.resize(i);
+		}			
+	}
+}
+
 bool StaticBlockMemoryPool::AllocateMemoryPage()
 {
 	void* newMemoryPage = malloc(memoryPageSize);

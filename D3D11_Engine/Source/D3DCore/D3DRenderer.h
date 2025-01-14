@@ -41,7 +41,6 @@ struct RENDERER_SETTING_DEBUG
 
 class D3DRenderer : public TSingleton<D3DRenderer>
 {
-	friend class WinGameApp;
 	friend TSingleton;
 public:
 	enum
@@ -55,7 +54,7 @@ protected:
 	D3DRenderer();
 	~D3DRenderer();
 
-private:
+public:
 	void Init();
 	void Uninit();	   
 	

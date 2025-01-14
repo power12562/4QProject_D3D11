@@ -341,6 +341,9 @@ namespace CompressPopupField
 
 bool ImGui::ShowCompressPopup(const wchar_t* path, D3DTexture2D* texture2D, int texType)
 {
+	if (!sceneManager.IsImGuiActive())
+		return false;
+
 	std::filesystem::path originPath = path;
 	originPath.replace_extension(L".dds");
 	constexpr wchar_t textuers[] = L"Textures";
@@ -356,10 +359,11 @@ bool ImGui::ShowCompressPopup(const wchar_t* path, D3DTexture2D* texture2D, int 
 	wstr_queue.push(path);
 	savePath_Queue.push(savePath.c_str());
 	ReloadTextureCompressEnd(savePath.c_str(), texture2D, texType);
-	
+
+
 	/*추천 포멧!!
 	Albedo		BC1/BC3/BC7	 알파 채널 유무에 따라 선택. 색상 데이터의 높은 품질 유지 필요시 BC7 //생각보다 압축티 많이남..
-	Normal		BC5	         2채널 사용하는 노말은 BC5. 
+	Normal		BC5	         2채널 사용하는 노말은 BC5.
 	Specular	BC1/BC7		 단순 데이터면 BC1, 고품질 필요 시 BC7.
 	Emissive	BC1/BC3/BC7  불투명은 BC1, 알파 필요 시 BC3. 고품질 필요시 BC7
 	Opacity		BC4/BC3		 단일 채널은 BC4, RGBA 필요 시 BC3.
@@ -436,14 +440,14 @@ bool ImGui::ShowCompressPopup(const wchar_t* path, D3DTexture2D* texture2D, int 
 						case E_TEXTURE::AmbientOcculusion:
 							compressType = Utility::E_COMPRESS::BC4;
 							break;
-						default :
+						default:
 							compressType = Utility::E_COMPRESS::BC7;
 						}
 					}
 				}
 				ImGui::Button("Auto Compress", &UseAutoCompress);
 				if (ImGui::Button("OK") || ImGui::IsKeyPressed(ImGuiKey_Enter) || UseAutoCompress)
-				{								
+				{
 					auto compressThreadFunc = [save_path, path = wstr_path, compType = compressType, isExists]()
 						{
 							static std::mutex mt;
@@ -470,7 +474,7 @@ bool ImGui::ShowCompressPopup(const wchar_t* path, D3DTexture2D* texture2D, int 
 							return;
 						};
 					compressThreads.emplace_back(compressThreadFunc); //스레드 처리
-						
+
 					str_queue.pop();
 					wstr_queue.pop();
 					savePath_Queue.pop();
@@ -515,7 +519,7 @@ bool ImGui::ShowCompressPopup(const wchar_t* path, D3DTexture2D* texture2D, int 
 						std::thread lodingWaitThread(lodingWaitThreadsFunc);
 						lodingWaitThread.detach();
 
-						sceneManager.SetLodingImguiFunc([]() 
+						sceneManager.SetLodingImguiFunc([]()
 							{
 								static std::string text;
 								text = std::format("Compress : {}", threadsCounter.load());
@@ -525,7 +529,7 @@ bool ImGui::ShowCompressPopup(const wchar_t* path, D3DTexture2D* texture2D, int 
 								draw_list->AddRectFilled(ImVec2(0, 0), screen_size, IM_COL32(255, 255, 255, 255));
 								ImVec2 text_size = ImGui::CalcTextSize(text.c_str());
 								ImVec2 text_pos = ImVec2(
-									(screen_size.x - text_size.x) * 0.5f, 
+									(screen_size.x - text_size.x) * 0.5f,
 									(screen_size.y - text_size.y) * 0.5f
 								);
 								draw_list->AddText(
@@ -546,14 +550,8 @@ bool ImGui::ShowCompressPopup(const wchar_t* path, D3DTexture2D* texture2D, int 
 			}
 		};
 
-	bool ActiveImgui = sceneManager.IsImGuiActive();
-	if (ActiveImgui)
-	{
-		sceneManager.PushImGuiPopupFunc(popupFunc);
-		return true;
-	}	
-	else
-		return false;
+	sceneManager.PushImGuiPopupFunc(popupFunc);
+	return true;
 }
 
 bool ImGui::ReloadTextureCompressEnd(const wchar_t* path, D3DTexture2D* texture2D, int texType)

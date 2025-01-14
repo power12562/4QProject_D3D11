@@ -5,6 +5,11 @@
 #include <D3DCore/D3DSamplerState.h>
 #include <string>
 
+struct TransformBufferData
+{
+	alignas(16) Matrix World;
+	alignas(16) Matrix WorldInverseTranspose;
+};
 class MeshRender : public RenderComponent
 {
 	inline static std::list<MeshRender*> instanceList;
@@ -17,8 +22,25 @@ public:
 	virtual ~MeshRender() override;
 public:
 	virtual void Start() = 0;
+
+	/// 새로운 렌더러의 입력을 위한 변수들로 테스트용으로 몰아둿습니다
+	/// Begin IRenderer Data
 	virtual struct MeshDrawCommand GetMeshDrawCommand() override { return meshDrawCommand; }
+
+	/**
+	* 편리성을위해 전부 업데이트 
+	* 성능을 위한다면 부분적으로 업데이트
+	*/
+	void UpdateMeshDrawCommand();
+	
 	MeshDrawCommand meshDrawCommand;
+	ConstantBuffer transformBuffer;
+	ConstantBuffer pbrMaterial;
+	bool isForward = false;
+	std::vector<uint32_t> texturesSlot;
+	std::vector<Texture> texturesV2;
+
+	/// ~End IRenderer Data
 
 protected:
 	virtual void FixedUpdate() = 0;

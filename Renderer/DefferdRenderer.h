@@ -2,9 +2,11 @@
 
 #include "RendererCore.h"
 #include "Renderer.h"
+#include "Light.h"
 #include <vector>
 
 #include <array>
+
 
 
 class DefferdRenderer : public IRenderer
@@ -15,21 +17,34 @@ public:
 
 public:
 	virtual void AddDrawCommand(_In_ const MeshDrawCommand& command) override;
-	virtual void AddBinadble(_In_ const Binadble& bindable) override;
+	virtual void AddBinadble(std::string_view key, const Binadble& bindable) override;
+	virtual void RemoveBinadble(std::string_view key) override;
 	virtual void SetRenderTarget(_In_ Texture& target) override;
 	virtual void Render() override;
 
 	virtual void SetCameraMatrix(const Matrix& world);
 	virtual void SetProjection(float fov, float nearZ, float farZ);
+	
+	//마음에는 안들지만 방법이없음....
+	ComputeShader deferredCS;
+	PixelShader deferredPS;
+	VertexShader fullScreenVS;
 
+	Texture BRDF_LUT;
+	Texture Diffuse_IBL;
+	Texture Specular_IBL;
+
+	DirectionLightBuffer directLight;
 private:
 	std::vector<MeshDrawCommand> allDrawCommandsOrigin{};
 	std::vector<MeshDrawCommand*> allDrawCommands{};
 	std::vector<MeshDrawCommand*> deferredDrawCommands{};
 	std::vector<MeshDrawCommand*> forwardDrawCommands{};
+	std::vector<MeshDrawCommand*> alphaDrawCommands{};
 
-	Texture* renderTarget{ nullptr };
+	Texture renderTarget{};
 
+	std::vector<std::string> bindablesKey;
 	std::vector<Binadble> bindables;
 
 #pragma region RHIDevice
@@ -41,7 +56,8 @@ private:
 
 
 #pragma region RenderState
-	
+
+	ComPtr<struct ID3D11DepthStencilState> defaultDSS{};
 	ComPtr<struct ID3D11DepthStencilState> noWriteDSS{};
 	ComPtr<struct ID3D11BlendState> noRenderState{};
 	ComPtr<struct ID3D11BlendState> alphaRenderState{};
@@ -49,9 +65,14 @@ private:
 #pragma endregion RenderState
 
 #pragma region RenderTexture
-	
+
 	Texture depthStencilTexture{};
+	Texture depthStencilTexture2{};
 	std::array<Texture, 4> renderBuffers{};
+	Texture deferredBuffer{};
+	std::array<Texture, 2> PostProcessTexture;
+	int renderBufferIndex{ 0 };
+
 
 #pragma endregion RenderTexture
 
@@ -72,20 +93,14 @@ private:
 	Matrix cameraWorld;
 	Matrix cameraProjection;
 	ConstantBuffer cameraBuffer;
-
-	struct CameraBufferData
-	{
-		alignas(16) Vector3 MainCamPos;
-		alignas(16) Matrix View;
-		alignas(16) Matrix Projection;
-		alignas(16) Matrix IVM;
-		alignas(16) Matrix IPM;
-	};
+	Binadble cameraBinadbleVS;
+	Binadble cameraBinadblePS;
+	Binadble cameraBinadbleCS;
 
 #pragma endregion Camera
 
 private:
 	void ProcessDrawCommands(std::vector<MeshDrawCommand*>& drawCommands, bool isWithMaterial = true);
-	void BindBinadble(const std::vector<Binadble>& bindables);
+	void BindBinadble(const Binadble& bindable);
 };
 

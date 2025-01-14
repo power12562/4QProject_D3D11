@@ -25,6 +25,7 @@
 
 #include <Math/Mathf.h>
 #include <iostream>
+#include <stack>
 
 namespace Utility
 {
@@ -364,6 +365,34 @@ bool Utility::ParseFileName(aiString& str)
 	}
 	else
 		return false;
+}
+
+std::map<std::wstring, std::vector<MeshRender*>> Utility::CollectMeshComponents(GameObject* root)
+{
+	std::map<std::wstring, std::vector<MeshRender*>> out;
+	std::stack<GameObject*> objStack;
+	objStack.push(root);
+
+	while (!objStack.empty())
+	{
+		GameObject* curr = objStack.top();
+		objStack.pop();
+
+		for (size_t i = 0; i < curr->GetComponentCount(); ++i)
+		{
+			MeshRender* mesh = curr->GetComponentAtIndex<MeshRender>(i);
+			if (mesh)
+			{
+				out[curr->Name].emplace_back(mesh);
+			}
+		}
+
+		for (size_t i = 0; i < curr->transform.GetChildCount(); i++)
+		{
+			objStack.push(&curr->transform.GetChild(i)->gameObject);
+		}
+	}
+	return out;
 }
 
 GameObject* Utility::LoadFBX(const wchar_t* path,

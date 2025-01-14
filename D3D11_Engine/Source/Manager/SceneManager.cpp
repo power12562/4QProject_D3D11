@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <ranges>
 #include <algorithm>
+#include <Manager/InstanceIDManager.h>
 #include <Core/TimeSystem.h>
 
 SceneManager& sceneManager = SceneManager::GetInstance();
@@ -42,7 +43,9 @@ void SceneManager::LoadScene(const wchar_t* scenePath)
 
 	currScene->loadScenesMap.clear();
 	currScene->sceneName = std::filesystem::path(scenePath).filename();
+
 	gameObjectFactory.DeserializedScene(currScene.get(), scenePath);
+	gameObjectFactory.CompactObjectMemoryPool();
 	PhysicsManager::ClearPhysicsScene();
 }
 
@@ -272,7 +275,6 @@ void SceneManager::FixedUpdateScene()
 
 void SceneManager::UpdateScene()
 {
-	DXTKinputSystem.Update();
 	currScene->Update();
 }
 
@@ -334,6 +336,7 @@ void SceneManager::EraseObjects()
 		}
 		eraseComponentSet.clear();
 	}
+	instanceIDManager.SortReturnID();
 }
 
 void SceneManager::ChangeScene()
@@ -365,6 +368,7 @@ void SceneManager::ChangeScene()
 				}
 			}
 			currScene.reset();
+			gameObjectFactory.CompactObjectMemoryPool();
 			MeshRender::ReloadShaderAll(); //유효한 메시 객체들 셰이더 다시 생성
 		}
 		currScene = std::move(nextScene);
@@ -391,6 +395,7 @@ void SceneManager::ChangeScene()
 
 void SceneManager::AddObjectCurrScene(std::shared_ptr<GameObject>& obj)
 {
+	if (!currScene) return;
 	unsigned int id = obj->GetInstanceID();
 	objectFindMap[obj->Name].insert(id);
 	if (id >= currScene->objectList.size())

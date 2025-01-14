@@ -9,6 +9,8 @@
 #include <Light/PBRDirectionalLight.h>
 #include <Light/SimpleDirectionalLight.h>
 #include <D3DCore/D3DConstBuffer.h>
+#include <Core/GameInputSystem.h>
+#include <Manager/InputManager.h>
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -34,11 +36,9 @@ LRESULT CALLBACK ImGUIWndProcDefault(HWND hWnd, UINT message, WPARAM wParam, LPA
 			}
 		}
 		Mouse::ProcessMessage(message, wParam, lParam);
-		Keyboard::ProcessMessage(message, wParam, lParam);
 		break;
 	case WM_ACTIVATEAPP:
 		Mouse::ProcessMessage(message, wParam, lParam);
-		Keyboard::ProcessMessage(message, wParam, lParam);
 		break;
 	case WM_LBUTTONDOWN:
 	case WM_LBUTTONUP:
@@ -131,6 +131,18 @@ D3D11_GameApp::~D3D11_GameApp()
 
 }
 
+void D3D11_GameApp::Initialize(HINSTANCE hinstance)
+{
+	WinGameApp::Initialize(hinstance);
+	inputManager.Initialize();
+}
+
+void D3D11_GameApp::Uninitialize()
+{
+	WinGameApp::Uninitialize();
+	inputManager.Uninitialize();
+}
+
 void D3D11_GameApp::Start()
 {
 	D3D11_GameApp::RunApp = this;
@@ -138,7 +150,6 @@ void D3D11_GameApp::Start()
 	SimpleDirectionalLight::cb_light =    D3DConstBuffer::GetData<cb_DirectionalLight>(SimpleDirectionalLight::cb_light_key);
 	DirectionalLight::DirectionalLights = D3DConstBuffer::GetData<cb_PBRDirectionalLight>(DirectionalLight::DirectionalLights_key);
 
-	DXTKinputSystem.Initialize(GetHWND());
 	gameObjectFactory.InitializeMemoryPool();
 
 	if (sceneManager.nextScene == nullptr)
@@ -150,12 +161,15 @@ void D3D11_GameApp::Start()
 
 void D3D11_GameApp::Update()
 {
+	inputManager.UpdateProcesser();
+
 	fixedElapsedTime += TimeSystem::Time.GetDeltaTime(false);
 	while (fixedElapsedTime >= TimeSystem::FixedTimeStep)
 	{		
 		sceneManager.FixedUpdateScene();
 		fixedElapsedTime -= TimeSystem::FixedTimeStep;
 	}
+
 	sceneManager.UpdateScene();
 	sceneManager.LateUpdateScene();
 }
@@ -180,8 +194,6 @@ void D3D11_GameApp::ProcessKeyboard(UINT message, WPARAM wParam, LPARAM lParam)
 {
 	if (RunApp && wParam != 0)
 		RunApp->PreProcessKeyboradMessage(message, static_cast<KeyboardVK>(wParam));
-
-	Keyboard::ProcessMessage(message, wParam, lParam);
 }
 
 void D3D11_GameApp::SetBorderlessWindowed()

@@ -82,7 +82,7 @@ public:
 public:
 	operator ID3D11PixelShader* () { return pixelShader.Get(); }
 	void CreateShader(ID3DBlob* compiledBlob);
-	void LoadShader(ID3D11PixelShader* pixelShader);
+	void LoadShader(ID3D11PixelShader* pixelShader) { this->pixelShader = pixelShader; }
 
 
 
@@ -99,6 +99,7 @@ public:
 public:
 	operator ID3D11ComputeShader* () { return computeShader.Get(); }
 	void CreateShader(ID3DBlob* compiledBlob);
+	void LoadShader(ID3D11ComputeShader* pixelShader){ this->computeShader = pixelShader; }
 
 private:
 	ComPtr<ID3D11ComputeShader> computeShader{};

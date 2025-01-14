@@ -154,17 +154,6 @@ void PixelShader::CreateShader(ID3DBlob* compiledBlob)
 							  pixelShader.GetAddressOf());
 }
 
-void PixelShader::LoadShader(ID3D11PixelShader* pixelShader)
-{
-	int temp;
-	temp = pixelShader->AddRef();
-	temp = pixelShader->Release();
-	this->pixelShader = pixelShader;
-	temp = this->pixelShader->AddRef();
-	temp = this->pixelShader->Release();
-
-}
-
 ComputeShader::ComputeShader()
 {
 	shaderModel = "cs_5_0";
@@ -179,3 +168,5 @@ void ComputeShader::CreateShader(ID3DBlob* compiledBlob)
 								nullptr,
 								computeShader.GetAddressOf());
 }
+
+

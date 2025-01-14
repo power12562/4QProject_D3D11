@@ -82,8 +82,8 @@ enum class KeyboardVK : unsigned short
 	//0x0E - 0x0F : unassigned
 
 	Shift = 0x10, //Shift key
-	LeftCtrl = 0x11, //Ctrl key
-	LeftAlt = 0x12, //Alt key
+	Ctrl = 0x11,  //Ctrl key
+	Alt = 0x12,   //Alt key
 	Pause = 0x13, //Pause key
 	CapsLock = 0x14, //Caps lock key
 
@@ -239,6 +239,7 @@ enum class KeyboardVK : unsigned short
 
 	LeftShift = 0xA0, //Left shift key
 	RightShift = 0xA1, //Right shift key
+	LeftCtrl = 0xA2, //LeftCtrl key
 	RightCtrl = 0xA3, //Right control key
 	LeftMenu = 0xA4, //Left menu key
 	RightMenu = 0xA5, //Right menu
@@ -361,6 +362,9 @@ public:
 public:
 	D3D11_GameApp();
 	virtual ~D3D11_GameApp() override;
+
+	void Initialize(HINSTANCE hinstance);
+	void Uninitialize();
 protected:
 	/*마우스 메시지 처리 전 호출해주는 메서드*/
 	virtual void PreProcessMouseMessage(UINT message, MouseVK keyCode) {}
