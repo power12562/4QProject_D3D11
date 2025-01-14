@@ -4,9 +4,9 @@
 #include <memory>
 #include <vector>
 #include <functional>
-#include <D3DCore/D3DRenderer.h>
 #include <Utility/utfConvert.h>
 #include <Utility/Console.h>
+#include <DrawCommand.h>
 
 class Resource
 {
@@ -62,15 +62,14 @@ public:
 	std::shared_ptr<T> operator[](const wchar_t* key) { return GetResource(key); }
 };
 
-
 template <>
-class ResourceManager<DRAW_INDEX_DATA> : public Resource
+class ResourceManager<MeshData> : public Resource
 {
 public:
     /*GetInstance*/
-    static ResourceManager<DRAW_INDEX_DATA>& instance()
+    static ResourceManager<MeshData>& instance()
     {
-        static ResourceManager<DRAW_INDEX_DATA> instance;
+        static ResourceManager<MeshData> instance;
         return instance;
     }
 private:
@@ -84,43 +83,34 @@ private:
         Clear();
     }
 
-public:
-    using DRAW_INDEX_DATA_LIST = std::vector<std::weak_ptr<DRAW_INDEX_DATA>>;
 private:
-    std::map<std::wstring, DRAW_INDEX_DATA_LIST> resourceMap;
+    std::map<std::wstring, std::vector<std::weak_ptr<MeshData>>> resourceMap;
 public:
     void Clear()
     {
         resourceMap.clear();
     }
-    bool isResource(const wchar_t* key, int index)
+    std::shared_ptr<MeshData> GetResource(const wchar_t* key, size_t meshID)
     {
         auto findIter = resourceMap.find(key);
-        if (findIter != resourceMap.end())
-        {
-            if (findIter->second.size() > index && !findIter->second[index].expired())
-                    return true;
-        }
-        return false;
-    }
-    std::shared_ptr<DRAW_INDEX_DATA> GetResource(const wchar_t* key, int index)
-    {
-        if (resourceMap[key].size() <= index)
-            resourceMap[key].resize(index + 1);
 
-        auto findIter = resourceMap.find(key);
         if (findIter != resourceMap.end())
         {
-            if (std::shared_ptr<DRAW_INDEX_DATA> resource = findIter->second[index].lock())
+            if (std::shared_ptr<MeshData> resource = findIter->second[meshID].lock())
             {
                 return  resource;
             }
         }
-        std::shared_ptr<DRAW_INDEX_DATA> resource = std::make_shared<DRAW_INDEX_DATA>();
-        resourceMap[key][index] = resource;
+        std::shared_ptr<MeshData> resource = std::make_shared<MeshData>();
+        if (resourceMap[key].size() <= meshID)
+        {
+            resourceMap[key].resize(meshID + 1);
+        }
+        resourceMap[key][meshID] = resource;
         return resource;
     }
 };
+
 
 template<typename T>
 ResourceManager<T>& GetResourceManager()

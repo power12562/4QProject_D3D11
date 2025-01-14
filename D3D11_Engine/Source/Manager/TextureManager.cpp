@@ -106,15 +106,15 @@ void TextureManager::InsertTexture(const wchar_t* key, ID3D11ShaderResourceView*
 	resourceMap[key] = pSRV;
 }
 
-ID3D11ShaderResourceView* TextureManager::GetDefaultTexture(E_TEXTURE_DEFAULT::DEFAULT_TEXTURE texture)
+ID3D11ShaderResourceView* TextureManager::GetDefaultTexture(DEFAULT_TEXTURE texture)
 {
 	switch (texture)
 	{
-	case E_TEXTURE_DEFAULT::ZERO:
+	case DEFAULT_TEXTURE::ZERO:
 		return GetZeroTexture();
-	case E_TEXTURE_DEFAULT::ONE:
+	case DEFAULT_TEXTURE::ONE:
 		return GetOneTexture();
-	case E_TEXTURE_DEFAULT::CUBE_ZERO:
+	case DEFAULT_TEXTURE::CUBE_ZERO:
 		return GetCubeZeroTexture();
 	default:
 		return GetZeroTexture();

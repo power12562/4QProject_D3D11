@@ -177,8 +177,6 @@
     <ClInclude Include="Source\Component\Animation\TransformAnimation.h" />
     <ClInclude Include="Source\Core\StaticBlockMemoryPool.h" />
     <ClInclude Include="Source\framework.h" />
-    <ClInclude Include="Source\D3DCore\D3DSamplerState.h" />
-    <ClInclude Include="Source\D3DCore\D3DTexture2D.h" />
     <ClInclude Include="Source\GameObject\Bone\BoneObject.h" />
     <ClInclude Include="Source\InverseKinematics\InverseKinematics.h" />
     <ClInclude Include="Source\ImGuiFileDialog\ImGuiFileDialog.h" />
@@ -205,9 +203,7 @@
     <ClInclude Include="Source\Component\Camera\Camera.h" />
     <ClInclude Include="Source\Component\Render\SimpleMeshRender.h" />
     <ClInclude Include="Source\Debug\Console.h" />
-    <ClInclude Include="Source\D3DCore\D3DConstBuffer.h" />
     <ClInclude Include="Source\D3DCore\D3D11_GameApp.h" />
-    <ClInclude Include="Source\D3DCore\D3DRenderer.h" />
     <ClInclude Include="Source\Core\DXTKInputSystem.h" />
     <ClInclude Include="Source\Manager\HLSLManager.h" />
     <ClInclude Include="Source\Physics\Struct\CollisionInfo.h" />
@@ -258,8 +254,6 @@
     <ClCompile Include="Source\Component\Render\SkyBoxRender.cpp" />
     <ClCompile Include="Source\Component\Animation\TransformAnimation.cpp" />
     <ClCompile Include="Source\Core\StaticBlockMemoryPool.cpp" />
-    <ClCompile Include="Source\D3DCore\D3DSamplerState.cpp" />
-    <ClCompile Include="Source\D3DCore\D3DTexture2D.cpp" />
     <ClCompile Include="Source\GameObject\Bone\BoneObject.cpp" />
     <ClCompile Include="Source\GameObject\Mesh\BlingPhongMeshObject.cpp" />
     <ClCompile Include="Source\GameObject\Mesh\PBRMeshObject.cpp" />
@@ -278,8 +272,6 @@
     <ClCompile Include="Source\Component\Camera\CameraMoveHelper.cpp" />
     <ClCompile Include="Source\Component\Render\SimpleMeshRender.cpp" />
     <ClCompile Include="Source\D3DCore\D3D11_GameApp.cpp" />
-    <ClCompile Include="Source\D3DCore\D3DConstBuffer.cpp" />
-    <ClCompile Include="Source\D3DCore\D3DRenderer.cpp" />
     <ClCompile Include="Source\Core\DXTKInputSystem.cpp" />
     <ClCompile Include="Source\Manager\HLSLManager.cpp" />
     <ClCompile Include="Source\Utility\FileSystemUtility.cpp" />

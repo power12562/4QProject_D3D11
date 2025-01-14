@@ -1,5 +1,4 @@
 #include "BlingPhongMeshObject.h"
-#include <D3DCore/D3DConstBuffer.h>
 #include <Utility/SerializedUtility.h>
 #include <Component/Render/BlingPhongBoneMeshRender.h>
 #include <Component/Render/BlingPhongMeshRender.h>

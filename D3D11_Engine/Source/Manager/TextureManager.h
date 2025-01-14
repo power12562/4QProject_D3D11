@@ -5,10 +5,17 @@
 #include <string>
 #include <minwindef.h>
 #include <Material/BlingPhongMaterial.h>
-#include <D3DCore/D3DTexture2D.h>
 
 class TextureManager;
 extern TextureManager& textureManager;
+
+enum class DEFAULT_TEXTURE
+{
+	ZERO,
+	ONE,
+	CUBE_ZERO
+};
+
 
 class TextureManager : public TSingleton<TextureManager>
 {
@@ -33,7 +40,7 @@ public:
 	void InsertTexture(const wchar_t* key, ID3D11ShaderResourceView* pSRV);
 	
 public:
-	ID3D11ShaderResourceView* GetDefaultTexture(E_TEXTURE_DEFAULT::DEFAULT_TEXTURE texture);
+	ID3D11ShaderResourceView* GetDefaultTexture(DEFAULT_TEXTURE texture);
 	void ReleaseDefaultTexture();
 
 private:

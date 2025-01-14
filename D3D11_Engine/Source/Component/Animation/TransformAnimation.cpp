@@ -1,7 +1,6 @@
 #include "TransformAnimation.h"
 #include <Core/TimeSystem.h>
 #include <Utility\AssimpUtility.h>
-#include <D3DCore/D3DRenderer.h>
 #include <stack>
 #include <format>
 #include <Manager/ResourceManager.h>
@@ -242,11 +241,10 @@ void TransformAnimation::LateUpdate()
 	{
 		elapsedTime += currClip->TickTime * TimeSystem::Time.DeltaTime;
 
-		if(d3dRenderer.CheckFrustumCulling(&gameObject))
-			for (auto& nodeAni : currClip->nodeAnimations)
-			{
-				nodeAni.Evaluate(elapsedTime);
-			}
+		for (auto& nodeAni : currClip->nodeAnimations)
+		{
+			nodeAni.Evaluate(elapsedTime);
+		}
 
 		while (elapsedTime >= currClip->Duration)
 		{
