@@ -25,8 +25,8 @@ private:
 	ComPtr<struct IDXGISwapChain1> swapChain;
 	Texture backBuffer;
 
-	std::vector<class PBRMeshRender*> charList;
 
+	std::vector<class MeshRender*> renderList;
 private:
 	void DXGIInit();
 
