@@ -15,10 +15,28 @@ using Vector4 = DirectX::SimpleMath::Vector4;
 struct NodeDataStruct
 {
 	std::string type;
-	std::string name;
-	std::string init;
-	bool isConstant;
+	std::string identifier;
+	std::string initializationExpression;
+	uint8_t isConstant : 1;
+	uint8_t isRegistor : 1;
 };
+
+struct Definition
+{
+	NodeDataStruct& data;
+};
+
+
+std::ostream& operator<<(std::ostream& os, const Definition& data)
+{
+	if (data.data.isConstant)
+	{
+		return os;
+	}
+	return os << std::format("{} {} = {}", data.data.type, data.data.identifier, data.data.initializationExpression);
+}
+
+
 
 struct ShaderNodeData
 {
@@ -243,8 +261,8 @@ public:
 		setStyle(ImFlow::NodeStyle::red());
 		setTitle("BRDF");
 
-		addIN<std::any>((char*)u8"알베도", std::any{}, AnyCast());
-		addIN<std::any>((char*)u8"노말", std::any{}, AnyCast());
+		addIN<NodeDataStruct>((char*)u8"알베도", NodeDataStruct{}, AnyCast());
+		addIN<NodeDataStruct>((char*)u8"노말", NodeDataStruct{}, AnyCast());
 	}
 
 
