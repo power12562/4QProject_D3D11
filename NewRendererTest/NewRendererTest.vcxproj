@@ -74,10 +74,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(ProjectDir)bin\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(SolutionDir)Renderer\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(ProjectDir)bin\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(SolutionDir)Renderer\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -169,6 +171,9 @@
     <ClInclude Include="Source\NewRendererTestScene.h" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CopyShader\CopyShader.vcxproj">
+      <Project>{b3a0df58-9f3a-42f6-a929-b2128adfa8fd}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\D3D11_Engine\D3D11_Engine.vcxproj">
       <Project>{c8880048-46a0-4cc4-be47-c3144cd15787}</Project>
     </ProjectReference>
