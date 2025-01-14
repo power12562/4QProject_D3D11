@@ -107,7 +107,7 @@ void BoxCollider::DetachShapeToActor()
 	actor->GetActor()->detachShape(*shape);
 }
 
-void BoxCollider::SetIsTrigger(bool is_trigger)6
+void BoxCollider::SetIsTrigger(bool is_trigger)
 {
 	this->is_trigger = is_trigger;
 	if (shape == nullptr)
