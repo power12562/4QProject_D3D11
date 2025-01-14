@@ -566,7 +566,7 @@ struct BindHelper
 		}
 		else
 		{
-			static_assert(false);
+			//static_assert(false);
 		}
 	}
 };

@@ -3,8 +3,8 @@
 
 void PhysicsTestController::Update()
 {
-	auto& input = DXTKInputSystem::GetInstance();
-	if (input.Input.IsKeyDown(KeyboardKeys::Space))
+	auto& input = GameInputSystem::GetInstance();
+	if (input.IsKeyDown(KeyboardKeys::P))
 	{
 		AddComponent<Rigidbody>();
 		AddComponent<BoxCollider>();
