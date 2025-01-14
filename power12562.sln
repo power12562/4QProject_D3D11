@@ -7,7 +7,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "D3D11_Engine", "D3D11_Engin
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Renderer", "Renderer\Renderer.vcxproj", "{346BD41A-C6DE-4BD7-A7F4-D39C12318347}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Project", "NewRendererTest\NewRendererTest.vcxproj", "{15CF9B1D-70FB-4C09-AB21-DD49D77A4CD4}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NewRendererTest", "NewRendererTest\NewRendererTest.vcxproj", "{15CF9B1D-70FB-4C09-AB21-DD49D77A4CD4}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CopyShader", "CopyShader\CopyShader.vcxproj", "{B3A0DF58-9F3A-42F6-A929-B2128ADFA8FD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +43,14 @@ Global
 		{15CF9B1D-70FB-4C09-AB21-DD49D77A4CD4}.Release|x64.Build.0 = Release|x64
 		{15CF9B1D-70FB-4C09-AB21-DD49D77A4CD4}.Release|x86.ActiveCfg = Release|Win32
 		{15CF9B1D-70FB-4C09-AB21-DD49D77A4CD4}.Release|x86.Build.0 = Release|Win32
+		{B3A0DF58-9F3A-42F6-A929-B2128ADFA8FD}.Debug|x64.ActiveCfg = Debug|x64
+		{B3A0DF58-9F3A-42F6-A929-B2128ADFA8FD}.Debug|x64.Build.0 = Debug|x64
+		{B3A0DF58-9F3A-42F6-A929-B2128ADFA8FD}.Debug|x86.ActiveCfg = Debug|Win32
+		{B3A0DF58-9F3A-42F6-A929-B2128ADFA8FD}.Debug|x86.Build.0 = Debug|Win32
+		{B3A0DF58-9F3A-42F6-A929-B2128ADFA8FD}.Release|x64.ActiveCfg = Release|x64
+		{B3A0DF58-9F3A-42F6-A929-B2128ADFA8FD}.Release|x64.Build.0 = Release|x64
+		{B3A0DF58-9F3A-42F6-A929-B2128ADFA8FD}.Release|x86.ActiveCfg = Release|Win32
+		{B3A0DF58-9F3A-42F6-A929-B2128ADFA8FD}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
