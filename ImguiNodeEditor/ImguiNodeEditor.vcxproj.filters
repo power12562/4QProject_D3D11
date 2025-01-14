@@ -15,48 +15,32 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="imgui_canvas.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui_extra_math.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui_node_editor.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui_node_editor_internal.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="crude_json.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui_bezier_math.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="imgui_extra_math.inl">
+    <None Include="src\imgui_bezier_math.inl">
       <Filter>헤더 파일</Filter>
     </None>
-    <None Include="imgui_node_editor_internal.inl">
+    <None Include="src\imgui_extra_math.inl">
       <Filter>헤더 파일</Filter>
     </None>
-    <None Include="LICENSE" />
-    <None Include="imgui_bezier_math.inl">
+    <None Include="src\ImNodeFlow.inl">
       <Filter>헤더 파일</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="imgui_node_editor.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui_node_editor_api.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="crude_json.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui_canvas.cpp">
+    <ClInclude Include="src\imgui_extra_math.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="src\context_wrapper.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="src\imgui_bezier_math.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ImNodeFlow.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\ImNodeFlow.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

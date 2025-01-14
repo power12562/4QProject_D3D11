@@ -149,6 +149,9 @@
     <ProjectReference Include="..\D3D11_Engine\D3D11_Engine.vcxproj">
       <Project>{c8880048-46a0-4cc4-be47-c3144cd15787}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\ImguiNodeEditor\ImguiNodeEditor.vcxproj">
+      <Project>{d181dd16-0471-474a-9147-e2b6bfe7c8af}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\Renderer\Renderer.vcxproj">
       <Project>{346bd41a-c6de-4bd7-a7f4-d39c12318347}</Project>
     </ProjectReference>

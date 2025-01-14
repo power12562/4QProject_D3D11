@@ -1,4 +1,6 @@
-﻿#include "RendererTestApp.h"
+﻿
+
+#include "RendererTestApp.h"
 #include <dxgi1_6.h>
 #include <filesystem>
 #pragma comment(lib, "dxgi")
@@ -53,68 +55,11 @@ void RendererTestApp::Start()
 
     renderer->SetRenderTarget(backBuffer);
 
-    ImGui::Node::Config config;
-    config.SettingsFile = "Simple.json";
-	m_Context = ImGui::Node::CreateEditor(&config);
-}
-void ShowExampleApp(ImGui::Node::EditorContext* context)
-{
-    static int linkId = 1; // 고유 링크 ID
-    static std::vector<std::pair<int, int>> links; // 생성된 링크 저장
-    static int startPinId = -1; // 드래그 시작 핀 ID
-
-    auto& io = ImGui::GetIO();
 
 
-    // 노드 에디터 컨텍스트 설정
-    ImGui::Node::SetCurrentEditor(context);
 
-    // 노드 에디터 시작
-    ImGui::Node::Begin("My Editor", ImVec2(0.0f, 0.0f));
-    size_t uniqueId = 1;
 
-    // 첫 번째 노드
-    ImGui::Node::BeginNode(uniqueId++);
-    ImGui::Text("Node A");
-    ImGui::Node::BeginPin(uniqueId++, ImGui::Node::PinKind::Output); // Node A Output
-    ImGui::Text("Out ->");
-    int nodeAOutputPinId = uniqueId - 1; // 저장해두기
-    ImGui::Node::EndPin();
-    ImGui::Node::EndNode();
 
-    // 두 번째 노드
-    ImGui::Node::BeginNode(uniqueId++);
-    ImGui::Text("Node B");
-    ImGui::Node::BeginPin(uniqueId++, ImGui::Node::PinKind::Input); // Node B Input
-    ImGui::Text("-> In");
-    int nodeBInputPinId = uniqueId - 1; // 저장해두기
-    ImGui::Node::EndPin();
-    ImGui::Node::EndNode();
-
-    // 드래그 핸들링
-    if (ImGui::Node::BeginCreate())
-    {
-
-        size_t startPin = 0, endPin = 0;
-        if (ImGui::Node::QueryNewLink((ImGui::Node::PinId*)&startPin, (ImGui::Node::PinId*)&endPin))
-        {
-            if (ImGui::Node::AcceptNewItem())
-            {
-                links.emplace_back(startPin, endPin); // 새 링크 저장
-            }
-        }
-    }
-    ImGui::Node::EndCreate();
-
-    // 저장된 링크 표시
-    for (auto& link : links)
-    {
-        ImGui::Node::Link(linkId++, link.first, link.second);
-    }
-
-    // 노드 에디터 종료
-    ImGui::Node::End();
-    ImGui::Node::SetCurrentEditor(nullptr);
 }
 
 void RendererTestApp::Update()
@@ -126,7 +71,7 @@ void RendererTestApp::Update()
     ImGui_ImplDX11_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame(); 
-    ShowExampleApp(m_Context);
+    nodeEditor.Update();
 
     ImGui::Begin("Renderer Test App");
     if (ImGui::Button("Recompile Shader") || ImGui::IsKeyDown(ImGuiKey_F2))
@@ -242,8 +187,7 @@ void RendererTestApp::Render()
 
 void RendererTestApp::Uninitialize()
 {
-    ImGui::Node::DestroyEditor(m_Context);
-
+    nodeEditor.~NodeEditor();
     sceneManager.AddObjects();
     sceneManager.currScene.reset();
     gameObjectFactory.UninitializeMemoryPool();
@@ -302,7 +246,7 @@ void RendererTestApp::TestInit()
 
     Texture albedo;
     textureManager.CreateSharingTexture(L"Resource/Texture/1735656899.jpg", &srv);
-    albedo.LoadTexture(srv.Get());
+    albedo.LoadTexture(srv.Get()); 
 
 	testObject->GetComponent<CubeMeshRender>().texturesV2.emplace_back(albedo);
     testObject->GetComponent<CubeMeshRender>().texturesSlot.emplace_back(0);

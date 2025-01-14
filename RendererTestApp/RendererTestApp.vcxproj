@@ -75,11 +75,13 @@
     <OutDir>$(ProjectDir)bin\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)$(Platform)\$(Configuration)\</IntDir>
     <IncludePath>$(SolutionDir)Renderer\;$(IncludePath)</IncludePath>
+    <ExternalIncludePath>$(SolutionDir)ImguiNodeEditor\include\;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(ProjectDir)bin\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)$(Platform)\$(Configuration)\</IntDir>
     <IncludePath>$(SolutionDir)Renderer\;$(IncludePath)</IncludePath>
+    <ExternalIncludePath>$(SolutionDir)ImguiNodeEditor\include\;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

@@ -74,11 +74,13 @@
     <OutDir>$(SolutionDir)lib\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)$(Platform)\$(Configuration)\</IntDir>
     <IncludePath>$(SolutionDir)Renderer\;$(IncludePath)</IncludePath>
+    <ExternalIncludePath>$(SolutionDir)ImguiNodeEditor\include\;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)lib\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)$(Platform)\$(Configuration)\</IntDir>
     <IncludePath>$(SolutionDir)Renderer\;$(IncludePath)</IncludePath>
+    <ExternalIncludePath>$(SolutionDir)ImguiNodeEditor\include\;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -153,6 +155,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\NodeEditor\NodeEditor.h" />
     <ClInclude Include="Source\Component\Rigidbody\Rigidbody.h" />
     <ClInclude Include="Source\Core\GameInputSystem.h" />
     <ClInclude Include="Source\Core\TKeyTracker.h" />
@@ -239,6 +242,7 @@
     <ClInclude Include="Source\Component\Collider\SphereCollider.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\NodeEditor\NodeEditor.cpp" />
     <ClCompile Include="Source\Component\Rigidbody\Rigidbody.cpp" />
     <ClCompile Include="Source\Core\GameInputSystem.cpp" />
     <ClCompile Include="Source\Manager\InputManager.cpp" />

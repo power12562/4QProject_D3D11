@@ -1,22 +1,16 @@
 #pragma once
 #include <D3DCore/D3D11_GameApp.h>
+
 #include <Manager/SceneManager.h>
 #include <Renderer.h>
 #include <DefferdRenderer.h>
 #include <StructuredBuffer.h>
-
-
-
-// Å×½ºÆ®!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#include <../ImguiNodeEditor/imgui_node_editor.h>
-namespace ImGui
-{
-	namespace Node = ax::NodeEditor;
-}
+#include <NodeEditor\NodeEditor.h>
 
 
 class RendererTestApp : public WinGameApp
 {
+	NodeEditor nodeEditor;
 public:
 	RendererTestApp();
 	~RendererTestApp();
@@ -50,8 +44,6 @@ private:
 	class GameObject* testObject3;
 
 
-
-	ImGui::Node::EditorContext* m_Context = nullptr;
 
 	// End Test
 	///////////////////////////////////////

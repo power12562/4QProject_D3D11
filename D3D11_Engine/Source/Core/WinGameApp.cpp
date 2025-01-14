@@ -274,6 +274,13 @@ void WinGameApp::InitImGUI()
 	// Setup Platform/Renderer backends
 	ImGui_ImplWin32_Init(GetHWND());
 	ImGui_ImplDX11_Init(d3dRenderer.GetDevice(), d3dRenderer.GetDeviceContext());
+
+	//한글
+	ImGuiIO& io = ImGui::GetIO();
+	io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\malgun.ttf", 20.0f, nullptr, io.Fonts->GetGlyphRangesKorean());
+	// EX) 
+	// ImGui::Begin((const char*)u8"으아악");
+	// u8"" 을 char*로 형변환
 }
 
 void WinGameApp::UninitImGUI()

@@ -99,6 +99,8 @@ private:
 
 #pragma endregion Camera
 
+	ComPtr<ID3D11SamplerState> samplerState;
+
 private:
 	void ProcessDrawCommands(std::vector<MeshDrawCommand*>& drawCommands, bool isWithMaterial = true);
 	void BindBinadble(const Binadble& bindable);

@@ -18,6 +18,20 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="src\imgui_bezier_math.inl" />
+    <None Include="src\imgui_extra_math.inl" />
+    <None Include="src\ImNodeFlow.inl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\context_wrapper.h" />
+    <ClInclude Include="src\imgui_bezier_math.h" />
+    <ClInclude Include="src\imgui_extra_math.h" />
+    <ClInclude Include="src\ImNodeFlow.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\ImNodeFlow.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -130,26 +144,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="crude_json.h" />
-    <ClInclude Include="imgui_bezier_math.h" />
-    <ClInclude Include="imgui_canvas.h" />
-    <ClInclude Include="imgui_extra_math.h" />
-    <ClInclude Include="imgui_node_editor.h" />
-    <ClInclude Include="imgui_node_editor_internal.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="imgui_bezier_math.inl" />
-    <None Include="imgui_extra_math.inl" />
-    <None Include="imgui_node_editor_internal.inl" />
-    <None Include="LICENSE" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="crude_json.cpp" />
-    <ClCompile Include="imgui_canvas.cpp" />
-    <ClCompile Include="imgui_node_editor.cpp" />
-    <ClCompile Include="imgui_node_editor_api.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
