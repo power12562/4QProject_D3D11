@@ -155,6 +155,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\NodeEditor\NodeFactory.h" />
     <ClInclude Include="Source\NodeEditor\json.hpp" />
     <ClInclude Include="Source\NodeEditor\ShaderNodes.h" />
     <ClInclude Include="Source\NodeEditor\NodeEditor.h" />
@@ -244,6 +245,7 @@
     <ClInclude Include="Source\Component\Collider\SphereCollider.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\NodeEditor\NodeFactory.cpp" />
     <ClCompile Include="Source\NodeEditor\ShaderNodes.cpp" />
     <ClCompile Include="Source\NodeEditor\NodeEditor.cpp" />
     <ClCompile Include="Source\Component\Rigidbody\Rigidbody.cpp" />

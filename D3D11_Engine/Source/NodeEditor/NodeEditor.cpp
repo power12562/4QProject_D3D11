@@ -1,11 +1,25 @@
 #include "NodeEditor.h"
+#include "json.hpp"
+#include "ShaderNodes.h"
+#include <ranges>
+#include <chrono>
 
 
 
-NodeEditor::NodeEditor()
+NodeEditor::NodeEditor(std::filesystem::path path) : path{}
 {
+	//Load(path);
+	this->path = path;
+
 	myGrid = std::make_shared<ImFlow::ImNodeFlow>();
-	resultNode = myGrid->addNode<ShaderResultNode>({ 0,0 }, ++count).get();
+	nodeFactory.Set(myGrid);
+	resultNode = myGrid->addNode<ShaderResultNode>({ 100, 100 }).get();
+	auto temp = myGrid->addNode<ConstantVector3Node>({ 0, 0 }).get();
+
+	temp->outPin(std::string((char*)u8"값"))->createLink(resultNode->inPin((const char*)u8"알베도"));
+
+
+
 
 	myGrid->rightClickPopUpContent(
 		[](ImFlow::BaseNode* node)
@@ -28,9 +42,10 @@ NodeEditor::~NodeEditor()
 {
 	if (myGrid)
 	{
-		Save();
+		//Save();
 		// 모든 노드 저장
 	}
+
 	myGrid.reset();
 }
 
@@ -42,22 +57,21 @@ void NodeEditor::Update()
 	bool isMouseClicked = ImGui::IsMouseClicked(0);  // 좌클릭 확인
 	if (isMouseClicked)
 	{
-		ImVec2 greedPos = myGrid->screen2grid(mousePos);
 		if (ImGui::IsKeyDown(ImGuiKey_1))
 		{
-			myGrid->addNode<ConstantValueNode>(greedPos, ++count);
+			nodeFactory.Create("ConstantValueNode");
 		}
 		if (ImGui::IsKeyDown(ImGuiKey_2))
 		{
-			myGrid->addNode<ConstantVector2Node>(greedPos, ++count);
+			nodeFactory.Create("ConstantVector2Node");
 		}
 		if (ImGui::IsKeyDown(ImGuiKey_3))
 		{
-			myGrid->addNode<ConstantVector3Node>(greedPos, ++count);
+			nodeFactory.Create("ConstantVector3Node");
 		}
 		if (ImGui::IsKeyDown(ImGuiKey_4))
 		{
-			myGrid->addNode<ConstantVector4Node>(greedPos, ++count);
+			nodeFactory.Create("ConstantVector4Node");
 		}
 	}
 
@@ -132,46 +146,61 @@ void NodeEditor::Save()
 	nlohmann::json j;
 	for (ImFlow::BaseNode* item : myGrid->getNodes() | std::views::transform([](const auto& item) {return item.second.get();}))
 	{
-		ShaderNode* node = static_cast<ShaderNode*>(item);
 		nlohmann::json nodeJson;
-		nlohmann::json pinsJson;
-		nodeJson["Type"] = typeid(*item).name();
+
+		auto typeview =
+			std::string_view(typeid(*item).name())
+			| std::views::reverse
+			| std::views::take_while([](char item) { return item == ' '; })
+			| std::views::reverse;
+
+		std::string type(typeview.begin(), typeview.end());
+
+		nodeJson["Type"] = type;
 		nodeJson["pos"] = { item->getPos().x, item->getPos().y };
-		nodeJson["size"] = { item->getSize().x, item->getSize().y };
-		node->Serialize(nodeJson);
-		for (auto& pin : node->getIns())
+
+		for (auto& pin : item->getIns())
 		{
-			pinsJson.push_back(pin->getUid());
+			nodeJson["pins"].push_back(pin->getUid());
 		}
-		nodeJson["pins"] = pinsJson;
+		for (auto& pin : item->getOuts())
+		{
+			nodeJson["pins"].push_back(pin->getUid());
+		}
+
+		ISerializable* serializeable = dynamic_cast<ISerializable*>(item);
+		if (serializeable)
+		{
+			serializeable->Serialize(nodeJson);
+		}
+
+
 		j["nodes"].push_back(nodeJson);
 	}
 
 	for (const auto& item : myGrid->getLinks() | std::views::transform([](const auto& item) { return item.lock().get(); }))
 	{
 		nlohmann::json linkJson;
-		linkJson["start"] = item->left()->getUid();
-		linkJson["end"] = item->right()->getUid();
+		linkJson["left"] = item->left()->getUid();
+		linkJson["right"] = item->right()->getUid();
 		j["links"].push_back(linkJson);
 	}
 
 	std::ofstream file(path);
 	file << j.dump(4);
 	file.close();
-
-
-
 }
 
 void NodeEditor::Load(std::filesystem::path path)
 {
-	if (std::filesystem::exists(path))
+	if (std::filesystem::exists(this->path))
 	{
 		Save();
 	}
 
 	this->path = path;
 	myGrid = std::make_shared<ImFlow::ImNodeFlow>();
+	nodeFactory.Set(myGrid);
 
 	std::ifstream file(path);
 	if (!file.is_open())
@@ -182,21 +211,163 @@ void NodeEditor::Load(std::filesystem::path path)
 	file >> j;
 	file.close();
 
-	struct Link
-	{
-		int startPinID;
-		int endPinID;
-	};
-	ImFlow::BaseNode* lastNode = nullptr;
-	lastNode->in
+	
+
 	for (auto& item : j["nodes"])
 	{
+		auto newNode = nodeFactory.Create(item["Type"]);
+		newNode->setPos({ item["pos"][0], item["pos"][1] });
 
+		ISerializable* serializeable = dynamic_cast<ISerializable*>(newNode.get());
+		if (serializeable)
+		{
+			serializeable->Deserialize(item);
+		}
 	}
 
 	for (auto& item : j["links"])
 	{
+		ImFlow::Pin* left;
+		ImFlow::Pin* right;
+
+		for (const auto& node : myGrid->getNodes() | std::views::transform([](const auto& item) { return item.second.get(); }))
+		{
+			right = node->inPin(item["right"]);
+			left = node->outPin(item["left"]);
+			left->createLink(right);
+		}
 
 
+	}
+}
+
+void ShaderNodeEditor::UpdateImp()
+{
+	if (ImGui::BeginMenuBar())
+	{
+		if (ImGui::BeginMenu((char*)u8"파일", true))
+		{
+			if (ImGui::MenuItem((char*)u8"내보내기", nullptr, nullptr, true))
+			{
+				GenerateShaderCode();
+			}
+			ImGui::EndMenu();
+		}
+		ImGui::EndMenuBar();
+	}
+};
+
+void ShaderNodeEditor::GenerateShaderCode()
+{
+	std::vector<ShaderDataProcess*> originalNodeReturn;
+
+	for (size_t i = 0; i < EShaderResult::MAX; i++)
+	{
+		auto temp = resultNode->getInVal<ShaderNodeReturn>(EShaderResult::pinNames[i]);
+		if (temp)
+		{
+			for (auto& item : *temp)
+			{
+				originalNodeReturn.emplace_back(item);
+			}
+
+			// temp의 마지막 Variable 찾기
+			auto lastVariable = std::ranges::find_if(temp->rbegin(), temp->rend(), [](auto& item) { return dynamic_cast<Variable*>(item); });
+
+
+
+			if (lastVariable != temp->rend())
+			{
+				Execution* execution = new Execution;
+				execution->leftIdentifier = EShaderResult::hlslName[i];
+				execution->rightIdentifier = static_cast<Variable*>(*lastVariable)->identifier;
+				originalNodeReturn.emplace_back(execution);
+			}
+
+			delete temp;
+		}
+		myGrid->get_recursion_blacklist().clear();
+	}
+
+	std::vector<Variable*> definitions;
+	std::vector<Execution*> executions;
+	std::vector<Define*> defines;
+
+	for (auto& item : originalNodeReturn)
+	{
+		if (auto data = dynamic_cast<Variable*>(item))
+		{
+			definitions.emplace_back(data);
+		}
+		else if (auto data = dynamic_cast<Execution*>(item))
+		{
+			executions.emplace_back(data);
+		}
+		else if (auto data = dynamic_cast<Define*>(item))
+		{
+			defines.emplace_back(data);
+		}
+	}
+	std::ranges::sort(defines, [](auto& a, auto& b) { return a->name < b->name; });
+	defines.erase(std::ranges::unique(defines, [](auto& a, auto& b) { return a->name == b->name; }).begin(), defines.end());
+
+	std::ranges::sort(definitions, [](auto& a, auto& b) { return a->identifier < b->identifier; });
+	definitions.erase(std::ranges::unique(definitions, [](auto& a, auto& b) { return a->identifier == b->identifier; }).begin(), definitions.end());
+
+	std::stringstream defineLine;
+	std::stringstream definitionsLine;
+	std::stringstream executionsLine;
+
+	for (auto& item : defines)
+	{
+		defineLine << *item << std::endl;
+	}
+
+	for (auto& item : definitions)
+	{
+		definitionsLine << *item << std::endl;
+	}
+
+	for (auto& item : executions)
+	{
+		executionsLine << *item << std::endl;
+	}
+
+	for (auto& item : originalNodeReturn)
+	{
+		delete item;
+	}
+
+
+	std::ofstream file("Resource/Shader/Effect.hlsl");
+
+	if (file.is_open())
+	{
+		std::string content = std::format(
+			R"aa(
+#include "../EngineShader/Shared.hlsli"
+#include "../EngineShader/GBufferMaterial.hlsli"
+
+{0}
+
+GBufferMaterial GetCustomGBufferMaterial(PS_INPUT input)
+{{
+    GBufferMaterial material = GetDefaultGBufferMaterial(input);
+
+{1}
+{2}
+    return material;
+}}
+
+#define GetGBufferMaterial GetCustomGBufferMaterial
+#include "../EngineShader/BasePassPS.hlsl"
+)aa",
+defineLine.str(),
+definitionsLine.str(),
+executionsLine.str()
+);
+
+		file << content;
+		file.close();
 	}
 }

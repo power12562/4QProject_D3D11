@@ -10,7 +10,7 @@
 
 class RendererTestApp : public WinGameApp
 {
-	ShaderNodeEditor nodeEditor;
+	std::unique_ptr<ShaderNodeEditor> nodeEditor;
 public:
 	RendererTestApp();
 	~RendererTestApp();

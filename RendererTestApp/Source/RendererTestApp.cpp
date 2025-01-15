@@ -54,8 +54,7 @@ void RendererTestApp::Start()
 	TestInit();
 
     renderer->SetRenderTarget(backBuffer);
-
-
+	nodeEditor = std::make_unique<ShaderNodeEditor>();
 
 
 
@@ -153,7 +152,7 @@ void RendererTestApp::Update()
 	ImGui::Text("fps : %d", beforeCount);
     ImGui::End();
 
-    nodeEditor.Update();
+    nodeEditor->Update();
     Transform::UpdateMatrix();
     Transform::ClearUpdateList();
 	
@@ -188,7 +187,7 @@ void RendererTestApp::Render()
 
 void RendererTestApp::Uninitialize()
 {
-    nodeEditor.~ShaderNodeEditor();
+    nodeEditor.reset();
     sceneManager.AddObjects();
     sceneManager.currScene.reset();
     gameObjectFactory.UninitializeMemoryPool();

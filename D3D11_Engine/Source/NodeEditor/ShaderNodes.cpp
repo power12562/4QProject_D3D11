@@ -1,14 +1,12 @@
 #include "ShaderNodes.h"
 
-ShaderNode::ShaderNode(size_t guid) :
-	guid(guid)
+ShaderNode::ShaderNode()
 {
 	setStyle(ImFlow::NodeStyle::green());
 	
 }
 
-ConstantValueNode::ConstantValueNode(size_t newGuid) :
-	ShaderNode(newGuid)
+ConstantValueNode::ConstantValueNode()
 {
 	Set(0.0f);
 	setStyle(ImFlow::NodeStyle::green());
@@ -17,7 +15,7 @@ ConstantValueNode::ConstantValueNode(size_t newGuid) :
 		{
 			Variable* var = new Variable();
 			var->type = "float";
-			var->identifier = std::format({ "c_{}" }, guid);
+			var->identifier = std::format({ "c_{}" }, getUID());
 			var->initializationExpression = std::format({ "{}" }, value);
 
 			ShaderNodeReturn result = CreateShaderNodeReturn();
@@ -53,8 +51,7 @@ void ConstantValueNode::Deserialize(const nlohmann::json& j)
 	value = j["value"];
 }
 
-ConstantVector2Node::ConstantVector2Node(size_t newGuid) :
-	ShaderNode(newGuid)
+ConstantVector2Node::ConstantVector2Node()
 {
 	Set(value);
 	setStyle(ImFlow::NodeStyle::green());
@@ -63,7 +60,7 @@ ConstantVector2Node::ConstantVector2Node(size_t newGuid) :
 		{
 			Variable* var = new Variable();
 			var->type = "float2";
-			var->identifier = std::format({ "c_{}" }, guid);
+			var->identifier = std::format({ "c_{}" }, getUID());
 			var->initializationExpression = std::format({ "float2({}, {})" }, value.x, value.y);
 
 			ShaderNodeReturn result = CreateShaderNodeReturn();
@@ -76,7 +73,7 @@ ConstantVector2Node::ConstantVector2Node(size_t newGuid) :
 		{
 			Variable* var = new Variable();
 			var->type = "float";
-			var->identifier = std::format({ "c_x{}" }, guid);
+			var->identifier = std::format({ "c_x{}" }, getUID());
 			var->initializationExpression = std::format({ "{}" }, value.x);
 
 			ShaderNodeReturn result = CreateShaderNodeReturn();
@@ -89,7 +86,7 @@ ConstantVector2Node::ConstantVector2Node(size_t newGuid) :
 		{
 			Variable* var = new Variable();
 			var->type = "float";
-			var->identifier = std::format({ "c_y{}" }, guid);
+			var->identifier = std::format({ "c_y{}" }, getUID());
 			var->initializationExpression = std::format({ "{}" }, value.y);
 
 			ShaderNodeReturn result = CreateShaderNodeReturn();
@@ -137,8 +134,7 @@ void ConstantVector2Node::Deserialize(const nlohmann::json& j)
 	value.y = j["value.y"];
 }
 
-ConstantVector3Node::ConstantVector3Node(size_t newGuid) :
-	ShaderNode(newGuid)
+ConstantVector3Node::ConstantVector3Node()
 {
 	Set(value);
 	setStyle(ImFlow::NodeStyle::green());
@@ -147,7 +143,7 @@ ConstantVector3Node::ConstantVector3Node(size_t newGuid) :
 		{
 			Variable* var = new Variable();
 			var->type = "float3";
-			var->identifier = std::format({ "c_{}" }, guid);
+			var->identifier = std::format({ "c_{}" }, getUID());
 			var->initializationExpression = std::format({ "float3({}, {}, {})" }, value.x, value.y, value.z);
 
 			ShaderNodeReturn result = CreateShaderNodeReturn();
@@ -159,7 +155,7 @@ ConstantVector3Node::ConstantVector3Node(size_t newGuid) :
 		{
 			Variable* var = new Variable();
 			var->type = "float";
-			var->identifier = std::format({ "c_x{}" }, guid);
+			var->identifier = std::format({ "c_x{}" }, getUID());
 			var->initializationExpression = std::format({ "{}" }, value.x);
 
 			ShaderNodeReturn result = CreateShaderNodeReturn();
@@ -171,7 +167,7 @@ ConstantVector3Node::ConstantVector3Node(size_t newGuid) :
 		{
 			Variable* var = new Variable();
 			var->type = "float";
-			var->identifier = std::format({ "c_y{}" }, guid);
+			var->identifier = std::format({ "c_y{}" }, getUID());
 			var->initializationExpression = std::format({ "{}" }, value.y);
 
 			ShaderNodeReturn result = CreateShaderNodeReturn();
@@ -183,7 +179,7 @@ ConstantVector3Node::ConstantVector3Node(size_t newGuid) :
 		{
 			Variable* var = new Variable();
 			var->type = "float";
-			var->identifier = std::format({ "c_z{}" }, guid);
+			var->identifier = std::format({ "c_z{}" }, getUID());
 			var->initializationExpression = std::format({ "{}" }, value.z);
 
 			ShaderNodeReturn result = CreateShaderNodeReturn();
@@ -243,8 +239,7 @@ void ConstantVector3Node::Deserialize(const nlohmann::json& j)
 	value.z = j["value.z"];
 }
 
-ConstantVector4Node::ConstantVector4Node(size_t newGuid) :
-	ShaderNode(newGuid)
+ConstantVector4Node::ConstantVector4Node()
 {
 	Set(value);
 	setStyle(ImFlow::NodeStyle::green());
@@ -253,7 +248,7 @@ ConstantVector4Node::ConstantVector4Node(size_t newGuid) :
 		{
 			Variable* var = new Variable();
 			var->type = "float4";
-			var->identifier = std::format({ "c_{}" }, guid);
+			var->identifier = std::format({ "c_{}" }, getUID());
 			var->initializationExpression = std::format({ "float4({}, {}, {}, {})" }, value.x, value.y, value.z, value.w);
 
 			ShaderNodeReturn result = CreateShaderNodeReturn();
@@ -265,7 +260,7 @@ ConstantVector4Node::ConstantVector4Node(size_t newGuid) :
 		{
 			Variable* var = new Variable();
 			var->type = "float";
-			var->identifier = std::format({ "c_x{}" }, guid);
+			var->identifier = std::format({ "c_x{}" }, getUID());
 			var->initializationExpression = std::format({ "{}" }, value.x);
 
 			ShaderNodeReturn result = CreateShaderNodeReturn();
@@ -277,7 +272,7 @@ ConstantVector4Node::ConstantVector4Node(size_t newGuid) :
 		{
 			Variable* var = new Variable();
 			var->type = "float";
-			var->identifier = std::format({ "c_y{}" }, guid);
+			var->identifier = std::format({ "c_y{}" }, getUID());
 			var->initializationExpression = std::format({ "{}" }, value.y);
 
 			ShaderNodeReturn result = CreateShaderNodeReturn();
@@ -289,7 +284,7 @@ ConstantVector4Node::ConstantVector4Node(size_t newGuid) :
 		{
 			Variable* var = new Variable();
 			var->type = "float";
-			var->identifier = std::format({ "c_z{}" }, guid);
+			var->identifier = std::format({ "c_z{}" }, getUID());
 			var->initializationExpression = std::format({ "{}" }, value.z);
 
 			ShaderNodeReturn result = CreateShaderNodeReturn();
@@ -301,7 +296,7 @@ ConstantVector4Node::ConstantVector4Node(size_t newGuid) :
 		{
 			Variable* var = new Variable();
 			var->type = "float";
-			var->identifier = std::format({ "c_w{}" }, guid);
+			var->identifier = std::format({ "c_w{}" }, getUID());
 			var->initializationExpression = std::format({ "{}" }, value.w);
 
 			ShaderNodeReturn result = CreateShaderNodeReturn();
@@ -372,8 +367,7 @@ void ConstantVector4Node::Deserialize(const nlohmann::json& j)
 	value.w = j["value.w"];
 }
 
-ShaderResultNode::ShaderResultNode(size_t newGuid) :
-	ShaderNode(newGuid)
+ShaderResultNode::ShaderResultNode()
 {
 	setStyle(ImFlow::NodeStyle::red());
 	setTitle("BRDF");
@@ -387,7 +381,5 @@ ShaderResultNode::ShaderResultNode(size_t newGuid) :
 
 ShaderNodeReturn CreateShaderNodeReturn()
 {
-	{
-		return new std::vector<ShaderDataProcess*>;
-	}
+	return new std::vector<ShaderDataProcess*>;
 }

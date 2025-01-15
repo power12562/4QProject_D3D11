@@ -7,6 +7,8 @@
 #include <format>
 #include <directxtk\SimpleMath.h>
 #include "json.hpp"
+
+
 using Vector2 = DirectX::SimpleMath::Vector2;
 using Vector3 = DirectX::SimpleMath::Vector3;
 using Vector4 = DirectX::SimpleMath::Vector4;
@@ -54,21 +56,27 @@ static std::ostream& operator<<(std::ostream& os, const Define& data)
 using ShaderNodeReturn = std::vector<ShaderDataProcess*>*;
 static ShaderNodeReturn CreateShaderNodeReturn();
 
-class ShaderNode : public ImFlow::BaseNode
+class ISerializable
 {
 public:
-	ShaderNode(size_t guid);
+	virtual void Serialize(nlohmann::json& j) = 0;
+	virtual void Deserialize(const nlohmann::json& j) = 0;
+};
+
+class ShaderNode : public ImFlow::BaseNode, public ISerializable
+{
+public:
+	ShaderNode();
+
+public:
 	virtual void Serialize(nlohmann::json& j){}
 	virtual void Deserialize(const nlohmann::json& j){}
-
-protected:
-	size_t guid;
 };
 
 class ConstantValueNode : public ShaderNode
 {
 public:
-	ConstantValueNode(size_t newGuid);
+	ConstantValueNode();
 
 public:
 	void Set(float value);
@@ -83,7 +91,7 @@ private:
 class ConstantVector2Node : public ShaderNode
 {
 public:
-	ConstantVector2Node(size_t newGuid);
+	ConstantVector2Node();
 
 public:
 	void Set(const Vector2& value);
@@ -99,7 +107,7 @@ private:
 class ConstantVector3Node : public ShaderNode
 {
 public:
-	ConstantVector3Node(size_t newGuid);
+	ConstantVector3Node();
 
 public:
 	void Set(const Vector3& value);
@@ -115,7 +123,7 @@ private:
 class ConstantVector4Node : public ShaderNode
 {
 public:
-	ConstantVector4Node(size_t newGuid);
+	ConstantVector4Node();
 
 public:
 	void Set(const Vector4& value);
@@ -166,7 +174,7 @@ namespace EShaderResult
 class ShaderResultNode : public ShaderNode
 {
 public:
-	ShaderResultNode(size_t newGuid);
+	ShaderResultNode();
 
 
 	virtual void destroy(){ }
