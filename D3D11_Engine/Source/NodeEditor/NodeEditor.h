@@ -7,6 +7,8 @@
 #include <fstream>
 
 #include <any>
+#include <filesystem>
+#include "json.hpp"
 
 class NodeEditor
 {
@@ -16,13 +18,14 @@ public:
 
 	void Update();
 	void Save();
+	void Load(std::filesystem::path path);
 	virtual void UpdateImp() {};
-
 
 protected:
 	std::shared_ptr<ImFlow::ImNodeFlow> myGrid;
 	ShaderResultNode* resultNode;
 	size_t count = 0;
+	std::filesystem::path path;
 };
 
 class ShaderNodeEditor : public NodeEditor

@@ -125,7 +125,78 @@ void NodeEditor::Update()
 
 }
 
+
+
 void NodeEditor::Save()
 {
+	nlohmann::json j;
+	for (ImFlow::BaseNode* item : myGrid->getNodes() | std::views::transform([](const auto& item) {return item.second.get();}))
+	{
+		ShaderNode* node = static_cast<ShaderNode*>(item);
+		nlohmann::json nodeJson;
+		nlohmann::json pinsJson;
+		nodeJson["Type"] = typeid(*item).name();
+		nodeJson["pos"] = { item->getPos().x, item->getPos().y };
+		nodeJson["size"] = { item->getSize().x, item->getSize().y };
+		node->Serialize(nodeJson);
+		for (auto& pin : node->getIns())
+		{
+			pinsJson.push_back(pin->getUid());
+		}
+		nodeJson["pins"] = pinsJson;
+		j["nodes"].push_back(nodeJson);
+	}
 
+	for (const auto& item : myGrid->getLinks() | std::views::transform([](const auto& item) { return item.lock().get(); }))
+	{
+		nlohmann::json linkJson;
+		linkJson["start"] = item->left()->getUid();
+		linkJson["end"] = item->right()->getUid();
+		j["links"].push_back(linkJson);
+	}
+
+	std::ofstream file(path);
+	file << j.dump(4);
+	file.close();
+
+
+
+}
+
+void NodeEditor::Load(std::filesystem::path path)
+{
+	if (std::filesystem::exists(path))
+	{
+		Save();
+	}
+
+	this->path = path;
+	myGrid = std::make_shared<ImFlow::ImNodeFlow>();
+
+	std::ifstream file(path);
+	if (!file.is_open())
+	{
+		return;
+	}
+	nlohmann::json j;
+	file >> j;
+	file.close();
+
+	struct Link
+	{
+		int startPinID;
+		int endPinID;
+	};
+	ImFlow::BaseNode* lastNode = nullptr;
+	lastNode->in
+	for (auto& item : j["nodes"])
+	{
+
+	}
+
+	for (auto& item : j["links"])
+	{
+
+
+	}
 }

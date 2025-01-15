@@ -155,6 +155,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\NodeEditor\json.hpp" />
     <ClInclude Include="Source\NodeEditor\ShaderNodes.h" />
     <ClInclude Include="Source\NodeEditor\NodeEditor.h" />
     <ClInclude Include="Source\Component\Rigidbody\Rigidbody.h" />

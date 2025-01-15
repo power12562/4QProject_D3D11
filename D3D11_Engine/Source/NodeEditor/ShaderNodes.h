@@ -6,6 +6,7 @@
 #include <string>
 #include <format>
 #include <directxtk\SimpleMath.h>
+#include "json.hpp"
 using Vector2 = DirectX::SimpleMath::Vector2;
 using Vector3 = DirectX::SimpleMath::Vector3;
 using Vector4 = DirectX::SimpleMath::Vector4;
@@ -57,6 +58,8 @@ class ShaderNode : public ImFlow::BaseNode
 {
 public:
 	ShaderNode(size_t guid);
+	virtual void Serialize(nlohmann::json& j){}
+	virtual void Deserialize(const nlohmann::json& j){}
 
 protected:
 	size_t guid;
@@ -70,6 +73,8 @@ public:
 public:
 	void Set(float value);
 	void draw() override;
+	virtual void Serialize(nlohmann::json& j) override;
+	virtual void Deserialize(const nlohmann::json& j) override;
 
 private:
 	float value;
@@ -83,6 +88,8 @@ public:
 public:
 	void Set(const Vector2& value);
 	void draw() override;
+	virtual void Serialize(nlohmann::json& j) override;
+	virtual void Deserialize(const nlohmann::json& j) override;
 
 private:
 	Vector2 value;
@@ -97,6 +104,8 @@ public:
 public:
 	void Set(const Vector3& value);
 	void draw() override;
+	virtual void Serialize(nlohmann::json& j) override;
+	virtual void Deserialize(const nlohmann::json& j) override;
 
 private:
 	Vector3 value;
@@ -111,6 +120,8 @@ public:
 public:
 	void Set(const Vector4& value);
 	void draw() override;
+	virtual void Serialize(nlohmann::json& j) override;
+	virtual void Deserialize(const nlohmann::json& j) override;
 
 private:
 	Vector4 value;

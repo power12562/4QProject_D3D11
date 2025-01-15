@@ -43,6 +43,16 @@ void ConstantValueNode::draw()
 	ImGui::PopID();
 }
 
+void ConstantValueNode::Serialize(nlohmann::json& j)
+{
+	j["value"] = value;
+}
+
+void ConstantValueNode::Deserialize(const nlohmann::json& j)
+{
+	value = j["value"];
+}
+
 ConstantVector2Node::ConstantVector2Node(size_t newGuid) :
 	ShaderNode(newGuid)
 {
@@ -113,6 +123,18 @@ void ConstantVector2Node::draw()
 		}
 		ImGui::PopID();
 	}
+}
+
+void ConstantVector2Node::Serialize(nlohmann::json& j)
+{
+	j["value.x"] = value.x;
+	j["value.y"] = value.y;
+}
+
+void ConstantVector2Node::Deserialize(const nlohmann::json& j)
+{
+	value.x = j["value.x"];
+	value.y = j["value.y"];
 }
 
 ConstantVector3Node::ConstantVector3Node(size_t newGuid) :
@@ -205,6 +227,20 @@ void ConstantVector3Node::draw()
 		}
 		ImGui::PopID();
 	}
+}
+
+void ConstantVector3Node::Serialize(nlohmann::json& j)
+{
+	j["value.x"] = value.x;
+	j["value.y"] = value.y;
+	j["value.z"] = value.z;
+}
+
+void ConstantVector3Node::Deserialize(const nlohmann::json& j)
+{
+	value.x = j["value.x"];
+	value.y = j["value.y"];
+	value.z = j["value.z"];
 }
 
 ConstantVector4Node::ConstantVector4Node(size_t newGuid) :
@@ -318,6 +354,22 @@ void ConstantVector4Node::draw()
 		}
 		ImGui::PopID();
 	}
+}
+
+void ConstantVector4Node::Serialize(nlohmann::json& j)
+{
+	j["value.x"] = value.x;
+	j["value.y"] = value.y;
+	j["value.z"] = value.z;
+	j["value.w"] = value.w;
+}
+
+void ConstantVector4Node::Deserialize(const nlohmann::json& j)
+{
+	value.x = j["value.x"];
+	value.y = j["value.y"];
+	value.z = j["value.z"];
+	value.w = j["value.w"];
 }
 
 ShaderResultNode::ShaderResultNode(size_t newGuid) :
