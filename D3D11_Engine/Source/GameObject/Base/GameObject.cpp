@@ -60,7 +60,7 @@ GameObject::~GameObject()
 	instanceIDManager.returnID(instanceID);
 	sceneManager.EraseObjectFindMap(this);
 
-
+	componentList.clear();
 	if (physicsActor) delete physicsActor;
 }
 
