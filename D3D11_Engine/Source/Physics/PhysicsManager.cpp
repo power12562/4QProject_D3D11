@@ -85,16 +85,16 @@ px::PxFilterFlags PhysicsManager::DefaultPhysicsFilterShader(px::PxFilterObjectA
 
 PhysicsManager::~PhysicsManager()
 {
+	SafeDelete(&physics_scene);
+	SafeDelete(&layer_manager);
+	SafeDelete(&default_scene_desc);
+	SafeDelete(&defaultPhysicsMaterial);
+
 	// 작동하는지 확인 안 됨
 	if (px_physics) px_physics->release();
 	if (px_dispatcher) px_dispatcher->release();
 	if (px_pvd) px_pvd->release();
 	if (px_foundation) px_foundation->release();
-
-	SafeDelete(&layer_manager);
-	SafeDelete(&physics_scene);
-	SafeDelete(&default_scene_desc);
-	SafeDelete(&defaultPhysicsMaterial);
 }
 
 void PhysicsManager::ClearPhysicsScene()
