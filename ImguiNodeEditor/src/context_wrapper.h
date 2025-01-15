@@ -5,7 +5,10 @@
 
 inline static void CopyIOEvents(ImGuiContext* src, ImGuiContext* dst, ImVec2 origin, float scale)
 {
+    dst->Time = src->Time;
+	dst->FramerateSecPerFrameAccum = src->FramerateSecPerFrameAccum;
     dst->InputEventsQueue = src->InputEventsTrail;
+	dst->IO.DeltaTime = src->IO.DeltaTime;
     for (ImGuiInputEvent& e : dst->InputEventsQueue) {
         if (e.Type == ImGuiInputEventType_MousePos) {
             e.MousePos.PosX = (e.MousePos.PosX - origin.x) / scale;
@@ -112,7 +115,12 @@ inline void ContainedContext::begin()
     m_origin = ImGui::GetCursorScreenPos();
     m_original_ctx = ImGui::GetCurrentContext();
     const ImGuiStyle& orig_style = ImGui::GetStyle();
-    if (!m_ctx) m_ctx = ImGui::CreateContext(ImGui::GetIO().Fonts);
+    if (!m_ctx)
+    {
+        m_ctx = ImGui::CreateContext(ImGui::GetIO().Fonts);
+            m_ctx->FramerateSecPerFrameAccum =         m_original_ctx->FramerateSecPerFrameAccum;
+    }
+    ;
     ImGui::SetCurrentContext(m_ctx);
     ImGuiStyle& new_style = ImGui::GetStyle();
     new_style = orig_style;

@@ -10,7 +10,7 @@
 
 class RendererTestApp : public WinGameApp
 {
-	NodeEditor nodeEditor;
+	ShaderNodeEditor nodeEditor;
 public:
 	RendererTestApp();
 	~RendererTestApp();
