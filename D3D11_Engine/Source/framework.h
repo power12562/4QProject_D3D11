@@ -27,6 +27,10 @@
 #include <Physics/PhysicsActor/PhysicsActor.h>
 #include <Physics/PhysicsScene/PhysicsScene.h>
 
+// Sound
+#include <Sound/FMODFramework.h>
+#include <Sound/SoundSystem.h>
+
 
 //gameObjects
 #include <GameObject/Base/CameraObject.h>
@@ -54,6 +58,7 @@
 #include <Component/Collider/CapsuleCollider.h>
 #include <Component/Collider/SphereCollider.h>
 
+#include <Component/SoundManager/SoundManager.h>
 
 
 //Lights

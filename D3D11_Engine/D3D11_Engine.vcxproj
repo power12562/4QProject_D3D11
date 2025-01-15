@@ -117,7 +117,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>Default</LanguageStandard_C>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(ProjectDir)Source\;$(ProjectDir)Source\InverseKinematics\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Source\;$(ProjectDir)Source\InverseKinematics\include\;$(SolutionDir)ThirdParty\fmod\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -138,7 +138,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>Default</LanguageStandard_C>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(ProjectDir)Source\;$(ProjectDir)Source\InverseKinematics\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Source\;$(ProjectDir)Source\InverseKinematics\include\;$(SolutionDir)ThirdParty\fmod\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>MaxSpeed</Optimization>
       <WholeProgramOptimization>true</WholeProgramOptimization>
     </ClCompile>
@@ -153,6 +153,9 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Component\SoundManager\SoundManager.h" />
+    <ClInclude Include="Source\Sound\SoundSystem.h" />
+    <ClInclude Include="Source\Sound\FMODFramework.h" />
     <ClInclude Include="Source\Physics\PhysicsLayerManager\PhysicsLayerManager.h" />
     <ClInclude Include="Source\Physics\PhysicsScene\PhysicsSceneEventCallback.h" />
     <ClInclude Include="Source\Component\Rigidbody\Rigidbody.h" />
@@ -243,6 +246,8 @@
     <ClInclude Include="Source\Component\Collider\SphereCollider.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Component\SoundManager\SoundManager.cpp" />
+    <ClCompile Include="Source\Sound\SoundSystem.cpp" />
     <ClCompile Include="Source\Physics\PhysicsLayerManager\PhysicsLayerManager.cpp" />
     <ClCompile Include="Source\Physics\PhysicsScene\PhysicsSceneEventCallback.cpp" />
     <ClCompile Include="Source\Component\Rigidbody\Rigidbody.cpp" />
@@ -472,6 +477,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="Source\Physics\readme.txt" />
+    <Text Include="Source\Sound\readme.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
