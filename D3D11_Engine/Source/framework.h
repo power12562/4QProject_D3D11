@@ -48,6 +48,7 @@
 #include <Utility/utfConvert.h>
 #include <Utility/ImguiHelper.h>
 #include <Utility/FileSystemUtility.h>
+#include <Utility/WinUtility.h>
 
 //Math
 #include <Math/Mathf.h>

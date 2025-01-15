@@ -1,12 +1,14 @@
 #pragma once
 #include <Component/Base/RenderComponent.h>
 #include <string>
+#include <Asset/MaterialAsset.h>
 
 struct TransformBufferData
 {
 	alignas(16) Matrix World;
 	alignas(16) Matrix WorldInverseTranspose;
 };
+
 class MeshRender : public RenderComponent
 {
 	inline static std::list<MeshRender*> instanceList;
@@ -26,24 +28,37 @@ public:
 
 	bool isForward = false;
 protected:
-	std::shared_ptr<MeshData> sharedMeshData;
+	MeshDrawCommand				meshDrawCommand;
+	ConstantBuffer				transformBuffer;
+	ConstantBuffer				material;
 
-	MeshDrawCommand meshDrawCommand;
-	ConstantBuffer transformBuffer;
-	ConstantBuffer material;
-	std::vector<uint32_t> texturesSlot;
-	std::vector<Texture> texturesV2;
+public:
+	MaterialAsset materialAsset;
+
 protected:
 	virtual void FixedUpdate() = 0;
 	virtual void Update() = 0;
 	virtual void LateUpdate() = 0;
-	virtual void Render();
-
+	virtual void Render() final;
 public:
 	virtual void CreateMesh() = 0;
+	virtual void UpdateMeshDrawCommand() = 0;
 
 public:
-	void SetMeshResource(const wchar_t* path);
+	void SetVS(const wchar_t* path);
+	inline const std::wstring& GetVSpath() { return currVSpath; }
+
+	void SetPS(const wchar_t* path);
+	inline const std::wstring& GetPSpath() { return currPSpath; }
+
+private:
+	std::wstring currVSpath;
+	std::wstring currPSpath;
+
+public:
+	void SetMeshResource(int meshID);
+	inline int GetMeshID() const { return MeshID; }
+private:
 	int MeshID = -1;
 
 public:

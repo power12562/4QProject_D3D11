@@ -2,7 +2,6 @@
 #include "Math\Mathf.h"
 
 #include <framework.h>
-#include <D3DCore/D3DRenderer.h>
 
 #include <unordered_map>
 #include <string>
@@ -197,50 +196,6 @@ void ImGui::EditHierarchyView()
 	PopID();
 }
 
-void ImGui::EditD3DRenderer()
-{
-	ImGui::PushID(g_id);
-	ImGui::Text("D3DRenderer");
-	ImGui::Text("FPS : %d", TimeSystem::Time.GetFrameRate());
-	ImGui::Text("Draw call : %llu", d3dRenderer.GetDrawCount());
-	if (ImGui::Button("Recompile Shader"))
-	{
-		MeshRender::ReloadShaderAll();
-		d3dRenderer.CreateDeferredResource();
-	}	
-	if (ImGui::Button("Toggle Fullscreen"))
-		d3dRenderer.ToggleFullscreenMode();
-	ImGui::ColorEdit3("Clear Color", &d3dRenderer.backgroundColor);
-	ImGui::ColorEdit4("Debug Draw Color", (float*)&d3dRenderer.DebugSetting.DebugDrawColor);
-	ImGui::Checkbox("Frustum Culling On / Off", &d3dRenderer.DebugSetting.UseFrustumCulling);
-	ImGui::Checkbox("Lock Camera Frustum", &d3dRenderer.DebugSetting.LockCameraFrustum);
-	ImGui::Checkbox("Draw Camera Frustum", &d3dRenderer.DebugSetting.DrawCameraFrustum);
-	ImGui::Checkbox("Draw Light Frustum", &d3dRenderer.DebugSetting.DrawLightFrustum);
-	ImGui::Checkbox("Draw Object Culling Box", &d3dRenderer.DebugSetting.DrawObjectCullingBox);
-	ImGui::Checkbox("VSync", &d3dRenderer.Setting.UseVSync);
-	ImGui::Text("Viewport");
-	{
-		SIZE size = D3D11_GameApp::GetClientSize();
-		float sizeWidth = (float)size.cx;
-		float sizeHeight = (float)size.cy;
-		D3D11_VIEWPORT& viewPort = d3dRenderer.ViewPortsVec.front();
-		ImGui::SliderFloat("Width", (float*)&viewPort.Width, 100, sizeWidth);
-		viewPort.Width = std::clamp(viewPort.Width, 100.f, sizeWidth);
-
-		ImGui::SliderFloat("Height", (float*)&viewPort.Height, 100, sizeHeight);
-		viewPort.Height = std::clamp(viewPort.Height, 100.f, sizeHeight);
-
-		ImGui::SliderFloat("TopLeftX", (float*)&viewPort.TopLeftX, 0, size.cx - viewPort.Width);
-		viewPort.TopLeftX = std::clamp(viewPort.TopLeftX, 0.f, size.cx - viewPort.Width);
-
-		ImGui::SliderFloat("TopLeftY", (float*)&viewPort.TopLeftY, 0, size.cy - viewPort.Height);
-		viewPort.TopLeftY = std::clamp(viewPort.TopLeftY, 0.f, size.cy - viewPort.Height);
-	}
-	ImGui::Text("");
-	ImGui::PopID();
-	g_id++;
-}
-
 void ImGui::EditTransform(GameObject* gameObject)
 {
 	ImGui::PushID(g_id);
@@ -268,8 +223,6 @@ void ImGui::EditCamera(const char* label, Camera* pCamera, CameraMoveHelper* pCa
 	ImGui::Text(label);
 	EditTransform(&pCamera->gameObject);
 	ImGui::PushID(g_id);
-	ImGui::Checkbox("Draw Frustum", &d3dRenderer.DebugSetting.DrawCameraFrustum);
-	ImGui::Checkbox("Lock Frustum", &d3dRenderer.DebugSetting.LockCameraFrustum);
 	ImGui::SliderFloat("FOV", &pCamera->FOV, 10, 120);
 	ImGui::SliderFloat("Near", &pCamera->Near, 0.05f, 10.f);
 	ImGui::SliderFloat("Far", &pCamera->Far, 15.f, 10000.f);
@@ -292,9 +245,9 @@ void ImGui::EditMaterial(const char* label, cb_PBRMaterial* Material)
 	ImGui::SliderFloat("Metalness", &Material->Metalness, 0.f, 1.0f);
 	ImGui::SliderFloat("Roughness", &Material->Roughness, 0.f, 1.0f);
 
-	ImGui::Checkbox("Metalness Map", &Material->UseMetalnessMap);
-	ImGui::Checkbox("Roughness Map", &Material->UseRoughnessMap);
-	ImGui::Checkbox("RMAC Map", &Material->UseRMACMap);
+	ImGui::Checkbox("Metalness Map", (bool*)&Material->UseMetalnessMap);
+	ImGui::Checkbox("Roughness Map", (bool*)&Material->UseRoughnessMap);
+	ImGui::Checkbox("RMAC Map",		 (bool*)&Material->UseRMACMap);
 
 	ImGui::Text("");
 	ImGui::PopID();
@@ -334,12 +287,11 @@ namespace CompressPopupField
 	static std::queue<std::wstring>  savePath_Queue;
 	static std::vector<std::thread>  compressThreads;
 	static std::vector<ID3D11ShaderResourceView*> tempSRVvec;
-	static std::unordered_set<D3DTexture2D*> textures;	//압축 후 다시 로드할 텍스쳐들
 	static std::unordered_set<GameObject*> DestroyObjects;	//압축 파괴할 오브젝트 목록
 	static std::atomic_int threadsCounter;
 }
 
-bool ImGui::ShowCompressPopup(const wchar_t* path, D3DTexture2D* texture2D, int texType)
+bool ImGui::ShowCompressPopup(const wchar_t* path, ETextureType texType)
 {
 	if (!sceneManager.IsImGuiActive())
 		return false;
@@ -358,8 +310,6 @@ bool ImGui::ShowCompressPopup(const wchar_t* path, D3DTexture2D* texture2D, int 
 	str_queue.push(utfConvert::wstring_to_utf8(path));
 	wstr_queue.push(path);
 	savePath_Queue.push(savePath.c_str());
-	ReloadTextureCompressEnd(savePath.c_str(), texture2D, texType);
-
 
 	/*추천 포멧!!
 	Albedo		BC1/BC3/BC7	 알파 채널 유무에 따라 선택. 색상 데이터의 높은 품질 유지 필요시 BC7 //생각보다 압축티 많이남..
@@ -380,7 +330,7 @@ bool ImGui::ShowCompressPopup(const wchar_t* path, D3DTexture2D* texture2D, int 
 		"BC6",
 		"BC7"
 	};
-	constexpr const char* textureTypeStr[E_TEXTURE::PBRTextureCount] =
+	constexpr const char* textureTypeStr[] =
 	{
 		"Albedo",
 		"Normal",
@@ -409,7 +359,7 @@ bool ImGui::ShowCompressPopup(const wchar_t* path, D3DTexture2D* texture2D, int 
 				static bool showAdvancedSettings = false;
 				if (!initialized)
 				{
-					textureType = texType;
+					textureType = (int)texType;
 					initialized = true;
 				}
 
@@ -421,23 +371,23 @@ bool ImGui::ShowCompressPopup(const wchar_t* path, D3DTexture2D* texture2D, int 
 				}
 				else
 				{
-					ImGui::Combo("Texture Type", &textureType, textureTypeStr, E_TEXTURE::PBRTextureCount);
+					ImGui::Combo("Texture Type", &textureType, textureTypeStr, std::size(textureTypeStr));
 					{
-						E_TEXTURE::TYPE type = (E_TEXTURE::TYPE)textureType;
+						ETextureType type = (ETextureType)textureType;
 						switch (type)
 						{
-						case E_TEXTURE::Normal:
+						case ETextureType::Normal:
 							compressType = Utility::E_COMPRESS::BC5;
 							break;
-						case E_TEXTURE::Albedo:
-						case E_TEXTURE::Specular:
-						case E_TEXTURE::Emissive:
-						case E_TEXTURE::Opacity:
+						case ETextureType::Albedo:
+						case ETextureType::Specular:
+						case ETextureType::Emissive:
+						case ETextureType::Opacity:
 							compressType = Utility::E_COMPRESS::BC7;
 							break;
-						case E_TEXTURE::Metalness:
-						case E_TEXTURE::Roughness:
-						case E_TEXTURE::AmbientOcculusion:
+						case ETextureType::Metalness:
+						case ETextureType::Roughness:
+						case ETextureType::AmbientOcculusion:
 							compressType = Utility::E_COMPRESS::BC4;
 							break;
 						default:
@@ -459,9 +409,9 @@ bool ImGui::ShowCompressPopup(const wchar_t* path, D3DTexture2D* texture2D, int 
 								ID3D11ShaderResourceView* tempSRV;
 								std::filesystem::path filePath = path;
 								if (isExists)
-									Utility::CheckHRESULT(Utility::CreateTextureFromFile(d3dRenderer.GetDevice(), save_path.c_str(), nullptr, &tempSRV));
+									Utility::CheckHRESULT(Utility::CreateTextureFromFile(RendererUtility::GetDevice(), save_path.c_str(), nullptr, &tempSRV));
 								else
-									image = Utility::CreateCompressTexture(d3dRenderer.GetDevice(), path.c_str(), nullptr, &tempSRV, compType);
+									image = Utility::CreateCompressTexture(RendererUtility::GetDevice(), path.c_str(), nullptr, &tempSRV, compType);
 								textureManager.InsertTexture(path.c_str(), tempSRV);
 								tempSRVvec.push_back(tempSRV);
 								CoUninitialize();
@@ -495,10 +445,6 @@ bool ImGui::ShowCompressPopup(const wchar_t* path, D3DTexture2D* texture2D, int 
 									threads.join();
 									--threadsCounter;
 								}
-								for (auto& texture : textures)
-								{
-									texture->ReloadTexture();
-								}
 								for (auto& obj : DestroyObjects)
 								{
 									sceneManager.DestroyObject(obj);
@@ -509,8 +455,6 @@ bool ImGui::ShowCompressPopup(const wchar_t* path, D3DTexture2D* texture2D, int 
 								}
 								compressThreads.clear();
 								compressThreads.shrink_to_fit();
-								textures.clear();
-								textures.rehash(0);
 								tempSRVvec.clear();
 								tempSRVvec.shrink_to_fit();
 								--threadsCounter;
@@ -552,18 +496,6 @@ bool ImGui::ShowCompressPopup(const wchar_t* path, D3DTexture2D* texture2D, int 
 
 	sceneManager.PushImGuiPopupFunc(popupFunc);
 	return true;
-}
-
-bool ImGui::ReloadTextureCompressEnd(const wchar_t* path, D3DTexture2D* texture2D, int texType)
-{
-	using namespace CompressPopupField;
-	if (popupCount > 0)
-	{
-		texture2D->GetPath(texType) = path;
-		textures.insert(texture2D);
-		return true;
-	}
-	return false;
 }
 
 bool ImGui::DestroyObjTextureCompressEnd(GameObject* obj)

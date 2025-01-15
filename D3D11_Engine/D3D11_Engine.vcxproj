@@ -153,9 +153,11 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Asset\Base\AssetBase.h" />
     <ClInclude Include="Source\Component\Rigidbody\Rigidbody.h" />
     <ClInclude Include="Source\Core\GameInputSystem.h" />
     <ClInclude Include="Source\Core\TKeyTracker.h" />
+    <ClInclude Include="Source\Asset\MaterialAsset.h" />
     <ClInclude Include="Source\Manager\InputManager.h" />
     <ClInclude Include="Source\Physics\enum\CollisionDetectionMode.h" />
     <ClInclude Include="Source\Physics\enum\ForceMode.h" />
@@ -233,10 +235,13 @@
     <ClInclude Include="Source\Utility\SpinLock.h" />
     <ClInclude Include="Source\Utility\utfConvert.h" />
     <ClInclude Include="Source\Component\Collider\SphereCollider.h" />
+    <ClInclude Include="Source\Utility\WinUtility.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Asset\Base\AssetBase.cpp" />
     <ClCompile Include="Source\Component\Rigidbody\Rigidbody.cpp" />
     <ClCompile Include="Source\Core\GameInputSystem.cpp" />
+    <ClCompile Include="Source\Asset\MaterialAsset.cpp" />
     <ClCompile Include="Source\Manager\InputManager.cpp" />
     <ClCompile Include="Source\Physics\PhysicsActor\PhysicsActor.cpp" />
     <ClCompile Include="Source\Physics\PhysicsScene\PhysicsScene.cpp" />
@@ -299,6 +304,7 @@
     <ClCompile Include="Source\Utility\SpinLock.cpp" />
     <ClCompile Include="Source\Utility\utfConvert.cpp" />
     <ClCompile Include="Source\Component\Collider\SphereCollider.cpp" />
+    <ClCompile Include="Source\Utility\WinUtility.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\EngineShader\BasePassPS.hlsl">

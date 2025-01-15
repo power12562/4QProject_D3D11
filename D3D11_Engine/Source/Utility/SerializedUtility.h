@@ -20,6 +20,11 @@ namespace Binary
 			ofs.write(reinterpret_cast<const char*>(&data), sizeof(T));
 		}
 		void data(std::ofstream& ofs, const void* data, size_t size);
+
+		template<typename T> void std_vector(std::ofstream& ofs, const std::vector<T>& vec)
+		{
+			Write::data(ofs, vec.data(), sizeof(vec[0]) * vec.size());
+		}
 		void string(std::ofstream& ofs, const std::string& data);
 		void wstring(std::ofstream& ofs, const std::wstring& data);
 		void floatArray(std::ofstream& ofs, const float* data, size_t size);
@@ -46,7 +51,10 @@ namespace Binary
 			return data;
 		}
 		void data(std::ifstream& ifs, void* out, size_t size);
-
+		template<typename T> void std_vector(std::ifstream& ifs, std::vector<T>& out)
+		{
+			Read::data(ifs, out.data(), sizeof(out[0]) * out.size());
+		}
 		std::string string(std::ifstream& ifs);
 		std::wstring wstring(std::ifstream& ifs);
 		void floatArray(std::ifstream& ifs, float* out, size_t size);

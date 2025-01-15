@@ -62,56 +62,6 @@ public:
 	std::shared_ptr<T> operator[](const wchar_t* key) { return GetResource(key); }
 };
 
-template <>
-class ResourceManager<MeshData> : public Resource
-{
-public:
-    /*GetInstance*/
-    static ResourceManager<MeshData>& instance()
-    {
-        static ResourceManager<MeshData> instance;
-        return instance;
-    }
-private:
-    ResourceManager()
-    {
-        auto clearFunc = [this]() { this->Clear(); };
-        clearList.push_back(clearFunc);
-    }
-    ~ResourceManager()
-    {
-        Clear();
-    }
-
-private:
-    std::map<std::wstring, std::vector<std::weak_ptr<MeshData>>> resourceMap;
-public:
-    void Clear()
-    {
-        resourceMap.clear();
-    }
-    std::shared_ptr<MeshData> GetResource(const wchar_t* key, size_t meshID)
-    {
-        auto findIter = resourceMap.find(key);
-
-        if (findIter != resourceMap.end())
-        {
-            if (std::shared_ptr<MeshData> resource = findIter->second[meshID].lock())
-            {
-                return  resource;
-            }
-        }
-        std::shared_ptr<MeshData> resource = std::make_shared<MeshData>();
-        if (resourceMap[key].size() <= meshID)
-        {
-            resourceMap[key].resize(meshID + 1);
-        }
-        resourceMap[key][meshID] = resource;
-        return resource;
-    }
-};
-
-
 template<typename T>
 ResourceManager<T>& GetResourceManager()
 {

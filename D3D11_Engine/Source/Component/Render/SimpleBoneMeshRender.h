@@ -34,11 +34,6 @@ public:
 	virtual ~SimpleBoneMeshRender() override;
 	virtual void Serialized(std::ofstream& ofs);
 	virtual void Deserialized(std::ifstream& ifs);
-private:
-	/*Deserialized된 항목들.*/
-	inline static std::vector<SimpleBoneMeshRender*> DeserializedListVec;
-	/*Deserialized 종료 후 호출해야하는 함수(GameObjectFactory에서 호출)*/
-	static void EndDeserialized();
 
 public:
 	virtual void Start() 		 override;
@@ -46,7 +41,7 @@ protected:
 	virtual void FixedUpdate()	 override;
 	virtual void Update() 		 override;
 	virtual void LateUpdate()	 override;
-	virtual void Render() 		 override;
+	virtual void UpdateMeshDrawCommand() override;
 
 public:
 	virtual void CreateMesh() override;
@@ -60,27 +55,8 @@ public:
 	void AddBonesFromRoot();
 
 private:
-	inline static size_t MatrixPalletCounter = 0;
-	inline static std::queue<size_t> RealseCounterQueue;
-	inline std::string MakeMatrixPalleteKey();
-	std::shared_ptr<MatrixPallete> matrixPallete = {};
-	std::string matrixPalleteKey;
-	int matrixPalleteRegisterIndex = -1;
-	size_t MyMatrixPalletCounter = 0;
+	MatrixPallete matrixPallete = {};
 	std::vector<BoneObject*> boneList;
+	ConstantBuffer matrixPalleteConstBuffer;
 };
-
-inline std::string SimpleBoneMeshRender::MakeMatrixPalleteKey()
-{
-	if (!RealseCounterQueue.empty())
-	{
-		MyMatrixPalletCounter = RealseCounterQueue.front();
-		RealseCounterQueue.pop();
-	}
-	else
-	{
-		MyMatrixPalletCounter = MatrixPalletCounter++;
-	}
-	return std::format("MatrixPallete ({})", MyMatrixPalletCounter);
-}
 

@@ -26,7 +26,7 @@ protected:
 	virtual void FixedUpdate()	 override;
 	virtual void Update() 		 override;
 	virtual void LateUpdate()	 override;
-	virtual void Render() 		 override;
+	virtual void UpdateMeshDrawCommand() override;
 
 public:
 	void CreateMesh();
@@ -34,6 +34,4 @@ public:
 public:
 	std::vector<Vertex> vertices;	
 	std::vector<UINT> indices;	
-
-
 };

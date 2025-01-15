@@ -1,9 +1,11 @@
 #include "MeshRender.h"
 #include <Manager/ResourceManager.h>
 #include <Manager/HLSLManager.h>
+#include <Manager/TextureManager.h>
 #include <Utility/MemoryUtility.h>
 #include <ranges>
 #include <Material/PBRMaterial.h>
+#include <format>
 
 using namespace Utility;
 
@@ -12,7 +14,8 @@ void MeshRender::ReloadShaderAll()
 	hlslManager.ClearSharingShader();
 	for (auto& item : instanceList)
 	{
-		
+		item->SetVS(item->currVSpath.c_str());
+		item->SetPS(item->currPSpath.c_str());
 	}
 }
 
@@ -23,29 +26,126 @@ MeshRender::MeshRender()
 
 MeshRender::~MeshRender()
 {
-
+	
 }
 
 void MeshRender::Render()
 {
-	transformBuffer.Set(transform.GetWM());
+	//TransformBufferData 업데이트(더티 체크 필요할듯?)
+	transformBuffer.Set(
+		TransformBufferData
+		{
+			.World = XMMatrixTranspose(transform.GetWM()),
+			.WorldInverseTranspose = transform.GetIWM()
+		}
+	);
 
+	//등록
+	meshDrawCommand.meshData.shaderResources.clear();
+	meshDrawCommand.meshData.shaderResources.push_back(
+		Binadble
+		{
+			.shaderType = EShaderType::Vertex,
+			.bindableType = EShaderBindable::ConstantBuffer,
+			.slot = 0,
+			.bind = (ID3D11Buffer*)transformBuffer
+		}
+	);
+
+	//텍스쳐 등록
+	size_t textureCount = materialAsset.GetTexturesV2().size();
+	const auto& textures = materialAsset.GetTexturesV2();
+	const auto& textureSlot = materialAsset.GetTexturesSlot();
+	meshDrawCommand.materialData.shaderResources.clear();
+	for (size_t i = 0; i < textureCount; i++)
+	{
+		Binadble bind{};
+		bind.bindableType = EShaderBindable::ShaderResource;
+		bind.shaderType = EShaderType::Pixel;
+		bind.slot = textureSlot[i];
+		bind.bind = (ID3D11ShaderResourceView*)textures[i];
+		meshDrawCommand.materialData.shaderResources.push_back(bind);
+	}
+
+	//샘플러 등록
+	size_t samplersCount = materialAsset.GetSamplers().size();
+	const auto& samplers = materialAsset.GetSamplers();
+	const auto& samplerSlot = materialAsset.GetSamplerSlot();
+	for (size_t i = 0; i < samplersCount; i++)
+	{
+		Binadble bind{};
+		bind.bindableType = EShaderBindable::Sampler;
+		bind.shaderType = EShaderType::Pixel;
+		bind.slot = samplerSlot[i];
+		bind.bind = (ID3D11SamplerState*)samplers[i];
+		meshDrawCommand.materialData.shaderResources.push_back(bind);
+	}
+
+	//포워드 여부
+	meshDrawCommand.materialData.pixelShader.isForward = this->isForward;
+
+	//업데이트 호출
+	UpdateMeshDrawCommand();
 }
 
-void MeshRender::SetMeshResource(const wchar_t* path)
+void MeshRender::SetVS(const wchar_t* path)
 {
-	if (MeshID < 0)
+	currVSpath = path;
+	{
+		//if (ID3D11VertexShader* vs = meshDrawCommand.meshData.vertexShader)
+		//	SafeRelease(vs);
+		//
+		//if (ID3D11InputLayout* il = meshDrawCommand.meshData.vertexShader)
+		//	SafeRelease(il);
+
+		ComPtr<ID3D11VertexShader> vs;
+		ComPtr<ID3D11InputLayout> il;
+		hlslManager.CreateSharingShader(currVSpath.c_str(), &vs, &il);
+		meshDrawCommand.meshData.vertexShader.LoadShader(vs.Get(), il.Get());
+	}
+}
+
+void MeshRender::SetPS(const wchar_t* path)
+{
+	currPSpath = path;
+	{
+		if (ID3D11PixelShader* ps = meshDrawCommand.materialData.pixelShader)
+			SafeRelease(ps);
+
+		ComPtr<ID3D11PixelShader> ps;
+		hlslManager.CreateSharingShader(currPSpath.c_str(), &ps);
+		meshDrawCommand.materialData.pixelShader.LoadShader(ps.Get());
+	}
+}
+
+void MeshRender::SetMeshResource(int meshID)
+{
+	if (meshID < 0)
 	{
 		__debugbreak();
 		return;
 	}
-
-	using namespace utfConvert;
-	if ((ID3D11Buffer*)meshDrawCommand.meshData.vertexBuffer == nullptr)
+	else
 	{
-		//고유의 경로 + index
-		sharedMeshData = GetResourceManager<MeshData>().GetResource(path, MeshID);
-		meshDrawCommand.meshData = *sharedMeshData;
+		MeshID = meshID;
+	}
+
+	GameObject* MeshObject = GameObject::Find(gameObject.Name.c_str());
+	if (MeshObject)
+	{
+		for (size_t i = 0; i < MeshObject->GetComponentCount(); i++)
+		{
+			if (MeshRender* renderer = MeshObject->GetComponentAtIndex<MeshRender>(i))
+			{
+				if (renderer->MeshID == MeshID)
+				{
+					meshDrawCommand = renderer->meshDrawCommand;
+					materialAsset.CopyAsset(renderer->materialAsset);
+					currVSpath = renderer->currVSpath;
+					currPSpath = renderer->currPSpath;
+				}
+			}
+		}
 	}
 }
 

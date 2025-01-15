@@ -1,5 +1,5 @@
 #include "TextureManager.h"
-#include <D3DCore/D3DRenderer.h>
+#include <RendererCore.h>
 #include <Math/Mathf.h>
 #include <Utility/ImguiHelper.h>
 #include <Manager/SceneManager.h>
@@ -28,7 +28,7 @@ ULONG TextureManager::CreateSharingTexture(const wchar_t* path, ID3D11ShaderReso
 	else
 	{
 		ID3D11ShaderResourceView* newResource;
-		CheckHRESULT(CreateTextureFromFile(d3dRenderer.GetDevice(), path, nullptr, &newResource));
+		CheckHRESULT(CreateTextureFromFile(RendererUtility::GetDevice(), path, nullptr, &newResource));
 		resourceMap[path] = newResource;
 		*ppOut_ResourceView = newResource;
 		return 1;
@@ -46,7 +46,7 @@ ULONG TextureManager::CreateSharingCompressTexture(const wchar_t* path, ID3D11Sh
 	else
 	{
 		ID3D11ShaderResourceView* newResource;
-		CreateCompressTexture(d3dRenderer.GetDevice(), path, nullptr, &newResource, type);
+		CreateCompressTexture(RendererUtility::GetDevice(), path, nullptr, &newResource, type);
 		resourceMap[path] = newResource;
 		*ppOut_ResourceView = newResource;
 		return 1;
@@ -64,7 +64,7 @@ ULONG TextureManager::CreateSharingCubeMap(const wchar_t* path, ID3D11ShaderReso
 	else
 	{
 		ID3D11ShaderResourceView* newResource;
-		CheckHRESULT(CreateCubeMapFromFile(d3dRenderer.GetDevice(), path, nullptr, &newResource));
+		CheckHRESULT(CreateCubeMapFromFile(RendererUtility::GetDevice(), path, nullptr, &newResource));
 		resourceMap[path] = newResource;
 		*ppOut_ResourceView = newResource;
 		return 1;
@@ -130,7 +130,7 @@ void TextureManager::ReleaseDefaultTexture()
 
 void TextureManager::CreateDefaultTexture(const float(&pixel)[4], ID3D11ShaderResourceView** ppSRV)
 {
-	if (ID3D11Device* device = d3dRenderer.GetDevice())
+	if (ID3D11Device* device = RendererUtility::GetDevice())
 	{
 		// 텍스처 설명 설정
 		D3D11_TEXTURE2D_DESC textureDesc = {};
@@ -167,12 +167,12 @@ void TextureManager::CreateDefaultTexture(const float(&pixel)[4], ID3D11ShaderRe
 
 void TextureManager::CreateDefaultCubeTexture(const float(&pixel)[4], ID3D11ShaderResourceView** ppSRV)
 {
-	if (ID3D11Device* device = d3dRenderer.GetDevice())
+	if (ID3D11Device* device = RendererUtility::GetDevice())
 	{
 		// 텍스처 설명 설정
 		D3D11_TEXTURE2D_DESC textureDesc = {};
 		textureDesc.Width = 1;
-		textureDesc.Height = 1;
+		textureDesc.Height = 1;	
 		textureDesc.MipLevels = 1;
 		textureDesc.ArraySize = 6;
 		textureDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
