@@ -5,6 +5,9 @@
 #include <string>
 #include <vector>
 #include <filesystem>
+#include <wrl.h>
+
+using namespace Microsoft::WRL;
 
 class HLSLManager;
 extern HLSLManager& hlslManager;   
@@ -14,6 +17,7 @@ class HLSLManager : public TSingleton<HLSLManager>
 	enum class EXTENSION_TYPE
 	{
 		hlsl,
+		memory,
 		cso,
 		null,
 	};
@@ -28,6 +32,8 @@ public:
 	void CreateSharingShader(const wchar_t* path, ID3D11VertexShader** ppOut_VertexShader, ID3D11InputLayout** ppOut_InputLayout);
 	/** 픽셀 셰이더 생성.*/
 	void CreateSharingShader(const wchar_t* path, ID3D11PixelShader** ppOutput);
+	/** 자원 공유를 위해 여기서 하려햇는데 에셋단위로 들고잇으니 효과없음 */
+	void CreateSharingShader(const void* data, size_t size, ComPtr<ID3D11PixelShader> ppOutput);
 	/** 컴퓨트 셰이더 생성.*/
 	void CreateSharingShader(const wchar_t* path, ID3D11ComputeShader** ppOutput);
 
@@ -47,9 +53,9 @@ public:
 	/** 셰이더를 생성합니다. */
 	void MakeShader(const wchar_t* path, ID3D11VertexShader** ppOut_VertexShader, ID3D11InputLayout** ppOut_InputLayout);
 	/** 셰이더를 생성합니다. */
-	void MakeShader(const wchar_t* path, ID3D11PixelShader** ppOutput);
+	void MakeShader(const wchar_t* path, ID3D11PixelShader** ppOutput, _In_opt_ size_t* size = nullptr);
 	/** 셰이더를 생성합니다. */
-	void MakeShader(const wchar_t* path, ID3D11ComputeShader** ppOutput);
+	void MakeShader(const wchar_t* path, ID3D11ComputeShader** ppOutput, _In_opt_ size_t* size = nullptr);
 private:
 	HLSLManager();
 	~HLSLManager();

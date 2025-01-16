@@ -10,11 +10,61 @@ namespace Utility
 {
 	using namespace DirectX;
 
+	consteval bool IsDebugMode()
+	{
+#ifdef _DEBUG
+		return true;
+#endif
+		return false;
+	}
+
 	LPCWSTR GetComErrorString(HRESULT hr)
 	{
 		_com_error err(hr);
 		LPCWSTR errMsg = err.ErrorMessage();
 		return errMsg;
+	}
+
+	HRESULT CompileShader(ID3DInclude* inlude, const void* data, size_t size, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)
+	{
+		HRESULT hr = S_OK;
+		DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_PARTIAL_PRECISION;
+		if (IsDebugMode())
+		{
+			dwShaderFlags |= D3DCOMPILE_DEBUG;
+			dwShaderFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
+		}
+		else
+		{
+			dwShaderFlags = D3DCOMPILE_OPTIMIZATION_LEVEL3;
+			dwShaderFlags |= D3DCOMPILE_SKIP_VALIDATION;
+		}
+
+		ID3DBlob* pErrorBlob = nullptr;
+		hr = D3DCompile(data,
+				   size,
+				   nullptr,
+				   nullptr,
+				   inlude,
+				   szEntryPoint,
+				   szShaderModel,
+				   dwShaderFlags,
+				   0,
+				   ppBlobOut,
+				   &pErrorBlob);
+
+		if (FAILED(hr))
+		{
+			if (pErrorBlob)
+			{
+				MessageBoxA(NULL, (char*)pErrorBlob->GetBufferPointer(), "CompileShaderFromFile", MB_OK);
+				pErrorBlob->Release();
+			}
+			return hr;
+		}
+		if (pErrorBlob) pErrorBlob->Release();
+
+		return S_OK;
 	}
 
 	HRESULT CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)

@@ -3,17 +3,22 @@
 #include "../EngineShader/GBufferMaterial.hlsli"
 
 
+Texture2D t_2288655999264 : register(t0);
 
 
 GBufferMaterial GetCustomGBufferMaterial(PS_INPUT input)
 {
     GBufferMaterial material = GetDefaultGBufferMaterial(input);
 
-float c_1855765704016 = 1;
-float3 c_1856011792880 = float3(1, 0, 1);
+float3 c_2288655999264 =  t_2288655999264.Sample(DefaultSampler, input.Tex).rgb;
+float c_2288656015824 = 1;
+float c_x2288656010448 = 1;
+float c_y2288656010448 = 0;
 
-material.albedo = c_1856011792880;
-material.roughness = c_1855765704016;
+material.albedo = c_2288655999264;
+material.metallic = c_x2288656010448;
+material.roughness = c_y2288656010448;
+material.emissive = c_2288656015824;
 
     return material;
 }

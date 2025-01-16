@@ -98,6 +98,7 @@ using namespace Utility;
 HLSLManager::HLSLManager()
 {
 	includePath = std::make_unique<ShaderIncludePath>();
+	includePath->AddPath("Resource/EngineShader/");
 }
 
 HLSLManager::~HLSLManager()
@@ -221,6 +222,13 @@ void HLSLManager::CreateSharingShader(const wchar_t* path, ID3D11PixelShader** p
 	}
 }
 
+void HLSLManager::CreateSharingShader(const void* data, size_t size, ComPtr<ID3D11PixelShader> ppOutput)
+{
+	ComPtr< ID3DBlob> blob;
+	Utility::CompileShader(includePath.get(), data, size, "main", PS_MODEL, &blob);
+	CheckHRESULT(RendererUtility::GetDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &ppOutput));
+}
+
 void HLSLManager::CreateSharingShader(const wchar_t* path, ID3D11ComputeShader** ppOutput)
 {
 	auto findIter = sharingShaderMap.find(path);
@@ -296,7 +304,7 @@ void HLSLManager::MakeShader(const wchar_t* path, ID3D11VertexShader** ppOut_Ver
 	SafeRelease(vertexShaderBuffer);
 }
 
-void HLSLManager::MakeShader(const wchar_t* path, ID3D11PixelShader** ppOutput)
+void HLSLManager::MakeShader(const wchar_t* path, ID3D11PixelShader** ppOutput, size_t* size)
 {
 	ID3D10Blob* computeShaderBuffer = nullptr;	// 픽셀 셰이더 코드가 저장될 버퍼.
 	ID3D11PixelShader* computeShader = nullptr;	// 픽셀 셰이더가 저장될 곳.
@@ -320,7 +328,7 @@ void HLSLManager::MakeShader(const wchar_t* path, ID3D11PixelShader** ppOutput)
 	computeShaderBuffer->Release();
 }
 
-void HLSLManager::MakeShader(const wchar_t* path, ID3D11ComputeShader** ppOutput)
+void HLSLManager::MakeShader(const wchar_t* path, ID3D11ComputeShader** ppOutput, size_t* size)
 {
 	ID3D10Blob* pixelShaderBuffer = nullptr;	// 픽셀 셰이더 코드가 저장될 버퍼.
 	ID3D11ComputeShader* pixelShader = nullptr;	// 픽셀 셰이더가 저장될 곳.

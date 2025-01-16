@@ -28,6 +28,8 @@ public:
 	void SetSamplerState(const D3D11_SAMPLER_DESC& desc, uint32_t slot);
 
 public:
+	void SetPixelShader(std::string shaderCode);
+
 	void SetTexture2D(const wchar_t* path, uint32_t slot);
 	template <typename T> void SetTexture2D(const wchar_t* path, T type)	
 	{
@@ -46,6 +48,8 @@ protected:
 	virtual void Deserialized(std::ifstream& ifs) override;
 
 private:
+	std::string				pixelShaderData;
+	PixelShader					pixelShader;
 	std::vector<uint32_t>		texturesSlot;
 	std::vector<Texture>		texturesV2;
 	std::vector<std::wstring>	currTexturePath;
@@ -53,6 +57,7 @@ private:
 	std::vector<uint32_t>		samplerSlot;
 	std::vector<SamplerState>	samplers;
 public:
+	const PixelShader& GetPS() { return pixelShader; }
 	const std::vector<uint32_t>& GetTexturesSlot() { return texturesSlot; }
 	const std::vector<Texture>& GetTexturesV2() { return texturesV2; }
 	const std::vector<std::wstring>& GetCurrTexturesPath() { return currTexturePath; }

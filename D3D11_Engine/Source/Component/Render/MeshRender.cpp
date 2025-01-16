@@ -126,6 +126,7 @@ void MeshRender::Render()
 	}
 
 	//포워드 여부
+	meshDrawCommand.materialData.pixelShader = materialAsset.GetPS();
 	meshDrawCommand.materialData.pixelShader.isForward = this->isForward;
 
 	//바운딩 박스
@@ -151,6 +152,8 @@ void MeshRender::SetVS(const wchar_t* path)
 
 void MeshRender::SetPS(const wchar_t* path)
 {
+	meshDrawCommand.materialData.pixelShader = materialAsset.GetPS();
+	return;
 	currPSpath = path;
 	{
 		ComPtr<ID3D11PixelShader> ps;

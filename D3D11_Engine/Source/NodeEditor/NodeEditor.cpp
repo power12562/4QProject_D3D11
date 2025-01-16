@@ -399,12 +399,9 @@ void ShaderNodeEditor::Export(std::filesystem::path savePath)
 
 
 
-	std::ofstream hlslFile(savePath.replace_extension(".hlsl"));
 
-	if (hlslFile.is_open())
-	{
-		std::string content = std::format(
-			R"aa(
+	std::string content = std::format(
+		R"aa(
 #include "../EngineShader/Shared.hlsli"
 #include "../EngineShader/GBufferMaterial.hlsli"
 
@@ -428,14 +425,18 @@ registerValueLine.str(),
 localValueLine.str(),
 executionsLine.str()
 );
+	std::ofstream hlslFile(savePath.replace_extension(".hlsl"));
+	if (hlslFile.is_open())
+	{
 
 		hlslFile << content;
 		hlslFile.close();
 	}
 
 
-	MaterialAsset materialAsset;
 
+	MaterialAsset materialAsset;
+	materialAsset.SetPixelShader(content);
 
 	for (auto& item : registerValues)
 	{
