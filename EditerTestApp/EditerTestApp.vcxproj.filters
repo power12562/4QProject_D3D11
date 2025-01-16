@@ -10,6 +10,9 @@
     <ClCompile Include="Source\EditerTestScene.cpp">
       <Filter>Scenes</Filter>
     </ClCompile>
+    <ClCompile Include="PhysicsTestController.cpp">
+      <Filter>Script</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="MainEntry">
@@ -18,6 +21,9 @@
     <Filter Include="Scenes">
       <UniqueIdentifier>{27f44787-e7ce-47a8-a5d1-6582f3b1a425}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Script">
+      <UniqueIdentifier>{3df3e2ae-edb3-4d60-93d8-23065cb76316}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\EditerTestApp.h">
@@ -25,6 +31,9 @@
     </ClInclude>
     <ClInclude Include="Source\EditerTestScene.h">
       <Filter>Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicsTestController.h">
+      <Filter>Script</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -110,8 +110,8 @@ DefferdRenderer::DefferdRenderer()
 	init.CreateNoWriteDepthStencilState(&noWriteDSS);
 	init.CreateNoRenderState(&noRenderState);
 	init.CreateAlphaRenderState(&alphaRenderState);
-
-
+	D3D11_SAMPLER_DESC samplerDesc = CD3D11_SAMPLER_DESC(D3D11_DEFAULT);
+	device->CreateSamplerState(&samplerDesc, &samplerState);
 	
 	CameraBufferData cameraData{};
 	cameraBuffer.Init(cameraData);
@@ -141,7 +141,32 @@ DefferdRenderer::~DefferdRenderer()
 
 void DefferdRenderer::AddDrawCommand(_In_ const MeshDrawCommand& command)
 {
-	allDrawCommandsOrigin.emplace_back(command);
+	int vsShaderResourcesStart = drawCommandBindable.size();
+	{
+		std::ranges::copy(command.materialData.shaderResources, std::back_inserter(drawCommandBindable));
+	}
+	int vsShaderResourcesEnd = drawCommandBindable.size();
+	int psShaderResourcesStart = vsShaderResourcesEnd;
+	{
+		std::ranges::copy(command.meshData.shaderResources, std::back_inserter(drawCommandBindable));
+	}
+	int psShaderResourcesEnd = drawCommandBindable.size();
+
+	allDrawCommandsOrigin.emplace_back(MeshDrawCommand2
+									   {
+										   command.meshData.vertexBuffer,
+										   command.meshData.indexBuffer,
+										   command.meshData.indexCounts,
+										   command.meshData.vertexStride,
+										   command.meshData.vertexShader,
+										   vsShaderResourcesStart,
+										   vsShaderResourcesEnd,
+										   command.meshData.boundingBox,
+										   command.materialData.pixelShader,
+										   psShaderResourcesStart,
+										   psShaderResourcesEnd
+									   });
+	
 }
 
 void DefferdRenderer::AddBinadble(std::string_view key, const Binadble& bindable)
@@ -220,7 +245,7 @@ void DefferdRenderer::SetRenderTarget(_In_ Texture& target)
 
 		result = device->CreateTexture2D(&desc, nullptr, &texture);
 		Check(result);
-		depthStencilTexture.LoadTexture(texture.Get(), usage, &srvDesc);\
+		depthStencilTexture.LoadTexture(texture.Get(), usage, &srvDesc);
 	}
 	{
 		HRESULT result;
@@ -273,16 +298,16 @@ void DefferdRenderer::Render()
 
 	auto culledDrawCommands = 
 		allDrawCommandsOrigin 
-		| std::views::filter([frustum](const MeshDrawCommand& item) { return frustum.Intersects(item.meshData.boundingBox); })
-		| std::views::transform([](MeshDrawCommand& item) -> MeshDrawCommand* { return &item; });
+		| std::views::filter([frustum](const MeshDrawCommand2& item) { return frustum.Intersects(item.boundingBox); })
+		| std::views::transform([](MeshDrawCommand2& item) -> MeshDrawCommand2* { return &item; });
 
 	std::ranges::copy(culledDrawCommands, std::back_inserter(allDrawCommands));
-	std::ranges::copy(culledDrawCommands | std::views::filter([](MeshDrawCommand* item) { return item->materialData.pixelShader.isForward; }), std::back_inserter(forwardDrawCommands));
-	std::ranges::copy(culledDrawCommands | std::views::filter([](MeshDrawCommand* item) { return !item->materialData.pixelShader.isForward; }), std::back_inserter(deferredDrawCommands));
+	std::ranges::copy(culledDrawCommands | std::views::filter([](MeshDrawCommand2* item) { return item->pixelShader.isForward; }), std::back_inserter(forwardDrawCommands));
+	std::ranges::copy(culledDrawCommands | std::views::filter([](MeshDrawCommand2* item) { return !item->pixelShader.isForward; }), std::back_inserter(deferredDrawCommands));
 
 	auto boundingBoxs =
 		allDrawCommands
-		| std::views::transform([](MeshDrawCommand* item) { return item->meshData.boundingBox; })
+		| std::views::transform([](MeshDrawCommand2* item) { return item->boundingBox; })
 		| std::views::filter([frustum](const BoundingOrientedBox& item) { return frustum.Intersects(item); });
 
 	auto visibilityBox = std::accumulate(boundingBoxs.begin(), boundingBoxs.end(), BoundingBox{},
@@ -298,7 +323,10 @@ void DefferdRenderer::Render()
 										 });
 
 	immediateContext->OMSetDepthStencilState(nullptr, 0);
-	
+
+	ID3D11ShaderResourceView* nullSRVPtr[1] = { nullptr };
+	immediateContext->PSSetShaderResources(20, 1, nullSRVPtr);
+	immediateContext->CSSetShaderResources(20, 1, nullSRVPtr);
 	// 溅档快甘 积己
 	for (size_t i = 0; i < directLight.size(); i++)
 	{
@@ -394,7 +422,7 @@ void DefferdRenderer::Render()
 	}
 
 	// Gbuffer 扼捞泼 贸府
-	if (0)
+	if (1)
 	{
 		ID3D11RenderTargetView* nullRenderBuffersRTV[4]{ nullptr, };
 		ID3D11RenderTargetView* deferredBufferRTV[1]{ deferredBuffer };
@@ -411,14 +439,19 @@ void DefferdRenderer::Render()
 		immediateContext->VSSetShader(fullScreenVS, nullptr, 0);
 		immediateContext->PSSetShader(deferredPS, nullptr, 0);
 
+		immediateContext->VSSetShaderResources(0, std::size(depthBuffersSRV), depthBuffersSRV);
 		immediateContext->PSSetShaderResources(0, std::size(renderBuffersSRV), renderBuffersSRV);
 		immediateContext->PSSetShaderResources(4, std::size(depthBuffersSRV), depthBuffersSRV);
-
+		immediateContext->PSSetSamplers(0, 1, &samplerState);
+		immediateContext->PSSetSamplers(1, 1, &samplerState);
+		immediateContext->PSSetSamplers(2, 1, &samplerState);
 		immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		immediateContext->Draw(3, 0);
 
 		ID3D11ShaderResourceView* nullSRV[5]{};
 		immediateContext->PSSetShaderResources(0, std::size(nullSRV), nullSRV);
+		immediateContext->VSSetShaderResources(0, std::size(nullSRV), nullSRV);
+
 	}
 	else
 	{
@@ -484,8 +517,10 @@ void DefferdRenderer::Render()
 	allDrawCommands.clear();
 	deferredDrawCommands.clear();
 	forwardDrawCommands.clear();
+	alphaDrawCommands.clear();
 	allDrawCommandsOrigin.clear();
 
+	drawCommandBindable.clear();
 	bindables.clear();
 }
 
@@ -503,39 +538,34 @@ void DefferdRenderer::SetProjection(float fov, float nearZ, float farZ)
 	cameraProjection = DirectX::XMMatrixPerspectiveFovLH(fov, (float)width / (float)height, nearZ, farZ);
 }
 
-void DefferdRenderer::ProcessDrawCommands(std::vector<MeshDrawCommand*>& drawCommands, bool isWithMaterial)
+void DefferdRenderer::ProcessDrawCommands(std::vector<MeshDrawCommand2*>& drawCommands, bool isWithMaterial)
 {
 	for (auto& command : drawCommands)
 	{
-		auto& mesh = command->meshData;
-		auto& material = command->materialData;
-
-		ID3D11Buffer* vertexBuffer[1] = { mesh.vertexBuffer };
-		UINT stride = mesh.vertexStride;
+		ID3D11Buffer* vertexBuffer[1] = { command->vertexBuffer };
+		UINT stride = command->vertexStride;
 		UINT offset = 0;
 
-		immediateContext->IASetVertexBuffers(0, std::size(vertexBuffer), vertexBuffer, &mesh.vertexStride, &offset);
-		immediateContext->IASetIndexBuffer(mesh.indexBuffer, DXGI_FORMAT_R32_UINT, 0);
-		immediateContext->IASetInputLayout(mesh.vertexShader);
+		immediateContext->IASetVertexBuffers(0, std::size(vertexBuffer), vertexBuffer, &command->vertexStride, &offset);
+		immediateContext->IASetIndexBuffer(command->indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		immediateContext->IASetInputLayout(command->vertexShader);
 		immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		for (auto& resource : mesh.shaderResources)
+		for (size_t i = command->vsShaderResourcesStart; i < command->vsShaderResourcesEnd; i++)
 		{
-			BindBinadble(resource);
+			BindBinadble(drawCommandBindable[i]);
 		}
 
-		immediateContext->VSSetShader(mesh.vertexShader, nullptr, 0);
+		immediateContext->VSSetShader(command->vertexShader, nullptr, 0);
 		if (isWithMaterial)
 		{
-			immediateContext->PSSetShader(material.pixelShader, nullptr, 0);
-
-			for (auto& resource : material.shaderResources)
+			immediateContext->PSSetShader(command->pixelShader, nullptr, 0);
+			for (size_t i = command->psShaderResourcesStart; i < command->psShaderResourcesEnd; i++)
 			{
-				BindBinadble(resource);
+				BindBinadble(drawCommandBindable[i]);
 			}
 		}
 
-
-		immediateContext->DrawIndexed(mesh.indexCounts, 0, 0);
+		immediateContext->DrawIndexed(command->indexCounts, 0, 0);
 	}
 }
 
@@ -566,7 +596,7 @@ struct BindHelper
 		}
 		else
 		{
-			static_assert(false);
+			//static_assert(false);
 		}
 	}
 };

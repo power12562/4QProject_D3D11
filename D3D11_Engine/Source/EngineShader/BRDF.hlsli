@@ -21,7 +21,7 @@ float3 BRDF(float3 albedo, float metalic, float roughness, float3 F0, float3 N, 
 	float3 F = FresnelReflection(F0, HoV);
 
 	// ¹ý¼± ºÐÆ÷ ÇÔ¼ö
-	float D = NormalDistribution(roughness, NoH);
+	float D = NormalDistribution(max(0.1f, roughness), NoH);
 
 	// Æó¼â¼º °¨¼è
 	float G = GeometricAttenuation(NoV, NoL, roughness);

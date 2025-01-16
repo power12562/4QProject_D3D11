@@ -1,5 +1,6 @@
-#include "EditerTestScene.h"
 #include <framework.h>
+#include "EditerTestScene.h"
+#include "../EditerTestApp/PhysicsTestController.h"
 
 void EditerTestScene::Start()
 {
@@ -12,6 +13,12 @@ void EditerTestScene::Start()
 	mainCamera->AddComponent<CameraMoveHelper>();
 
 	auto cube = NewGameObject<CubeObject>(L"Cube");
+	cube->AddComponent<PhysicsTestController>();
+
+	auto ground = NewGameObject<CubeObject>(L"Ground");
+	ground->AddComponent<BoxCollider>();
+	ground->transform.SetPosition({ 0, -10, 0 });
+	ground->transform.SetScale({ 10, 1, 10 });
 }
 
 void EditerTestScene::ImGUIRender()

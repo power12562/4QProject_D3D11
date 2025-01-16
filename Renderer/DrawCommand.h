@@ -40,3 +40,23 @@ public:
 	MeshData meshData;
 	MaterialData materialData;
 };
+
+
+struct MeshDrawCommand2
+{
+public:
+	RendererBuffer vertexBuffer;
+	RendererBuffer indexBuffer;
+	uint32_t indexCounts;
+	uint32_t vertexStride;
+	VertexShader vertexShader;
+	int vsShaderResourcesStart;
+	int vsShaderResourcesEnd;
+
+	DirectX::BoundingOrientedBox boundingBox;
+
+
+	PixelShader pixelShader;
+	int psShaderResourcesStart;
+	int psShaderResourcesEnd;
+};

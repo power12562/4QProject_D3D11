@@ -1,8 +1,11 @@
-﻿#include "RendererTestApp.h"
+﻿
+
+#include "RendererTestApp.h"
 #include <dxgi1_6.h>
 #include <filesystem>
 #pragma comment(lib, "dxgi")
 #include <framework.h>
+#include <ranges>
 
 extern LRESULT CALLBACK ImGUIWndProcDefault(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 RendererTestApp::RendererTestApp()
@@ -52,6 +55,11 @@ void RendererTestApp::Start()
 	TestInit();
 
     renderer->SetRenderTarget(backBuffer);
+	nodeEditor = std::make_unique<ShaderNodeEditor>();
+
+
+
+
 }
 
 void RendererTestApp::Update()
@@ -62,7 +70,7 @@ void RendererTestApp::Update()
 
     ImGui_ImplDX11_NewFrame();
     ImGui_ImplWin32_NewFrame();
-    ImGui::NewFrame();
+    ImGui::NewFrame(); 
 
     ImGui::Begin("Renderer Test App");
     if (ImGui::Button("Recompile Shader") || ImGui::IsKeyDown(ImGuiKey_F2))
@@ -126,12 +134,13 @@ void RendererTestApp::Update()
     static int count = 0;
     static int beforeCount = 0;
     static std::chrono::nanoseconds elpasTime{};
-    double deltaTime;
+    double deltaTime = 0;
     previousTime = currentTime;
     currentTime = clock::now();
 
-    auto duration = currentTime - previousTime;
+    std::chrono::nanoseconds duration = currentTime - previousTime;
 	elpasTime += duration;
+	deltaTime = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
 
     ++count;
     //1초
@@ -144,6 +153,7 @@ void RendererTestApp::Update()
 	ImGui::Text("fps : %d", beforeCount);
     ImGui::End();
 
+    nodeEditor->Update();
     Transform::UpdateMatrix();
     Transform::ClearUpdateList();
 	
@@ -159,7 +169,7 @@ void RendererTestApp::Render()
     testComponent.UpdateMeshDrawCommand();
     renderer->AddDrawCommand(testComponent.GetMeshDrawCommand());
 
-	for (auto& chara : charList)
+	for (auto& chara : renderList)
 	{
 		chara->UpdateMeshDrawCommand();
 		renderer->AddDrawCommand(chara->GetMeshDrawCommand());
@@ -178,6 +188,7 @@ void RendererTestApp::Render()
 
 void RendererTestApp::Uninitialize()
 {
+    nodeEditor.reset();
     sceneManager.AddObjects();
     sceneManager.currScene.reset();
     gameObjectFactory.UninitializeMemoryPool();
@@ -217,26 +228,24 @@ void RendererTestApp::TestInit()
     testObject = NewGameObject<CubeObject>(L"Cube");
     testObject->GetComponent<CubeMeshRender>().SetPixelShader(L"Resource/Shader/TEst.hlsl");
 
-	auto init = [this](MeshRender* mesh)
-		{
-			charList.emplace_back(reinterpret_cast<PBRMeshRender*>(mesh));
-			mesh->SetPixelShader(L"Resource/Shader/Effect.hlsl");
-		};
-	testObject2 = Utility::LoadFBX(L"Resource/char/char.fbx", init, false, SURFACE_TYPE::PBR);
+
+	testObject2 = Utility::LoadFBX(L"Resource/char/char.fbx", false, SURFACE_TYPE::PBR);
     testObject2->transform.position = Vector3(-2.0f, 0.0f, 0.0f);
 	testObject2->transform.scale = Vector3(0.01f, 0.01f, 0.01f);
 
-    testObject3 = Utility::LoadFBX(L"Resource/char/char.fbx", init, false, SURFACE_TYPE::PBR);
+
+    testObject3 = Utility::LoadFBX(L"Resource/char/char.fbx", false, SURFACE_TYPE::PBR);
     testObject3->transform.position = Vector3(2.0f, 0.0f, 0.0f);
     testObject3->transform.scale = Vector3(0.01f, 0.01f, 0.01f);
 
+    auto pipe = std::views::transform([](auto& pair) { return pair.second; }) | std::ranges::views::join;
 
-
-
+    std::ranges::copy(Utility::CollectMeshComponents(testObject2) | pipe, std::back_inserter(renderList));
+    std::ranges::copy(Utility::CollectMeshComponents(testObject3) | pipe, std::back_inserter(renderList));
 
     Texture albedo;
     textureManager.CreateSharingTexture(L"Resource/Texture/1735656899.jpg", &srv);
-    albedo.LoadTexture(srv.Get());
+    albedo.LoadTexture(srv.Get()); 
 
 	testObject->GetComponent<CubeMeshRender>().texturesV2.emplace_back(albedo);
     testObject->GetComponent<CubeMeshRender>().texturesSlot.emplace_back(0);

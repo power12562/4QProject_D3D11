@@ -8,6 +8,7 @@
 #include <set>
 #include <Utility/utfConvert.h>
 #include <Scene\Base\Scene.h>
+#include <Physics/PhysicsManager.h>
 
 class Component;
 extern class SceneManager& sceneManager;
@@ -97,6 +98,8 @@ private:
 	unsigned int EraseObjectFindMap(GameObject* obj);
 
 	std::function<void()> ImGuiLodingFunc;
+
+
 };
 
 template<typename T>
@@ -110,4 +113,6 @@ inline void SceneManager::LoadScene()
 	nextScene.reset(new T);
 	nextScene->sceneName = utfConvert::utf8_to_wstring(typeid(T).name());
 	resourceObjectList.clear();
+
+	PhysicsManager::ClearPhysicsScene();
 }

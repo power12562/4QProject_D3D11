@@ -11,12 +11,31 @@ consteval bool IsDebug()
 	return false;
 }
 
+std::atomic_int RendererUtility::deviceCount{ 0 };
+std::atomic_int RendererUtility::swapChainCount{ 0 };
 ComPtr<ID3D11Device> RendererUtility::device{ nullptr };
 ComPtr<IDXGISwapChain1> RendererUtility::swapChain{ nullptr };
 
 void RendererUtility::SetDevice(ComPtr<ID3D11Device> newDevice)
 {
-	device = newDevice;
+	if (newDevice)
+	{
+		if (device == newDevice)
+		{
+			++deviceCount;
+		}
+		else
+		{
+			device = newDevice;
+		}
+	}
+	else
+	{
+		if (--deviceCount == 0)
+		{
+			device.Reset();
+		}
+	}
 }
 
 ID3D11Device* RendererUtility::GetDevice()

@@ -40,6 +40,8 @@ public:
 private:
 	static ComPtr<ID3D11Device> device;
 	static ComPtr<struct IDXGISwapChain1> swapChain;
+	static std::atomic_int deviceCount;
+	static std::atomic_int swapChainCount;
 };
 
 static struct Check

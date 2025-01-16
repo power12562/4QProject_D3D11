@@ -9,6 +9,14 @@
 #include <Utility/utfConvert.h>
 #include <Math/Mathf.h>
 
+#include <Physics/PhysicsManager.h>
+#include <Physics/PhysicsActor/PhysicsActor.h>
+#include <Component/Rigidbody/Rigidbody.h>
+#include <Component/Collider/Collider.h>
+#include <Component/Collider/BoxCollider.h>
+#include <Component/Collider/SphereCollider.h>
+#include <Component/Collider/CapsuleCollider.h>
+
 void GameObject::Destroy(GameObject& obj)
 {
 	sceneManager.DestroyObject(obj);
@@ -49,6 +57,9 @@ GameObject::~GameObject()
 	}
 	instanceIDManager.returnID(instanceID);
 	sceneManager.EraseObjectFindMap(this);
+
+	componentList.clear();
+	if (physicsActor) delete physicsActor;
 }
 
 template <>
@@ -69,6 +80,11 @@ TransformAnimation& GameObject::AddComponent()
 		__debugbreak();
 		throw_GameObject("Error : Only one TransformAnimation component can be used.", this);
 	}
+}
+
+std::vector<Collider*>& GameObject::GetEveryCollider()
+{
+	return colliders;
 }
 
 int GameObject::GetComponentIndex(Component* findComponent)
@@ -172,6 +188,15 @@ void GameObject::EraseComponent(Component* component)
 		if (renderIndex < size)
 			renderList.erase((renderList.begin() + renderIndex));
 	}
+
+	// ÀÌ°Ô ’o¹Ì?
+	int colIdx = 0;
+	for (auto& col : colliders)
+	{
+		if (typeid(*col) == typeid(component)) break;
+		++colIdx;
+	}
+	colliders.erase(colliders.begin() + colIdx);
 }
 
 void GameObject::UpdateChildActive(Transform* rootObject)
@@ -183,6 +208,11 @@ void GameObject::UpdateChildActive(Transform* rootObject)
 		if (!child->childList.empty())
 			UpdateChildActive(child);
 	}
+}
+
+void GameObject::SetPhysicsLayer(unsigned int slot)
+{
+	PhysicsManager::GetInstance().SetPhysicsLayer(this, slot);
 }
 
 const std::wstring& GameObject::SetName(const wchar_t* _name)
