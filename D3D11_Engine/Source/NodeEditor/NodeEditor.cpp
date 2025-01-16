@@ -425,13 +425,7 @@ registerValueLine.str(),
 localValueLine.str(),
 executionsLine.str()
 );
-	std::ofstream hlslFile(savePath.replace_extension(".hlsl"));
-	if (hlslFile.is_open())
-	{
 
-		hlslFile << content;
-		hlslFile.close();
-	}
 
 
 

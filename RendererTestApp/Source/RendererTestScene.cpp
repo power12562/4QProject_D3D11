@@ -36,7 +36,6 @@ void RendererTestScene::Start()
 
 	for (auto& i : meshList)
 	{
-		i->SetPS(L"Resource/Shader/Effect.hlsl");
 		i->materialAsset.OpenAsset(L"Resource/Texture/Test.MaterialAsset");
 	}
 
