@@ -31,6 +31,7 @@ public:
 	void MuteOff();
 
 	void SetMasterVolume(float master_volume);
+	bool IsPlaying();
 
 	//void SetPitch(float pitch);
 

@@ -118,6 +118,14 @@ void SoundManager::SetMasterVolume(float master_volume)
 	SoundSystem::GetInstance().SetMasterVolume(master_volume);
 }
 
+bool SoundManager::IsPlaying()
+{
+	if (currentSound == nullptr || channel == nullptr) return false;
+
+	bool is_playing{ false };
+	channel->isPlaying(&is_playing);
+	return is_playing;
+}
 //void SoundManager::SetPitch(float pitch)
 //{
 //	if (currentSound == nullptr || channel == nullptr) return;
