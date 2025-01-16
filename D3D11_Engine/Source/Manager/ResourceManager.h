@@ -8,6 +8,9 @@
 #include <Utility/utfConvert.h>
 #include <Utility/Console.h>
 
+#include <Sound/FMODFramework.h>
+#include <Sound/SoundSystem.h>
+
 class Resource
 {
 public:
@@ -119,6 +122,67 @@ public:
         std::shared_ptr<DRAW_INDEX_DATA> resource = std::make_shared<DRAW_INDEX_DATA>();
         resourceMap[key][index] = resource;
         return resource;
+    }
+};
+
+template <>
+class ResourceManager<FMOD::Sound> : public Resource
+{
+public:
+    /*GetInstance*/
+    static ResourceManager<FMOD::Sound>& instance()
+    {
+        static ResourceManager<FMOD::Sound> instance;
+        return instance;
+    }
+private:
+    ResourceManager()
+    {
+        auto clearFunc = [this]() { this->Clear(); };
+        clearList.push_back(clearFunc);
+    }
+    ~ResourceManager()
+    {
+        Clear();
+    }
+
+private:
+    std::map<std::wstring, std::weak_ptr<FMOD::Sound>> resourceMap;
+public:
+    void Clear()
+    {
+        resourceMap.clear();
+    }
+    bool isResource(const wchar_t* key)
+    {
+        return resourceMap.find(key) != resourceMap.end() ? true : false;
+    }
+    std::shared_ptr<FMOD::Sound> AddResource(std::wstring_view key, std::wstring_view path)
+    {
+        if (resourceMap.find(key.data()) == resourceMap.end())
+        {
+            FMOD::Sound* _sound = SoundSystem::GetInstance().CreateSound(path);
+            std::shared_ptr<FMOD::Sound> sound(_sound, [](FMOD::Sound* sound) { if (sound) sound->release(); });
+            resourceMap[key.data()] = sound;
+            return sound;
+        }
+        else
+        {
+            printf("Resource already exists : FMOD::Sound / %s\n", key.data());
+            return resourceMap[key.data()].lock();
+        }
+    }
+    std::shared_ptr<FMOD::Sound> GetResource(std::wstring_view key)
+    {
+        if (resourceMap.find(key.data()) == resourceMap.end())
+        {
+            printf("Resource not found : FMOD::Sound / %s\n", key.data());
+            return nullptr;
+        }
+        else
+        {
+            return resourceMap[key.data()].lock();
+        }
     }
 };
 
