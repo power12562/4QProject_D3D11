@@ -16,7 +16,7 @@ struct DirectionLight
 
 float3 GetRadiance(DirectionLight light)
 {
-	return light.LightColor.rgb * light.LightDir.a;
+	return light.LightColor.rgb;
 }
 
 float3 GetDirection(DirectionLight light)

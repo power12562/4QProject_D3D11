@@ -4,6 +4,7 @@
 #include <ranges>
 #include <chrono>
 #include "Utility/WinUtility.h"
+#include "Asset\MaterialAsset.h"
 
 
 
@@ -296,7 +297,7 @@ void ShaderNodeEditor::UpdateImp()
 			
 			if (ImGui::MenuItem((char*)u8"내보내기", nullptr, nullptr, true))
 			{
-				GenerateShaderCode();
+				Export();
 			}
 			ImGui::EndMenu();
 		}
@@ -304,7 +305,7 @@ void ShaderNodeEditor::UpdateImp()
 	}
 };
 
-void ShaderNodeEditor::GenerateShaderCode()
+void ShaderNodeEditor::Export(std::filesystem::path savePath)
 {
 	std::vector<std::shared_ptr<ShaderDataProcess>> originalNodeReturn;
 
@@ -396,12 +397,11 @@ void ShaderNodeEditor::GenerateShaderCode()
 		executionsLine << *item << std::endl;
 	}
 
-	originalNodeReturn.clear();
 
 
-	std::ofstream file("Resource/Shader/Effect.hlsl");
+	std::ofstream hlslFile(savePath.replace_extension(".hlsl"));
 
-	if (file.is_open())
+	if (hlslFile.is_open())
 	{
 		std::string content = std::format(
 			R"aa(
@@ -429,7 +429,24 @@ localValueLine.str(),
 executionsLine.str()
 );
 
-		file << content;
-		file.close();
+		hlslFile << content;
+		hlslFile.close();
 	}
+
+
+	MaterialAsset materialAsset;
+
+
+	for (auto& item : registerValues)
+	{
+		std::filesystem::path relativePath =  std::filesystem::relative(item->path, std::filesystem::current_path());
+
+		materialAsset.SetTexture2D(relativePath.c_str(), item->registorSlot);
+	}
+
+	materialAsset.SaveAsset();
+
+
+
+	originalNodeReturn.clear();
 }

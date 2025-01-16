@@ -400,6 +400,7 @@ TextureNode::TextureNode()
 			var->type = "Texture2D";
 			var->identifier = std::format({ "t_{}" }, getUID());
 			var->registorSlot = ERegisterSlot::Texture;
+			var->path = texturePath;
 
 			auto var2 = std::make_shared<LocalVariable>();
 			var2->type = "float3";

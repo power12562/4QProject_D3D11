@@ -13,6 +13,7 @@ int APIENTRY wWinMain(
 
     RendererTestApp app;
     app.Initialize(hInstance);
+    sceneManager.LoadScene<RendererTestScene>();
     app.Run();
     app.RendererTestApp::Uninitialize();
 
