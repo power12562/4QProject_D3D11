@@ -56,7 +56,7 @@ void MaterialAsset::SetPixelShader(std::string shaderCode)
 	pixelShaderData = shaderCode;
 
 	ComPtr<ID3D11PixelShader> rhiPixelShader;
-	hlslManager.CreateSharingShader(shaderCode.data(), shaderCode.size(), rhiPixelShader);
+	hlslManager.CreateSharingShader(shaderCode.data(), shaderCode.size(), &rhiPixelShader);
 	pixelShader.LoadShader(rhiPixelShader.Get());
 	///////////////////////////////////////////////////////////////////
 	// ¸ð¸£°Ù´Ù

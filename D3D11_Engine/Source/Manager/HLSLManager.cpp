@@ -222,11 +222,11 @@ void HLSLManager::CreateSharingShader(const wchar_t* path, ID3D11PixelShader** p
 	}
 }
 
-void HLSLManager::CreateSharingShader(const void* data, size_t size, ComPtr<ID3D11PixelShader> ppOutput)
+void HLSLManager::CreateSharingShader(const void* data, size_t size, ID3D11PixelShader** ppOutput)
 {
 	ComPtr< ID3DBlob> blob;
 	Utility::CompileShader(includePath.get(), data, size, "main", PS_MODEL, &blob);
-	CheckHRESULT(RendererUtility::GetDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, &ppOutput));
+	CheckHRESULT(RendererUtility::GetDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), NULL, ppOutput));
 }
 
 void HLSLManager::CreateSharingShader(const wchar_t* path, ID3D11ComputeShader** ppOutput)

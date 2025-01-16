@@ -27,8 +27,4 @@
       <Filter>Scenes</Filter>
     </ClInclude>
   </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="Resource\Shader\TEst.hlsl" />
-    <FxCompile Include="Resource\Shader\Effect.hlsl" />
-  </ItemGroup>
 </Project>

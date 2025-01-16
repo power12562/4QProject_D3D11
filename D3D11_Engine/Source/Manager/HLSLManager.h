@@ -33,7 +33,7 @@ public:
 	/** 픽셀 셰이더 생성.*/
 	void CreateSharingShader(const wchar_t* path, ID3D11PixelShader** ppOutput);
 	/** 자원 공유를 위해 여기서 하려햇는데 에셋단위로 들고잇으니 효과없음 */
-	void CreateSharingShader(const void* data, size_t size, ComPtr<ID3D11PixelShader> ppOutput);
+	void CreateSharingShader(const void* data, size_t size, ID3D11PixelShader** ppOutput);
 	/** 컴퓨트 셰이더 생성.*/
 	void CreateSharingShader(const wchar_t* path, ID3D11ComputeShader** ppOutput);
 
