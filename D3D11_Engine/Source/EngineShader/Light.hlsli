@@ -16,7 +16,7 @@ struct DirectionLight
 
 float3 GetRadiance(DirectionLight light)
 {
-	return light.LightColor.rgb;
+	return light.LightColor.rgb * light.LightColor.a;
 }
 
 float3 GetDirection(DirectionLight light)
@@ -61,9 +61,9 @@ float3 DefaultLit(float3 albedo, float metallic, float roughness, float3 F0, flo
 			shadowFactor += 1 - saturate((currentDepth - shadowDepth) * 200.0f);
 		}
 		shadowFactor /= 9.0f;
+		shadowFactor = 1;
 		finalColor += BRDF(albedo, metallic, roughness, F0, N, V, GetDirection(DirecLights[i])) * GetRadiance(DirecLights[i]) * shadowFactor;
 	}
-
 	finalColor += BRDF_IBL(albedo, metallic, roughness, F0, N, V) * ambiantOcclusion;
 	
 	return finalColor;

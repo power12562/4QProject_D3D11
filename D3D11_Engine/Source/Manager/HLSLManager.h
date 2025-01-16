@@ -33,10 +33,12 @@ public:
 
 	/*사용중인 Shader 객체들을 Release 합니다. 씬 소멸자에서 호출됩니다.*/
 	void ClearSharingShader();
-
+	void AddPath(std::filesystem::path path);
+	void RemovePath(std::filesystem::path path);
 private:
 	std::map<std::wstring, ID3D11DeviceChild*> sharingShaderMap;
 	std::map<std::wstring, ID3D11InputLayout*> sharingInputLayoutMap;
+	std::unique_ptr<class ShaderIncludePath> includePath;
 
 private:
 	EXTENSION_TYPE ChackShaderFile(const wchar_t* extension);

@@ -92,6 +92,8 @@ void SkyBoxRender::Start()
         SetPS(pixelPath.c_str());
     }
     mainSkyBox = this;
+
+
 }
 
 void SkyBoxRender::FixedUpdate()
@@ -108,7 +110,7 @@ void SkyBoxRender::LateUpdate()
 
 void SkyBoxRender::UpdateMeshDrawCommand()
 {
-
+    D3D11_GameApp::GetRenderer().SetSkyBoxDrawCommand(this->GetMeshDrawCommand());
 }
 
 void SkyBoxRender::SetSkyBox(TEXTURE_TYPE type, const wchar_t* path)

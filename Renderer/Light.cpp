@@ -114,17 +114,19 @@ void DirectionLightBuffer::ComputeLightMatrix(const BoundingBox& boundBox,
 											  _Out_ XMMATRIX& lightProjMatrix, 
 											  _Out_opt_ BoundingOrientedBox* outProjectBox)
 {
+	Vector3 light;
+	lightDirection.Normalize(light);
 	// 1. 카메라 절두체의 꼭짓점 계산 (월드 좌표계로 가정)
 	XMFLOAT3 frustumCorners[8];
 	boundBox.GetCorners(frustumCorners);
 
 	// 2. 빛 뷰 행렬 생성
 	Vector3 lightUp(0.0f, 1.0f, 0.0f); // 기본 Up 벡터
-	if (abs(lightDirection.y) > 0.99f) // 빛이 위나 아래로 향하는 경우
+	if (abs(light.y) > 0.99f) // 빛이 위나 아래로 향하는 경우
 	{
 		lightUp = Vector3(0.0f, 0.0f, -1.0f); // Up 벡터를 바꿈
 	}
-	lightViewMatrix = XMMatrixLookToLH(Vector3::Zero, lightDirection, lightUp);
+	lightViewMatrix = XMMatrixLookToLH(Vector3::Zero, light, lightUp);
 
 	// 3. 빛 좌표계로 변환된 절두체의 꼭짓점 계산
 	Vector4 lightMin(FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX);

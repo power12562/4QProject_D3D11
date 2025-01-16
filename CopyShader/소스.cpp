@@ -53,28 +53,40 @@ public:
 
 int main(int argc, char* argv[])
 {
+    std::filesystem::path dest;
+    std::filesystem::path src;
     if (argc == 2)
     {
         PathFormatter converter;
         converter.Input(argv[1]);
         auto p = converter.GetConvertedPath();
 
-        // 실행 시 인자를 파일 경로로 설정
         std::filesystem::path dest = p.first;
-        if (!std::filesystem::exists(dest))
-        {
-            std::filesystem::create_directories(dest);
-        }
-
         std::filesystem::path source = p.second;
-
-        // ShaderUtility를 이용해 셰이더 복사
-        ShaderUtility::CopyShader(dest, source);
-
-        std::cout << "셰이더 복사가 완료되었습니다: " << dest << " <- " << source << "\n";
-
+    }
+    else if (argc == 3)
+    {
+		dest = argv[1];
+		src = argv[2];
+    }
+    else
+    {
+		std::cerr << "사용법: 프로그램 <dest> <source>" << std::endl;
         return 0;
     }
+    if (!std::filesystem::exists(dest))
+    {
+        std::filesystem::create_directories(dest);
+    }
+
+
+    // ShaderUtility를 이용해 셰이더 복사
+    ShaderUtility::CopyShader(dest, src);
+
+    std::cout << "셰이더 복사가 완료되었습니다: " << dest << " <- " << src << "\n";
+
+
+    return 0;
 
     // 인자 수 확인
     //if (argc < 3)

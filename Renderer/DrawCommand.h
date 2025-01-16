@@ -41,22 +41,11 @@ public:
 	MaterialData materialData;
 };
 
-
-struct MeshDrawCommand2
+struct SkyBoxMeshDrawCommand : public MeshDrawCommand
 {
-public:
-	RendererBuffer vertexBuffer;
-	RendererBuffer indexBuffer;
-	uint32_t indexCounts;
-	uint32_t vertexStride;
-	VertexShader vertexShader;
-	int vsShaderResourcesStart;
-	int vsShaderResourcesEnd;
+};
 
-	DirectX::BoundingOrientedBox boundingBox;
-
-
-	PixelShader pixelShader;
-	int psShaderResourcesStart;
-	int psShaderResourcesEnd;
+struct PostProcessMeshDrawCommand
+{
+	ComputeShader computeShader;
 };

@@ -9,6 +9,25 @@
 
 
 
+struct MeshDrawCommand2
+{
+public:
+	RendererBuffer vertexBuffer;
+	RendererBuffer indexBuffer;
+	uint32_t indexCounts;
+	uint32_t vertexStride;
+	VertexShader vertexShader;
+	int vsShaderResourcesStart;
+	int vsShaderResourcesEnd;
+
+	DirectX::BoundingOrientedBox boundingBox;
+
+
+	PixelShader pixelShader;
+	int psShaderResourcesStart;
+	int psShaderResourcesEnd;
+};
+
 class DefferdRenderer : public IRenderer
 {
 public:
@@ -16,6 +35,9 @@ public:
 	virtual ~DefferdRenderer();
 
 public:
+	void SetSkyBoxDrawCommand(_In_ const MeshDrawCommand& command);
+
+
 	virtual void AddDrawCommand(_In_ const MeshDrawCommand& command) override;
 	virtual void AddBinadble(std::string_view key, const Binadble& bindable) override;
 	virtual void RemoveBinadble(std::string_view key) override;
@@ -42,6 +64,7 @@ private:
 	std::vector<MeshDrawCommand2*> forwardDrawCommands{};
 	std::vector<MeshDrawCommand2*> alphaDrawCommands{};
 	std::vector<Binadble> drawCommandBindable{};
+	MeshDrawCommand skyBoxDrawCommand{};
 
 	Texture renderTarget{};
 
@@ -103,6 +126,7 @@ private:
 	ComPtr<ID3D11SamplerState> samplerState;
 
 private:
+	void ProcessDrawCommand(MeshDrawCommand& drawCommands);
 	void ProcessDrawCommands(std::vector<MeshDrawCommand2*>& drawCommands, bool isWithMaterial = true);
 	void BindBinadble(const Binadble& bindable);
 };

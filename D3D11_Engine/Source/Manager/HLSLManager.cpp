@@ -8,6 +8,88 @@
 #include <Renderer.h>
 #include <Utility\MemoryUtility.h>
 #include <cassert>
+#include <fstream>
+
+
+class ShaderIncludePath : public ID3DInclude
+{
+public:
+	ShaderIncludePath()
+	{
+		AddPath(std::filesystem::current_path());
+	}
+	void AddPath(std::filesystem::path fileName)
+	{
+		//upperbound로 정렬되게 넣기
+		auto it = std::upper_bound(paths.begin(), paths.end(), fileName);
+		paths.insert(it, fileName);
+	}
+
+	void RemovePath(std::filesystem::path fileName)
+	{
+		//upperbound로 찾기
+		auto it = std::upper_bound(paths.begin(), paths.end(), fileName);
+		if (it != paths.end())
+		{
+			paths.erase(it);
+		}
+	}
+
+	HRESULT Open(D3D_INCLUDE_TYPE IncludeType, LPCSTR pFileName, LPCVOID pParentData, LPCVOID* ppData, UINT* pByteCount) override
+	{
+		for (auto& path : paths)
+		{
+			auto filePath = path.parent_path() / pFileName;
+			if (std::filesystem::exists(filePath))
+			{
+				std::ifstream file(filePath, std::ios::binary);
+
+				if (!file.is_open())
+				{
+					return E_FAIL;
+				}
+
+				file.seekg(0, std::ios::end);
+				auto size = file.tellg();
+				file.seekg(0, std::ios::beg);
+
+				auto buffer = new char[size];
+				file.read(buffer, size);
+
+				*ppData = buffer;
+				*pByteCount = size;
+
+
+				auto it = std::upper_bound(buffers.begin(), buffers.end(), buffer);
+				buffers.insert(it, buffer);
+
+				return S_OK;
+			}
+		}
+		return E_FAIL;
+	}
+
+	HRESULT Close(LPCVOID pData) override
+	{
+		auto it = std::upper_bound(buffers.begin(), buffers.end(), pData);
+		if (it != buffers.end())
+		{
+			delete pData;
+			buffers.erase(it);
+		}
+		return S_OK;
+	}
+
+
+private:
+	std::vector<std::filesystem::path> paths;
+	std::vector<LPCVOID> buffers;
+};
+
+
+
+
+
 
 HLSLManager& hlslManager = HLSLManager::GetInstance();
 
@@ -15,7 +97,7 @@ using namespace Utility;
 
 HLSLManager::HLSLManager()
 {
-
+	includePath = std::make_unique<ShaderIncludePath>();
 }
 
 HLSLManager::~HLSLManager()
@@ -71,6 +153,24 @@ void HLSLManager::ClearSharingShader()
 		}
 		sharingShaderMap.clear();
 	}
+}
+
+void HLSLManager::AddPath(std::filesystem::path path)
+{
+	if (!includePath)
+	{
+		includePath = std::make_unique<ShaderIncludePath>();
+	}
+	includePath->AddPath(path);
+}
+
+void HLSLManager::RemovePath(std::filesystem::path path)
+{
+	if (!includePath)
+	{
+		return;
+	}
+	includePath->RemovePath(path);
 }
 
 void HLSLManager::CreateSharingShader(const wchar_t* path, ID3D11VertexShader** ppOut_VertexShader, ID3D11InputLayout** ppOut_InputLayout)

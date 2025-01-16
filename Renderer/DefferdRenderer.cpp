@@ -139,6 +139,11 @@ DefferdRenderer::~DefferdRenderer()
 #endif
 }
 
+void DefferdRenderer::SetSkyBoxDrawCommand(_In_ const MeshDrawCommand& command)
+{
+	skyBoxDrawCommand = command;
+}
+
 void DefferdRenderer::AddDrawCommand(_In_ const MeshDrawCommand& command)
 {
 	int vsShaderResourcesStart = drawCommandBindable.size();
@@ -301,7 +306,7 @@ void DefferdRenderer::Render()
 		| std::views::filter([frustum](const MeshDrawCommand2& item) { return frustum.Intersects(item.boundingBox); })
 		| std::views::transform([](MeshDrawCommand2& item) -> MeshDrawCommand2* { return &item; });
 
-	std::ranges::copy(culledDrawCommands, std::back_inserter(allDrawCommands));
+	std::ranges::copy(culledDrawCommands, std::back_inserter(allDrawCommands));	
 	std::ranges::copy(culledDrawCommands | std::views::filter([](MeshDrawCommand2* item) { return item->pixelShader.isForward; }), std::back_inserter(forwardDrawCommands));
 	std::ranges::copy(culledDrawCommands | std::views::filter([](MeshDrawCommand2* item) { return !item->pixelShader.isForward; }), std::back_inserter(deferredDrawCommands));
 
@@ -310,7 +315,8 @@ void DefferdRenderer::Render()
 		| std::views::transform([](MeshDrawCommand2* item) { return item->boundingBox; })
 		| std::views::filter([frustum](const BoundingOrientedBox& item) { return frustum.Intersects(item); });
 
-	auto visibilityBox = std::accumulate(boundingBoxs.begin(), boundingBoxs.end(), BoundingBox{},
+	auto visibilityBox = std::accumulate(boundingBoxs.begin(), boundingBoxs.end(), 
+										 BoundingBox(XMFLOAT3(cameraProjection.Translation()), XMFLOAT3(20.0f, 20.f, 20.f) ),
 										 [](const BoundingBox& a, const BoundingOrientedBox& b)
 										 {
 											 XMFLOAT3 boxCorners[8];
@@ -495,6 +501,8 @@ void DefferdRenderer::Render()
 		ID3D11RenderTargetView* nullSRV[1]{ nullptr };
 		immediateContext->OMSetRenderTargets(std::size(nullSRV), nullSRV, nullptr);
 	}
+	ProcessDrawCommand(skyBoxDrawCommand);
+	
 
 
 	// ÈÄÃ³¸®
@@ -538,6 +546,31 @@ void DefferdRenderer::SetProjection(float fov, float nearZ, float farZ)
 	cameraProjection = DirectX::XMMatrixPerspectiveFovLH(fov, (float)width / (float)height, nearZ, farZ);
 }
 
+void DefferdRenderer::ProcessDrawCommand(MeshDrawCommand& drawCommands)
+{
+	ID3D11Buffer* vertexBuffer[1] = { drawCommands.meshData.vertexBuffer };
+	UINT stride = drawCommands.meshData.vertexStride;
+	UINT offset = 0;
+
+	immediateContext->IASetVertexBuffers(0, std::size(vertexBuffer), vertexBuffer, &stride, &offset);
+	immediateContext->IASetIndexBuffer(drawCommands.meshData.indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+	immediateContext->IASetInputLayout(drawCommands.meshData.vertexShader);
+	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	for (auto& i : drawCommands.meshData.shaderResources)
+	{
+		BindBinadble(i);
+	}
+
+	immediateContext->VSSetShader(drawCommands.meshData.vertexShader, nullptr, 0);
+	immediateContext->PSSetShader(drawCommands.materialData.pixelShader, nullptr, 0);
+	for (auto& i : drawCommands.materialData.shaderResources)
+	{
+		BindBinadble(i);
+	}
+
+	immediateContext->DrawIndexed(drawCommands.meshData.indexCounts, 0, 0);
+}
+
 void DefferdRenderer::ProcessDrawCommands(std::vector<MeshDrawCommand2*>& drawCommands, bool isWithMaterial)
 {
 	for (auto& command : drawCommands)
@@ -546,7 +579,7 @@ void DefferdRenderer::ProcessDrawCommands(std::vector<MeshDrawCommand2*>& drawCo
 		UINT stride = command->vertexStride;
 		UINT offset = 0;
 
-		immediateContext->IASetVertexBuffers(0, std::size(vertexBuffer), vertexBuffer, &command->vertexStride, &offset);
+		immediateContext->IASetVertexBuffers(0, std::size(vertexBuffer), vertexBuffer, &stride, &offset);
 		immediateContext->IASetIndexBuffer(command->indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 		immediateContext->IASetInputLayout(command->vertexShader);
 		immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
