@@ -60,6 +60,5 @@ void main( uint3 DTid : SV_DispatchThreadID )
 	T_Output[DTid.xy] = float4(LinearToGammaSpace(OutputColor), 1);
 	//T_Output[DTid.xy] = float4(worldPosition, 1);
 	//T_Output[DTid.xy] = float4(0, (depth - 0.98) * 50, 0, 1);
-	//T_Output[DTid.xy] = 1;
 
 }

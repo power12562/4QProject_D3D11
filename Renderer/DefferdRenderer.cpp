@@ -335,7 +335,7 @@ void DefferdRenderer::Render()
 		XMMATRIX view;
 		XMMATRIX projection;
 		DirectionLightBuffer::ComputeLightMatrix(visibilityBox,
-												 -lightData.Directoin,
+												 Vector3(lightData.Directoin),
 												 view, 
 												 projection);
 		CameraBufferData cameraData{};
@@ -422,7 +422,7 @@ void DefferdRenderer::Render()
 	}
 
 	// Gbuffer 라이팅 처리
-	if (0)
+	if (1)
 	{
 		ID3D11RenderTargetView* nullRenderBuffersRTV[4]{ nullptr, };
 		ID3D11RenderTargetView* deferredBufferRTV[1]{ deferredBuffer };
