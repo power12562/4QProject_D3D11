@@ -16,7 +16,7 @@ void SimpleMeshRender::Serialized(std::ofstream& ofs)
 		return;
 
 	ID3D11Device* pDevice = RendererUtility::GetDevice();
-	ID3D11DeviceContext* pDeviceContext = nullptr;
+	ComPtr<ID3D11DeviceContext> pDeviceContext;
 	pDevice->GetImmediateContext(&pDeviceContext);
 
 	using namespace Binary;
@@ -31,7 +31,7 @@ void SimpleMeshRender::Serialized(std::ofstream& ofs)
 	ID3D11Buffer* indexBuffer = (ID3D11Buffer*)meshDrawCommand.meshData.indexBuffer;
 	indexBuffer->GetDesc(&bd);
 	indices.resize(bd.ByteWidth / sizeof(UINT));
-	Utility::RetrieveIndexBufferData(pDeviceContext, pDevice, indexBuffer, indices.data(), bd.ByteWidth);
+	Utility::RetrieveIndexBufferData(pDeviceContext.Get(), pDevice, indexBuffer, indices.data(), bd.ByteWidth);
 	Write::data(ofs, indices.size());
 	ofs.write(reinterpret_cast<const char*>(indices.data()), bd.ByteWidth);
 	indices.clear();
@@ -40,7 +40,7 @@ void SimpleMeshRender::Serialized(std::ofstream& ofs)
 	ID3D11Buffer* vertexBuffer = (ID3D11Buffer*)meshDrawCommand.meshData.vertexBuffer;
 	vertexBuffer->GetDesc(&bd);
 	vertices.resize(bd.ByteWidth / sizeof(Vertex));
-	Utility::RetrieveVertexBufferData(pDeviceContext,pDevice, vertexBuffer, vertices.data(), bd.ByteWidth);
+	Utility::RetrieveVertexBufferData(pDeviceContext.Get(), pDevice, vertexBuffer, vertices.data(), bd.ByteWidth);
 	Write::data(ofs, vertices.size());
 	ofs.write(reinterpret_cast<const char*>(vertices.data()), bd.ByteWidth);
 	vertices.clear();
@@ -112,26 +112,6 @@ void SimpleMeshRender::Start()
 	materialAsset.SetSamplerState(SamplerDesc, 0);
 }
 
-void SimpleMeshRender::FixedUpdate()
-{
-
-}
-
-void SimpleMeshRender::Update()
-{
-
-}
-
-void SimpleMeshRender::LateUpdate()
-{
-
-}
-
-void SimpleMeshRender::UpdateMeshDrawCommand()
-{
-
-}
-
 void SimpleMeshRender::CreateMesh()
 {
 	using namespace Utility;
@@ -195,6 +175,7 @@ void SimpleMeshRender::CreateMesh()
 
 	vertices.clear();
 	indices.clear();
+
 	vertices.shrink_to_fit();
 	indices.shrink_to_fit();
 }

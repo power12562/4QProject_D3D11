@@ -1,5 +1,4 @@
 #include "HLSLManager.h"
-#include <D3DCore/D3DRenderer.h>
 #include <d3d11shader.h>
 #include <d3dcompiler.h>
 #include <Utility/Console.h>

@@ -1,14 +1,12 @@
 #include "D3D11_GameApp.h"
 #include <Manager/SceneManager.h>
 #include <Core/TimeSystem.h>
-#include <D3DCore/D3DRenderer.h>
 #include <GameObject\Base\CameraObject.h>
 #include <Core/DXTKInputSystem.h>
 #include <Utility/ImguiHelper.h>
 #include <Manager/ResourceManager.h>
 #include <Light/PBRDirectionalLight.h>
 #include <Light/SimpleDirectionalLight.h>
-#include <D3DCore/D3DConstBuffer.h>
 #include <Core/GameInputSystem.h>
 #include <Manager/InputManager.h>
 

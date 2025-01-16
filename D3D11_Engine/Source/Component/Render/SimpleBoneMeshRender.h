@@ -38,9 +38,9 @@ public:
 public:
 	virtual void Start() 		 override;
 protected:
-	virtual void FixedUpdate()	 override;
-	virtual void Update() 		 override;
-	virtual void LateUpdate()	 override;
+	virtual void FixedUpdate()	 override {};
+	virtual void Update() 		 override {};
+	virtual void LateUpdate()	 override {};
 	virtual void UpdateMeshDrawCommand() override;
 
 public:

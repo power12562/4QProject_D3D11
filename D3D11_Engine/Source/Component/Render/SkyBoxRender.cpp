@@ -5,7 +5,7 @@ SkyBoxRender* SkyBoxRender::GetMainSkyBox()
 {
 	if (mainSkyBox && mainSkyBox->Enable && mainSkyBox->gameObject.Active)
 	{
-        return mainSkyBox->textures[TEXTURE_TYPE::ENV] ? mainSkyBox : nullptr;
+        return mainSkyBox->materialAsset.GetTexturesV2().empty() ? nullptr : mainSkyBox;
 	}
     return nullptr;
 }
@@ -22,7 +22,7 @@ void SkyBoxRender::Start()
 {
     if (mainSkyBox)
     {
-        __debugbreak(); //스카이 박스는 하나만 존재 가능.
+        Debug_printf("Warning : There can only be one skybox.\n"); //스카이 박스는 하나만 존재 가능합니다.
         GameObject::Destroy(this->gameObject);
         return;
     }
@@ -64,10 +64,7 @@ void SkyBoxRender::Start()
     indices.emplace_back(4); indices.emplace_back(0); indices.emplace_back(3);
     indices.emplace_back(4); indices.emplace_back(3); indices.emplace_back(7);
 
-    meshResource = std::make_shared<DRAW_INDEX_DATA>();
     CreateMesh();
-
-    textures.resize(TEXTURE_TYPE::Count);
 
     //SkyBox용 샘플러
     D3D11_SAMPLER_DESC samplerDesc = {};
@@ -84,15 +81,15 @@ void SkyBoxRender::Start()
     samplerDesc.MaxAnisotropy = 1;                         // 비선형 샘플링을 사용하지 않음
     samplerDesc.MinLOD = 0.0f;                             // 최소 LOD는 0
     samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;                // Mipmap의 최대 LOD
-    samplerState.resize(TEXTURE_TYPE::Count);
-    samplerState.SetSamplerState(0, samplerDesc);
+    materialAsset.SetSamplerState(samplerDesc, 0);
+
     {
         using namespace std::string_literals;
         std::wstring vertexPath(HLSLManager::EngineShaderPath + L"SkyBoxVS.hlsl"s);
-        SetVertexShader(vertexPath.c_str());
+        SetVS(vertexPath.c_str());
 
         std::wstring pixelPath(HLSLManager::EngineShaderPath + L"SkyBoxPS.hlsl"s);
-        SetPixelShader(pixelPath.c_str());
+        SetPS(pixelPath.c_str());
     }
     mainSkyBox = this;
 }
@@ -109,27 +106,61 @@ void SkyBoxRender::LateUpdate()
 {
 }
 
-void SkyBoxRender::Render()
-{
-    //d3dRenderer가 GetMainSkyBox()로 직접 수집해서 그린다.
-}
-
 void SkyBoxRender::SetSkyBox(TEXTURE_TYPE type, const wchar_t* path)
 {
-    switch (type)
+    materialAsset.SetTexture2D(path, type);
+    const Texture* brdf_lut = nullptr;
+    const Texture* diffuse_ibl = nullptr;
+    const Texture* specular_ibl = nullptr;
+    const auto& textuers = materialAsset.GetTexturesV2();
+    const auto& textuerSlot = materialAsset.GetTexturesSlot();
+    size_t textuerCount = textuers.size();
+    for (size_t i = 0; i < textuerCount; i++)
     {
-    case SkyBoxRender::BRDF_LUT:
-        textures.SetTexture2D(type, path);
-        break;
-    default:
-        textures.SetCubeMapTexture(type, path);
-        break;
+        TEXTURE_TYPE type = (TEXTURE_TYPE)textuerSlot[i];
+        switch (type)
+        {
+        case SkyBoxRender::BRDF_LUT:
+            brdf_lut = &textuers[i];
+            break;
+        case SkyBoxRender::Diffuse_IBL:
+            diffuse_ibl = &textuers[i];
+            break;
+        case SkyBoxRender::Specular_IBL:
+            specular_ibl = &textuers[i];
+            break;
+        default:
+            continue;
+        }
+    }
+
+    if(brdf_lut && diffuse_ibl && specular_ibl)
+    {
+        //처리 필요
+
+        //renderer->RemoveBinadble("BRDF_LUT_PS");
+        //renderer->AddBinadble("BRDF_LUT_PS", Binadble{ EShaderType::Pixel, EShaderBindable::ShaderResource, 30, (ID3D11ShaderResourceView*)(*brdf_lut)});
+
+        //renderer->RemoveBinadble("BRDF_LUT_CS");
+        //renderer->AddBinadble("BRDF_LUT_CS", Binadble{ EShaderType::Compute, EShaderBindable::ShaderResource, 30, (ID3D11ShaderResourceView*)(*brdf_lut) });
+      
+        //renderer->RemoveBinadble("Diffuse_IBL_PS");
+        //renderer->AddBinadble("Diffuse_IBL_PS", Binadble{ EShaderType::Pixel, EShaderBindable::ShaderResource, 31, (ID3D11ShaderResourceView*)(*diffuse_ibl)});
+        
+         //renderer->RemoveBinadble("Diffuse_IBL_CS");
+        //renderer->AddBinadble("Diffuse_IBL_CS", Binadble{ EShaderType::Compute, EShaderBindable::ShaderResource, 31, (ID3D11ShaderResourceView*)(*diffuse_ibl) });
+
+        //renderer->RemoveBinadble("Specular_IBL_PS");
+        //renderer->AddBinadble("Specular_IBL_PS", Binadble{ EShaderType::Pixel, EShaderBindable::ShaderResource, 32, (ID3D11ShaderResourceView*)(*specular_ibl)});
+       
+        //renderer->RemoveBinadble("Specular_IBL_CS");
+        //renderer->AddBinadble("Specular_IBL_CS", Binadble{ EShaderType::Compute, EShaderBindable::ShaderResource, 32, (ID3D11ShaderResourceView*)(*specular_ibl) });   
     }
 }
 
 void SkyBoxRender::ResetSkyBox(TEXTURE_TYPE type)
 {
-    textures.ResetTexture2D(type);
+    materialAsset.ReleaseTexture(type);
 }
 
 void SkyBoxRender::CreateMesh()
@@ -138,14 +169,9 @@ void SkyBoxRender::CreateMesh()
     if (vertices.empty() || indices.empty())
         return;
 
-    if (meshResource->pIndexBuffer)
-        SafeRelease(meshResource->pIndexBuffer);
+    ID3D11Device* pDevcie = RendererUtility::GetDevice();
 
-    if (meshResource->pVertexBuffer)
-        SafeRelease(meshResource->pVertexBuffer);
-
-    meshResource->vertexBufferOffset = 0;
-    meshResource->vertexBufferStride = sizeof(Vector4);
+    meshDrawCommand.meshData.vertexStride = sizeof(Vector4);
     D3D11_BUFFER_DESC bd{};
     bd.ByteWidth = sizeof(Vector4) * vertices.size();
     bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
@@ -153,9 +179,11 @@ void SkyBoxRender::CreateMesh()
     bd.CPUAccessFlags = 0;
     D3D11_SUBRESOURCE_DATA vbData = {};
     vbData.pSysMem = vertices.data();
-    CheckHRESULT(d3dRenderer.GetDevice()->CreateBuffer(&bd, &vbData, &meshResource->pVertexBuffer));
+    ComPtr<ID3D11Buffer> vb;
+    Check(pDevcie->CreateBuffer(&bd, &vbData, &vb));
+    meshDrawCommand.meshData.vertexBuffer.Load(vb);
 
-    meshResource->indicesCount = indices.size();
+    meshDrawCommand.meshData.indexCounts = indices.size();
     bd = {};
     bd.Usage = D3D11_USAGE_DEFAULT;
     bd.ByteWidth = sizeof(UINT) * indices.size();
@@ -163,7 +191,9 @@ void SkyBoxRender::CreateMesh()
     bd.CPUAccessFlags = 0;
     D3D11_SUBRESOURCE_DATA ibData = {};
     ibData.pSysMem = indices.data();
-    CheckHRESULT(d3dRenderer.GetDevice()->CreateBuffer(&bd, &ibData, &meshResource->pIndexBuffer));
+    ComPtr<ID3D11Buffer> ib;
+    CheckHRESULT(pDevcie->CreateBuffer(&bd, &ibData, &ib));
+    meshDrawCommand.meshData.indexBuffer.Load(ib);
 
     vertices.clear();
     indices.clear();

@@ -51,13 +51,11 @@ void MaterialAsset::ReleaseSamplerState(uint32_t slot)
 	}
 }
 
-void MaterialAsset::SetTexture2D(const wchar_t* path, ETextureType type)
+void MaterialAsset::SetTexture2D(const wchar_t* path, uint32_t slot)
 {
-	uint32_t slot = static_cast<uint32_t>(type);
 	ReleaseTexture(slot);
 	currTexturePath.emplace_back(path);
 	texturesSlot.emplace_back(slot);
-
 	texturesV2.emplace_back();
 	Texture& textures = texturesV2.back();
 	ComPtr<ID3D11ShaderResourceView> textuer2D;

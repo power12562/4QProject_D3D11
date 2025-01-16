@@ -9,4 +9,9 @@ public:
 	virtual ~PBRMeshRender() override = default;
 
 	virtual void Start() override;
+	virtual void UpdateMeshDrawCommand() override;
+
+	PBRMeshObject& GetPBRMeshObject() { return *meshObject; }
+private:
+	PBRMeshObject* meshObject = nullptr;
 };

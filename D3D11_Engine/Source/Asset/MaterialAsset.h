@@ -24,13 +24,23 @@ public:
 public:
 	void CopyAsset(const MaterialAsset& rhs);
 
-	void SetSamplerState(const D3D11_SAMPLER_DESC& desc, uint32_t slot);
 	void ReleaseSamplerState(uint32_t slot);
+	void SetSamplerState(const D3D11_SAMPLER_DESC& desc, uint32_t slot);
 
 public:
-	void SetTexture2D(const wchar_t* path, ETextureType type);
-	void ReleaseTexture(uint32_t slot);
+	void SetTexture2D(const wchar_t* path, uint32_t slot);
+	template <typename T> void SetTexture2D(const wchar_t* path, T type)	
+	{
+		uint32_t slot = static_cast<uint32_t>(type);
+		SetTexture2D(path, slot);
+	}
 
+	void ReleaseTexture(uint32_t slot);
+	template <typename T> void ReleaseTexture(T type)
+	{
+		uint32_t slot = static_cast<uint32_t>(type);
+		ReleaseTexture(slot);
+	}
 protected:
 	virtual void Serialized(std::ofstream& ofs) override;
 	virtual void Deserialized(std::ifstream& ifs) override;

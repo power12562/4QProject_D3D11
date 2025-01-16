@@ -1,9 +1,7 @@
 #include "Scene.h"
 #include <Manager/SceneManager.h>
-#include <D3DCore/D3DRenderer.h>
 #include <Manager/HLSLManager.h>
 #include <Manager/ResourceManager.h>
-#include <D3DCore/D3DSamplerState.h>
 #include <typeinfo>
 #include <Utility/ImguiHelper.h>
 #include <Utility/Console.h>
@@ -16,7 +14,6 @@
 #include <algorithm>
 #include <ImGuizmo/ImGuizmo.h>
 #include <imgui_internal.h>
-#include <D3DCore/D3DConstBuffer.h>
 
 Scene::Scene()
 {

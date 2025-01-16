@@ -1,6 +1,5 @@
 #include "WinGameApp.h"
 #include <GameObject/Base/GameObject.h>
-#include <D3DCore/D3DRenderer.h>
 #include <Core/TimeSystem.h>
 #include <Manager/SceneManager.h>
 #include <cassert>

@@ -32,6 +32,8 @@ public:
 public:
 	static void Destroy(GameObject& obj);
 	static void Destroy(GameObject* obj);
+	static void DestroyComponent(Component& component);
+	static void DestroyComponent(Component* component);
 	static void DontDestroyOnLoad(GameObject& obj);
 	static void DontDestroyOnLoad(GameObject* obj);
 	static GameObject* Find(const wchar_t* name);
@@ -80,9 +82,6 @@ public:
 
 	/*이 오브젝트의 컴포넌트 개수*/
 	int GetComponentCount() { return componentList.size(); }
-
-	void DestroyComponent(Component& component);
-	void DestroyComponent(Component* component);
 
 	DirectX::BoundingOrientedBox GetOBBToWorld() const;
 	DirectX::BoundingBox GetBBToWorld() const;

@@ -31,6 +31,10 @@ MeshRender::~MeshRender()
 
 void MeshRender::Render()
 {
+	//초기화
+	meshDrawCommand.meshData.shaderResources.clear();
+	meshDrawCommand.materialData.shaderResources.clear();
+
 	//TransformBufferData 업데이트(더티 체크 필요할듯?)
 	transformBuffer.Set(
 		TransformBufferData
@@ -41,7 +45,6 @@ void MeshRender::Render()
 	);
 
 	//등록
-	meshDrawCommand.meshData.shaderResources.clear();
 	meshDrawCommand.meshData.shaderResources.push_back(
 		Binadble
 		{
@@ -56,7 +59,6 @@ void MeshRender::Render()
 	size_t textureCount = materialAsset.GetTexturesV2().size();
 	const auto& textures = materialAsset.GetTexturesV2();
 	const auto& textureSlot = materialAsset.GetTexturesSlot();
-	meshDrawCommand.materialData.shaderResources.clear();
 	for (size_t i = 0; i < textureCount; i++)
 	{
 		Binadble bind{};
@@ -92,12 +94,6 @@ void MeshRender::SetVS(const wchar_t* path)
 {
 	currVSpath = path;
 	{
-		//if (ID3D11VertexShader* vs = meshDrawCommand.meshData.vertexShader)
-		//	SafeRelease(vs);
-		//
-		//if (ID3D11InputLayout* il = meshDrawCommand.meshData.vertexShader)
-		//	SafeRelease(il);
-
 		ComPtr<ID3D11VertexShader> vs;
 		ComPtr<ID3D11InputLayout> il;
 		hlslManager.CreateSharingShader(currVSpath.c_str(), &vs, &il);
@@ -109,9 +105,6 @@ void MeshRender::SetPS(const wchar_t* path)
 {
 	currPSpath = path;
 	{
-		if (ID3D11PixelShader* ps = meshDrawCommand.materialData.pixelShader)
-			SafeRelease(ps);
-
 		ComPtr<ID3D11PixelShader> ps;
 		hlslManager.CreateSharingShader(currPSpath.c_str(), &ps);
 		meshDrawCommand.materialData.pixelShader.LoadShader(ps.Get());
@@ -141,8 +134,8 @@ void MeshRender::SetMeshResource(int meshID)
 				{
 					meshDrawCommand = renderer->meshDrawCommand;
 					materialAsset.CopyAsset(renderer->materialAsset);
-					currVSpath = renderer->currVSpath;
-					currPSpath = renderer->currPSpath;
+					SetVS(renderer->currVSpath.c_str());
+					SetPS(renderer->currPSpath.c_str());
 				}
 			}
 		}
