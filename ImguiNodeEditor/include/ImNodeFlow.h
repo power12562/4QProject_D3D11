@@ -273,6 +273,8 @@ namespace ImFlow
     private:
         static int m_instances;
     public:
+        virtual ~ImNodeFlow() {}
+
         /**
          * @brief <BR>Instantiate a new editor with default name.
          * <BR> Editor name will be "FlowGrid + the number of editors"
@@ -778,7 +780,7 @@ namespace ImFlow
         /**
          * @brief <BR>Delete itself
          */
-        void destroy() { m_destroyed = true; }
+        virtual void destroy() { m_destroyed = true; }
 
         /*
          * @brief <BR>Get if node must be deleted

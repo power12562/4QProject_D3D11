@@ -6,21 +6,28 @@ ShaderNode::ShaderNode()
 	
 }
 
+NodeFlow* ShaderNode::GetHandler()
+{
+	return dynamic_cast<NodeFlow*>(getHandler());
+}
+
 ConstantValueNode::ConstantValueNode()
 {
 	Set(0.0f);
 	setStyle(ImFlow::NodeStyle::green());
-	addOUT<ShaderNodeReturn>((char*)u8"값")->behaviour(
+	addOUT<ShaderPin>((char*)u8"값")->behaviour(
 		[this]()
 		{
-			Variable* var = new Variable();
+			auto var = std::make_shared<LocalVariable>();
 			var->type = "float";
 			var->identifier = std::format({ "c_{}" }, getUID());
 			var->initializationExpression = std::format({ "{}" }, value);
 
-			ShaderNodeReturn result = CreateShaderNodeReturn();
-			result->push_back(var);
-			return result;
+
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
+			GetHandler()->GetShaderNodeReturn().result = var;
+
+			return 0;
 		});
 }
 
@@ -55,43 +62,44 @@ ConstantVector2Node::ConstantVector2Node()
 {
 	Set(value);
 	setStyle(ImFlow::NodeStyle::green());
-	addOUT<ShaderNodeReturn>((char*)u8"값")->behaviour(
+	addOUT<ShaderPin>((char*)u8"값")->behaviour(
 		[this]()
 		{
-			Variable* var = new Variable();
+			auto var = std::make_shared<LocalVariable>();
 			var->type = "float2";
 			var->identifier = std::format({ "c_{}" }, getUID());
 			var->initializationExpression = std::format({ "float2({}, {})" }, value.x, value.y);
 
-			ShaderNodeReturn result = CreateShaderNodeReturn();
-			result->push_back(var);
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
+			GetHandler()->GetShaderNodeReturn().result = var;
 
-			return result;
+			return 0;
 		});
-	addOUT<ShaderNodeReturn>("x")->behaviour(
+	addOUT<ShaderPin>("x")->behaviour(
 		[this]()
 		{
-			Variable* var = new Variable();
+			auto var = std::make_shared<LocalVariable>();
 			var->type = "float";
 			var->identifier = std::format({ "c_x{}" }, getUID());
 			var->initializationExpression = std::format({ "{}" }, value.x);
 
-			ShaderNodeReturn result = CreateShaderNodeReturn();
-			result->push_back(var);
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
+			GetHandler()->GetShaderNodeReturn().result = var;
 
-			return result;
+			return 0;
 		});
-	addOUT<ShaderNodeReturn>("y")->behaviour(
+	addOUT<ShaderPin>("y")->behaviour(
 		[this]()
 		{
-			Variable* var = new Variable();
+			auto var = std::make_shared<LocalVariable>();
 			var->type = "float";
 			var->identifier = std::format({ "c_y{}" }, getUID());
 			var->initializationExpression = std::format({ "{}" }, value.y);
 
-			ShaderNodeReturn result = CreateShaderNodeReturn();
-			result->push_back(var);
-			return result;
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
+			GetHandler()->GetShaderNodeReturn().result = var;
+
+			return 0;
 		});
 }
 void ConstantVector2Node::Set(const Vector2& value)
@@ -138,53 +146,57 @@ ConstantVector3Node::ConstantVector3Node()
 {
 	Set(value);
 	setStyle(ImFlow::NodeStyle::green());
-	addOUT<ShaderNodeReturn>((char*)u8"값")->behaviour(
+	addOUT<ShaderPin>((char*)u8"값")->behaviour(
 		[this]()
 		{
-			Variable* var = new Variable();
+			auto var = std::make_shared<LocalVariable>();
 			var->type = "float3";
 			var->identifier = std::format({ "c_{}" }, getUID());
 			var->initializationExpression = std::format({ "float3({}, {}, {})" }, value.x, value.y, value.z);
 
-			ShaderNodeReturn result = CreateShaderNodeReturn();
-			result->push_back(var);
-			return result;
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
+			GetHandler()->GetShaderNodeReturn().result = var;
+
+			return 0;
 		});
-	addOUT<ShaderNodeReturn>("x")->behaviour(
+	addOUT<ShaderPin>("x")->behaviour(
 		[this]()
 		{
-			Variable* var = new Variable();
+			auto var = std::make_shared<LocalVariable>();
 			var->type = "float";
 			var->identifier = std::format({ "c_x{}" }, getUID());
 			var->initializationExpression = std::format({ "{}" }, value.x);
 
-			ShaderNodeReturn result = CreateShaderNodeReturn();
-			result->push_back(var);
-			return result;
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
+			GetHandler()->GetShaderNodeReturn().result = var;
+
+			return 0;
 		});
-	addOUT<ShaderNodeReturn>("y")->behaviour(
+	addOUT<ShaderPin>("y")->behaviour(
 		[this]()
 		{
-			Variable* var = new Variable();
+			auto var = std::make_shared<LocalVariable>();
 			var->type = "float";
 			var->identifier = std::format({ "c_y{}" }, getUID());
 			var->initializationExpression = std::format({ "{}" }, value.y);
 
-			ShaderNodeReturn result = CreateShaderNodeReturn();
-			result->push_back(var);
-			return result;
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
+			GetHandler()->GetShaderNodeReturn().result = var;
+
+			return 0;
 		});
-	addOUT<ShaderNodeReturn>("z")->behaviour(
+	addOUT<ShaderPin>("z")->behaviour(
 		[this]()
 		{
-			Variable* var = new Variable();
+			auto var = std::make_shared<LocalVariable>();
 			var->type = "float";
 			var->identifier = std::format({ "c_z{}" }, getUID());
 			var->initializationExpression = std::format({ "{}" }, value.z);
 
-			ShaderNodeReturn result = CreateShaderNodeReturn();
-			result->push_back(var);
-			return result;
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
+			GetHandler()->GetShaderNodeReturn().result = var;
+
+			return 0;
 		});
 }
 
@@ -243,65 +255,70 @@ ConstantVector4Node::ConstantVector4Node()
 {
 	Set(value);
 	setStyle(ImFlow::NodeStyle::green());
-	addOUT<ShaderNodeReturn>((char*)u8"값")->behaviour(
+	addOUT<ShaderPin>((char*)u8"값")->behaviour(
 		[this]()
 		{
-			Variable* var = new Variable();
+			auto var = std::make_shared<LocalVariable>();
 			var->type = "float4";
 			var->identifier = std::format({ "c_{}" }, getUID());
 			var->initializationExpression = std::format({ "float4({}, {}, {}, {})" }, value.x, value.y, value.z, value.w);
 
-			ShaderNodeReturn result = CreateShaderNodeReturn();
-			result->push_back(var);
-			return result;
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
+			GetHandler()->GetShaderNodeReturn().result = var;
+
+			return 0;
 		});
-	addOUT<ShaderNodeReturn>("x")->behaviour(
+	addOUT<ShaderPin>("x")->behaviour(
 		[this]()
 		{
-			Variable* var = new Variable();
+			auto var = std::make_shared<LocalVariable>();
 			var->type = "float";
 			var->identifier = std::format({ "c_x{}" }, getUID());
 			var->initializationExpression = std::format({ "{}" }, value.x);
 
-			ShaderNodeReturn result = CreateShaderNodeReturn();
-			result->push_back(var);
-			return result;
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
+			GetHandler()->GetShaderNodeReturn().result = var;
+
+			return 0;
 		});
-	addOUT<ShaderNodeReturn>("y")->behaviour(
+	addOUT<ShaderPin>("y")->behaviour(
 		[this]()
 		{
-			Variable* var = new Variable();
+			auto var = std::make_shared<LocalVariable>();
 			var->type = "float";
 			var->identifier = std::format({ "c_y{}" }, getUID());
 			var->initializationExpression = std::format({ "{}" }, value.y);
 
-			ShaderNodeReturn result = CreateShaderNodeReturn();
-			result->push_back(var);
-			return result;
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
+			GetHandler()->GetShaderNodeReturn().result = var;
+
+			return 0;
 		});
-	addOUT<ShaderNodeReturn>("z")->behaviour(
+	addOUT<ShaderPin>("z")->behaviour(
 		[this]()
 		{
-			Variable* var = new Variable();
+			auto var = std::make_shared<LocalVariable>();
 			var->type = "float";
 			var->identifier = std::format({ "c_z{}" }, getUID());
 			var->initializationExpression = std::format({ "{}" }, value.z);
 
-			ShaderNodeReturn result = CreateShaderNodeReturn();
-			result->push_back(var);
-			return result;
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
+			GetHandler()->GetShaderNodeReturn().result = var;
+
+			return 0;
 		});
-	addOUT<ShaderNodeReturn>("w")->behaviour(
+	addOUT<ShaderPin>("w")->behaviour(
 		[this]()
 		{
-			Variable* var = new Variable();
+			auto var = std::make_shared<LocalVariable>();
 			var->type = "float";
 			var->identifier = std::format({ "c_w{}" }, getUID());
 			var->initializationExpression = std::format({ "{}" }, value.w);
 
-			ShaderNodeReturn result = CreateShaderNodeReturn();
-			result->push_back(var);
-			return result;
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
+			GetHandler()->GetShaderNodeReturn().result = var;
+
+			return 0;
 		});
 }
 
@@ -367,6 +384,136 @@ void ConstantVector4Node::Deserialize(const nlohmann::json& j)
 	value.w = j["value.w"];
 }
 
+TextureNode::TextureNode()
+{
+	setTitle("Texture Sample");
+	Set(texturePath);
+	setStyle(ImFlow::NodeStyle::cyan());
+
+	addIN<ShaderPin>("uv", 0, ImFlow::ConnectionFilter::None());
+
+	addOUT<ShaderPin>((char*)u8"RGB")->behaviour(
+		[this]()
+		{
+			auto var = std::make_shared<RegistorVariable>();
+			var->type = "Texture2D";
+			var->identifier = std::format({ "t_{}" }, getUID());
+			var->registorSlot = ERegisterSlot::Texture;
+
+			auto var2 = std::make_shared<LocalVariable>();
+			var2->type = "float3";
+			var2->identifier = std::format({ "c_{}" }, getUID());
+			var2->initializationExpression = std::format({ " {}.Sample(DefaultSampler, input.Tex).rgb" }, var->identifier);
+
+
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var2);
+			GetHandler()->GetShaderNodeReturn().result = var2;
+
+			return 0;
+		});
+	addOUT<ShaderPin>((char*)u8"r")->behaviour(
+		[this]()
+		{
+			auto var = std::make_shared<RegistorVariable>();
+			var->type = "Texture2D";
+			var->identifier = std::format({ "t_{}" }, getUID());
+			var->registorSlot = ERegisterSlot::Texture;
+
+			auto var2 = std::make_shared<LocalVariable>();
+			var2->type = "float3";
+			var2->identifier = std::format({ "c_r{}" }, getUID());
+			var2->initializationExpression = std::format({ " {}.Sample(DefaultSampler, input.Tex).r" }, var->identifier);
+
+
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var2);
+			GetHandler()->GetShaderNodeReturn().result = var2;
+
+			return 0;
+		});
+	addOUT<ShaderPin>((char*)u8"g")->behaviour(
+		[this]()
+		{
+			auto var = std::make_shared<RegistorVariable>();
+			var->type = "Texture2D";
+			var->identifier = std::format({ "t_{}" }, getUID());
+			var->registorSlot = ERegisterSlot::Texture;
+
+			auto var2 = std::make_shared<LocalVariable>();
+			var2->type = "float3";
+			var2->identifier = std::format({ "c_g{}" }, getUID());
+			var2->initializationExpression = std::format({ " {}.Sample(DefaultSampler, input.Tex).g" }, var->identifier);
+
+
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var2);
+			GetHandler()->GetShaderNodeReturn().result = var2;
+
+			return 0;
+		});
+	addOUT<ShaderPin>((char*)u8"B")->behaviour(
+		[this]()
+		{
+			auto var = std::make_shared<RegistorVariable>();
+			var->type = "Texture2D";
+			var->identifier = std::format({ "t_{}" }, getUID());
+			var->registorSlot = ERegisterSlot::Texture;
+
+			auto var2 = std::make_shared<LocalVariable>();
+			var2->type = "float";
+			var2->identifier = std::format({ "c_B{}" }, getUID());
+			var2->initializationExpression = std::format({ " {}.Sample(DefaultSampler, input.Tex).b" }, var->identifier);
+
+
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var2);
+			GetHandler()->GetShaderNodeReturn().result = var2;
+
+			return 0;
+		});
+	addOUT<ShaderPin>((char*)u8"RGBA")->behaviour(
+		[this]()
+		{
+			auto var = std::make_shared<RegistorVariable>();
+			var->type = "Texture2D";
+			var->identifier = std::format({ "t_{}" }, getUID());
+			var->registorSlot = ERegisterSlot::Texture;
+
+			auto var2 = std::make_shared<LocalVariable>();
+			var2->type = "float4";
+			var2->identifier = std::format({ "c_RGBA{}" }, getUID());
+			var2->initializationExpression = std::format({ " {}.Sample(DefaultSampler, input.Tex).rgba" }, var->identifier);
+
+
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var2);
+			GetHandler()->GetShaderNodeReturn().result = var2;
+
+			return 0;
+		});
+
+
+}
+
+void TextureNode::Set(std::string& value)
+{
+	texturePath = value;
+}
+
+void TextureNode::draw()
+{
+}
+
+void TextureNode::Serialize(nlohmann::json& j)
+{
+}
+
+void TextureNode::Deserialize(const nlohmann::json& j)
+{
+}
+
+
 ShaderResultNode::ShaderResultNode()
 {
 	setStyle(ImFlow::NodeStyle::red());
@@ -375,11 +522,14 @@ ShaderResultNode::ShaderResultNode()
 
 	for (auto& name : EShaderResult::pinNames)
 	{
-		addIN<ShaderNodeReturn>(name, nullptr, ImFlow::ConnectionFilter::None());
+		addIN<ShaderPin>(name, 0, ImFlow::ConnectionFilter::None());
 	}
 }
 
-ShaderNodeReturn CreateShaderNodeReturn()
+NodeFlow::NodeFlow()
 {
-	return new std::vector<ShaderDataProcess*>;
+	nodeFactory.Set(this);
+	resultNode = addNode<ShaderResultNode>({ 100, 100 }).get();
 }
+
+NodeFlow::~NodeFlow() = default;

@@ -6,27 +6,34 @@
 
 
 
+
+std::shared_ptr<ShaderNode> NodeFlow::Create(std::string_view typeName)
+{
+	return nodeFactory.Create(typeName);
+}
+
 NodeEditor::NodeEditor(std::filesystem::path path) : path{}
 {
-	//Load(path);
+	//myGrid = std::make_shared<ImFlow::ImNodeFlow>();
+	//nodeFactory.Set(myGrid);
+	//resultNode = myGrid->addNode<ShaderResultNode>({ 100, 100 }).get();
+	//auto temp = myGrid->addNode<ConstantVector3Node>({ 0, 0 }).get();
+	//temp->outPin(std::string((char*)u8"값"))->createLink(resultNode->inPin((const char*)u8"알베도"));
+
+
+	Load(path);
 	this->path = path;
 
-	myGrid = std::make_shared<ImFlow::ImNodeFlow>();
-	nodeFactory.Set(myGrid);
-	resultNode = myGrid->addNode<ShaderResultNode>({ 100, 100 }).get();
-	auto temp = myGrid->addNode<ConstantVector3Node>({ 0, 0 }).get();
-
-	temp->outPin(std::string((char*)u8"값"))->createLink(resultNode->inPin((const char*)u8"알베도"));
 
 
 
 
 	myGrid->rightClickPopUpContent(
-		[](ImFlow::BaseNode* node)
+		[this](ImFlow::BaseNode* node)
 		{
 			if (ImGui::MenuItem((char*)u8"텍스처"))
 			{
-				__debugbreak();
+				myGrid->Create("TextureNode");
 			}
 		});
 
@@ -42,7 +49,7 @@ NodeEditor::~NodeEditor()
 {
 	if (myGrid)
 	{
-		//Save();
+		Save();
 		// 모든 노드 저장
 	}
 
@@ -59,21 +66,27 @@ void NodeEditor::Update()
 	{
 		if (ImGui::IsKeyDown(ImGuiKey_1))
 		{
-			nodeFactory.Create("ConstantValueNode");
+			myGrid->Create("ConstantValueNode");
 		}
 		if (ImGui::IsKeyDown(ImGuiKey_2))
 		{
-			nodeFactory.Create("ConstantVector2Node");
+			myGrid->Create("ConstantVector2Node");
 		}
 		if (ImGui::IsKeyDown(ImGuiKey_3))
 		{
-			nodeFactory.Create("ConstantVector3Node");
+			myGrid->Create("ConstantVector3Node");
 		}
 		if (ImGui::IsKeyDown(ImGuiKey_4))
 		{
-			nodeFactory.Create("ConstantVector4Node");
+			myGrid->Create("ConstantVector4Node");
+		}
+		if (ImGui::IsKeyDown(ImGuiKey_T))
+		{
+			myGrid->Create("TextureNode");
 		}
 	}
+
+
 
 	myGrid->update();
 
@@ -125,14 +138,21 @@ void NodeEditor::Update()
 				float minY = (std::min)(dragStartPos.y, dragEndPos.y);
 				float maxY = (std::max)(dragStartPos.y, dragEndPos.y);
 
-				if (nodePos.x + nodeSize.x >= minX && nodePos.x - nodeSize.x <= maxX &&
-					nodePos.y + nodeSize.y >= minY && nodePos.y - nodeSize.x <= maxY)
+				// 노드와 드래그 박스가 겹치는지 확인
+				if (nodePos.x < maxX && nodePos.x + nodeSize.x > minX &&
+					nodePos.y < maxY && nodePos.y + nodeSize.y > minY)
 				{
 					node->selected(true);
 				}
 
+
 			}
 		}
+
+	}
+	if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyDown(ImGuiKey_S))
+	{
+		Save();
 	}
 
 	ImGui::End();
@@ -143,6 +163,11 @@ void NodeEditor::Update()
 
 void NodeEditor::Save()
 {
+	if (!myGrid)
+	{
+		return;
+	}
+
 	nlohmann::json j;
 	for (ImFlow::BaseNode* item : myGrid->getNodes() | std::views::transform([](const auto& item) {return item.second.get();}))
 	{
@@ -151,13 +176,15 @@ void NodeEditor::Save()
 		auto typeview =
 			std::string_view(typeid(*item).name())
 			| std::views::reverse
-			| std::views::take_while([](char item) { return item == ' '; })
-			| std::views::reverse;
+			| std::views::take_while([](char item) { return item != ' '; })
+			| std::views::reverse
+			| std::views::common;
 
 		std::string type(typeview.begin(), typeview.end());
 
 		nodeJson["Type"] = type;
 		nodeJson["pos"] = { item->getPos().x, item->getPos().y };
+		nodeJson["uid"] = item->getUID();
 
 		for (auto& pin : item->getIns())
 		{
@@ -181,8 +208,13 @@ void NodeEditor::Save()
 	for (const auto& item : myGrid->getLinks() | std::views::transform([](const auto& item) { return item.lock().get(); }))
 	{
 		nlohmann::json linkJson;
+		
+		linkJson["leftNode"] = item->left()->getParent()->getUID();
 		linkJson["left"] = item->left()->getUid();
+
+		linkJson["rightNode"] = item->right()->getParent()->getUID();
 		linkJson["right"] = item->right()->getUid();
+		
 		j["links"].push_back(linkJson);
 	}
 
@@ -197,10 +229,8 @@ void NodeEditor::Load(std::filesystem::path path)
 	{
 		Save();
 	}
-
+	myGrid = std::make_shared<NodeFlow>();
 	this->path = path;
-	myGrid = std::make_shared<ImFlow::ImNodeFlow>();
-	nodeFactory.Set(myGrid);
 
 	std::ifstream file(path);
 	if (!file.is_open())
@@ -212,10 +242,10 @@ void NodeEditor::Load(std::filesystem::path path)
 	file.close();
 
 	
-
+	std::map<ImFlow::NodeUID, std::shared_ptr<ImFlow::BaseNode>> nodes;
 	for (auto& item : j["nodes"])
 	{
-		auto newNode = nodeFactory.Create(item["Type"]);
+		auto newNode = myGrid->Create(item["Type"]);
 		newNode->setPos({ item["pos"][0], item["pos"][1] });
 
 		ISerializable* serializeable = dynamic_cast<ISerializable*>(newNode.get());
@@ -223,21 +253,27 @@ void NodeEditor::Load(std::filesystem::path path)
 		{
 			serializeable->Deserialize(item);
 		}
+
+		nodes.emplace(item["uid"], newNode);
 	}
 
 	for (auto& item : j["links"])
 	{
-		ImFlow::Pin* left;
-		ImFlow::Pin* right;
+		std::shared_ptr< ImFlow::Pin> left = nullptr;
+		std::shared_ptr< ImFlow::Pin> right = nullptr;
+		auto leftUid = item["left"].get<ImFlow::PinUID>();
+		auto rightUid = item["right"].get<ImFlow::PinUID>();
+		auto leftNodeUid = item["leftNode"].get<ImFlow::PinUID>();
+		auto rightNodeUid = item["rightNode"].get<ImFlow::PinUID>();
+		
 
-		for (const auto& node : myGrid->getNodes() | std::views::transform([](const auto& item) { return item.second.get(); }))
+		left = (nodes[leftNodeUid]->getOuts() | std::views::filter([&leftUid](auto& item) { return item->getUid() == leftUid; }) | std::views::take(1)).front();
+		right = (nodes[rightNodeUid]->getIns() | std::views::filter([&rightUid](auto& item) { return item->getUid() == rightUid; }) | std::views::take(1)).front();
+
+		if (left && right)
 		{
-			right = node->inPin(item["right"]);
-			left = node->outPin(item["left"]);
-			left->createLink(right);
+			left->createLink(right.get());
 		}
-
-
 	}
 }
 
@@ -247,6 +283,17 @@ void ShaderNodeEditor::UpdateImp()
 	{
 		if (ImGui::BeginMenu((char*)u8"파일", true))
 		{
+			if (ImGui::MenuItem((char*)u8"저장", "Ctrl + S", nullptr, true))
+			{
+				Save();
+			}
+
+			if (ImGui::MenuItem((char*)u8"열기", nullptr, nullptr, true))
+			{
+
+				//Save();
+			}
+			
 			if (ImGui::MenuItem((char*)u8"내보내기", nullptr, nullptr, true))
 			{
 				GenerateShaderCode();
@@ -259,63 +306,71 @@ void ShaderNodeEditor::UpdateImp()
 
 void ShaderNodeEditor::GenerateShaderCode()
 {
-	std::vector<ShaderDataProcess*> originalNodeReturn;
+	std::vector<std::shared_ptr<ShaderDataProcess>> originalNodeReturn;
 
 	for (size_t i = 0; i < EShaderResult::MAX; i++)
 	{
-		auto temp = resultNode->getInVal<ShaderNodeReturn>(EShaderResult::pinNames[i]);
-		if (temp)
+		std::vector<std::shared_ptr<ShaderDataProcess>>& processVector = myGrid->GetShaderNodeReturn().data;
+
+		processVector.clear();
+
+		myGrid->GetResultNode()->getInVal<ShaderPin>(EShaderResult::pinNames[i]);
+
+		for (auto& item : processVector)
 		{
-			for (auto& item : *temp)
-			{
-				originalNodeReturn.emplace_back(item);
-			}
-
-			// temp의 마지막 Variable 찾기
-			auto lastVariable = std::ranges::find_if(temp->rbegin(), temp->rend(), [](auto& item) { return dynamic_cast<Variable*>(item); });
-
-
-
-			if (lastVariable != temp->rend())
-			{
-				Execution* execution = new Execution;
-				execution->leftIdentifier = EShaderResult::hlslName[i];
-				execution->rightIdentifier = static_cast<Variable*>(*lastVariable)->identifier;
-				originalNodeReturn.emplace_back(execution);
-			}
-
-			delete temp;
+			originalNodeReturn.emplace_back(item);
 		}
+
+		if (myGrid->GetShaderNodeReturn().result)
+		{
+			auto execution = std::make_shared<Execution>();
+			execution->leftIdentifier = EShaderResult::hlslName[i];
+			execution->rightIdentifier = myGrid->GetShaderNodeReturn().result->identifier;
+			originalNodeReturn.emplace_back(execution);
+		}
+
+		processVector.clear();
+		myGrid->GetShaderNodeReturn().result = {};
 		myGrid->get_recursion_blacklist().clear();
 	}
 
-	std::vector<Variable*> definitions;
-	std::vector<Execution*> executions;
 	std::vector<Define*> defines;
+	std::vector<RegistorVariable*> registerValues;
+	std::vector<LocalVariable*> localValues;
+	std::vector<Execution*> executions;
 
 	for (auto& item : originalNodeReturn)
 	{
-		if (auto data = dynamic_cast<Variable*>(item))
+		if (auto data = std::dynamic_pointer_cast<Define>(item))
 		{
-			definitions.emplace_back(data);
+			defines.emplace_back(data.get());
 		}
-		else if (auto data = dynamic_cast<Execution*>(item))
+		else if (auto data = std::dynamic_pointer_cast<RegistorVariable>(item))
 		{
-			executions.emplace_back(data);
+			registerValues.emplace_back(data.get());
 		}
-		else if (auto data = dynamic_cast<Define*>(item))
+		else if (auto data = std::dynamic_pointer_cast<LocalVariable>(item))
 		{
-			defines.emplace_back(data);
+			localValues.emplace_back(data.get());
 		}
+		else if (auto data = std::dynamic_pointer_cast<Execution>(item))
+		{
+			executions.emplace_back(data.get());
+		}
+		 
 	}
 	std::ranges::sort(defines, [](auto& a, auto& b) { return a->name < b->name; });
 	defines.erase(std::ranges::unique(defines, [](auto& a, auto& b) { return a->name == b->name; }).begin(), defines.end());
+	
+	std::ranges::sort(registerValues, [](auto& a, auto& b) { return a->identifier < b->identifier; });
+	registerValues.erase(std::ranges::unique(registerValues, [](auto& a, auto& b) { return a->identifier == b->identifier; }).begin(), registerValues.end());
 
-	std::ranges::sort(definitions, [](auto& a, auto& b) { return a->identifier < b->identifier; });
-	definitions.erase(std::ranges::unique(definitions, [](auto& a, auto& b) { return a->identifier == b->identifier; }).begin(), definitions.end());
+	std::ranges::sort(localValues, [](auto& a, auto& b) { return a->identifier < b->identifier; });
+	localValues.erase(std::ranges::unique(localValues, [](auto& a, auto& b) { return a->identifier == b->identifier; }).begin(), localValues.end());
 
 	std::stringstream defineLine;
-	std::stringstream definitionsLine;
+	std::stringstream registerValueLine;
+	std::stringstream localValueLine;
 	std::stringstream executionsLine;
 
 	for (auto& item : defines)
@@ -323,9 +378,17 @@ void ShaderNodeEditor::GenerateShaderCode()
 		defineLine << *item << std::endl;
 	}
 
-	for (auto& item : definitions)
+	int registerCounts[ERegisterSlot::MAX] = { 0, };
+
+	for (auto& item : registerValues)
 	{
-		definitionsLine << *item << std::endl;
+		item->slotNum = registerCounts[item->registorSlot]++;
+		registerValueLine << *item << std::endl;
+	}
+
+	for (auto& item : localValues)
+	{
+		localValueLine << *item << std::endl;
 	}
 
 	for (auto& item : executions)
@@ -333,10 +396,7 @@ void ShaderNodeEditor::GenerateShaderCode()
 		executionsLine << *item << std::endl;
 	}
 
-	for (auto& item : originalNodeReturn)
-	{
-		delete item;
-	}
+	originalNodeReturn.clear();
 
 
 	std::ofstream file("Resource/Shader/Effect.hlsl");
@@ -349,13 +409,14 @@ void ShaderNodeEditor::GenerateShaderCode()
 #include "../EngineShader/GBufferMaterial.hlsli"
 
 {0}
+{1}
 
 GBufferMaterial GetCustomGBufferMaterial(PS_INPUT input)
 {{
     GBufferMaterial material = GetDefaultGBufferMaterial(input);
 
-{1}
 {2}
+{3}
     return material;
 }}
 
@@ -363,7 +424,8 @@ GBufferMaterial GetCustomGBufferMaterial(PS_INPUT input)
 #include "../EngineShader/BasePassPS.hlsl"
 )aa",
 defineLine.str(),
-definitionsLine.str(),
+registerValueLine.str(),
+localValueLine.str(),
 executionsLine.str()
 );
 

@@ -29,7 +29,7 @@ GBufferMaterial GetDefaultGBufferMaterial(PS_INPUT input)
 	material.specular = 1.0;
 	material.metallic = 1.0;
 	material.roughness = 0.0;
-	material.ambiantOcclusion = 1;
+	material.ambiantOcclusion = 0.2;
 	
 	material.normal = float3(0.0, 0.0, 1.0);
 	material.emissive = 0;

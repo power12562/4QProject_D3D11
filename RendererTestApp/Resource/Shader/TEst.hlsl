@@ -8,6 +8,7 @@ Texture2D albedoTexture : register(t0);
 GBufferMaterial GetCustomGBufferMaterial(PS_INPUT input)
 {
 	GBufferMaterial material = GetDefaultGBufferMaterial(input);
+	
 	material.albedo = albedoTexture.Sample(DefaultSampler, input.Tex).rgb;
 	material.roughness = 1;
 	material.metallic = 0.5;

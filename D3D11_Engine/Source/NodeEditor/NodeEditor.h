@@ -1,9 +1,10 @@
 #pragma once
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <ImNodeFlow.h>
-#include "NodeFactory.h"
 #include <fstream>
 #include <filesystem>
+class NodeFlow;
+
 
 class NodeEditor
 {
@@ -17,9 +18,7 @@ public:
 	virtual void UpdateImp() {};
 
 protected:
-	std::shared_ptr<ImFlow::ImNodeFlow> myGrid;
-	ShaderNodeFactory nodeFactory;
-	class ShaderResultNode* resultNode;
+	std::shared_ptr<NodeFlow> myGrid;
 	std::filesystem::path path;
 };
 
@@ -32,3 +31,5 @@ public:
 	void GenerateShaderCode();
 	
 };
+
+

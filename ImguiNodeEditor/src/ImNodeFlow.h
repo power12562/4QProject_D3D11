@@ -273,6 +273,8 @@ namespace ImFlow
     private:
         static int m_instances;
     public:
+        virtual ~ImNodeFlow() {}
+
         /**
          * @brief <BR>Instantiate a new editor with default name.
          * <BR> Editor name will be "FlowGrid + the number of editors"
