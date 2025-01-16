@@ -20,7 +20,6 @@ Scene::Scene()
 	constexpr unsigned int ReserveSize = 100000;
 	objectList.reserve(ReserveSize);
 	dontdestroyonloadList.reserve(ReserveSize);
-	d3dRenderer.reserveRenderQueue(ReserveSize);
 	Transform::reserveUpdateList(ReserveSize);
 }
 
@@ -28,7 +27,6 @@ Scene::~Scene()
 {
 	hlslManager.ClearSharingShader();
 	Resource::ClearResourceManagers();
-	D3DConstBuffer::ClearInitFlag();
 }
 
 void Scene::FixedUpdate()
@@ -67,19 +65,21 @@ void Scene::LateUpdate()
 
 void Scene::Render()
 {	
+	Transform::UpdateMatrix();
+	Transform::ClearUpdateList();
 	if (Camera::GetMainCamera())
 	{
-		d3dRenderer.BegineDraw();
 		for (auto& obj : objectList)
 		{
 			if (obj && obj->Active)
+			{
 				obj->Render();
+			}		
 		}
-		d3dRenderer.EndDraw();
+		D3D11_GameApp::GetRenderer().Render();
 	}
 	if (UseImGUI)
 	{
-		d3dRenderer.SetRTVdefault();
 		ImGUIBegineDraw();
 		ImGuizmoDraw();
 		ImGUIRender();
@@ -87,7 +87,7 @@ void Scene::Render()
 			ImGUIPopupQue.front()();
 		ImGUIEndDraw();
 	}
-	d3dRenderer.Present();
+	D3D11_GameApp::Present();
 }
 
 void Scene::ImGUIBegineDraw()
@@ -112,9 +112,10 @@ void Scene::ImGuizmoDraw()
 		if (Camera* mainCamera = Camera::GetMainCamera())
 		{
 			ImGuizmo::BeginFrame();
-			D3D11_VIEWPORT& frontView = d3dRenderer.ViewPortsVec.front();
-			ImGuizmo::SetRect(frontView.TopLeftX, frontView.TopLeftY, frontView.Width, frontView.Height);
-			SIZE clientSize = D3D11_GameApp::GetClientSize();
+			const SIZE& clientSize = D3D11_GameApp::GetClientSize();
+			float width = clientSize.cx;
+			float height = clientSize.cy;
+			ImGuizmo::SetRect(0, 0, width, height);
 			const Matrix& cameraVM = mainCamera->GetVM();
 			const Matrix& cameraPM = mainCamera->GetPM();
 

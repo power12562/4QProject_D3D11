@@ -23,7 +23,7 @@ void SimpleMeshRender::Serialized(std::ofstream& ofs)
 	Write::data(ofs, Enable);
 	Write::Color(ofs, baseColor);
 	Write::data(ofs, isForward);
-	Write::data(ofs, GetMeshID);
+	Write::data(ofs, GetMeshID());
 	Write::wstring(ofs, GetVSpath());
 	Write::wstring(ofs, GetPSpath());
 

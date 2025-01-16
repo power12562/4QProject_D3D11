@@ -2,7 +2,9 @@
 #include <d3d11shader.h>
 #include <d3dcompiler.h>
 #include <Utility/Console.h>
+#include <Utility/D3D11Utility.h>
 #include <intrin.h>
+#include <Renderer.h>
 
 HLSLManager& hlslManager = HLSLManager::GetInstance();
 
@@ -153,7 +155,7 @@ void HLSLManager::MakeShader(const wchar_t* path, ID3D11VertexShader** ppOut_Ver
 		__debugbreak(); //not shader file
 		*ppOut_VertexShader = nullptr;
 	}
-	CheckHRESULT(d3dRenderer.GetDevice()->CreateVertexShader(vertexShaderBuffer->GetBufferPointer(), vertexShaderBuffer->GetBufferSize(), NULL, &vertexShader));
+	CheckHRESULT(RendererUtility::GetDevice()->CreateVertexShader(vertexShaderBuffer->GetBufferPointer(), vertexShaderBuffer->GetBufferSize(), NULL, &vertexShader));
 	*ppOut_VertexShader = vertexShader;
 	D3D_SET_OBJECT_NAME(vertexShader, path);
 
@@ -182,7 +184,7 @@ void HLSLManager::MakeShader(const wchar_t* path, ID3D11VertexShader** ppOut_Ver
 
 		inputLayoutDesc.push_back(elementDesc);
 	}
-	CheckHRESULT(d3dRenderer.GetDevice()->CreateInputLayout(inputLayoutDesc.data(), (UINT)inputLayoutDesc.size(),
+	CheckHRESULT(RendererUtility::GetDevice()->CreateInputLayout(inputLayoutDesc.data(), (UINT)inputLayoutDesc.size(),
 		vertexShaderBuffer->GetBufferPointer(), vertexShaderBuffer->GetBufferSize(), ppOut_InputLayout));
 
 	D3D_SET_OBJECT_NAME(*ppOut_InputLayout, path);
@@ -208,7 +210,7 @@ void HLSLManager::MakeShader(const wchar_t* path, ID3D11PixelShader** ppOutput)
 		__debugbreak(); //not shader file
 		*ppOutput = nullptr;
 	}
-	CheckHRESULT(d3dRenderer.GetDevice()->CreatePixelShader(computeShaderBuffer->GetBufferPointer(), computeShaderBuffer->GetBufferSize(), NULL, &computeShader));
+	CheckHRESULT(RendererUtility::GetDevice()->CreatePixelShader(computeShaderBuffer->GetBufferPointer(), computeShaderBuffer->GetBufferSize(), NULL, &computeShader));
 	D3D_SET_OBJECT_NAME(computeShader, path);
 
 	*ppOutput = computeShader;
@@ -232,7 +234,7 @@ void HLSLManager::MakeShader(const wchar_t* path, ID3D11ComputeShader** ppOutput
 		__debugbreak(); //not shader file
 		*ppOutput = nullptr;
 	}
-	CheckHRESULT(d3dRenderer.GetDevice()->CreateComputeShader(pixelShaderBuffer->GetBufferPointer(), pixelShaderBuffer->GetBufferSize(), NULL, &pixelShader));
+	CheckHRESULT(RendererUtility::GetDevice()->CreateComputeShader(pixelShaderBuffer->GetBufferPointer(), pixelShaderBuffer->GetBufferSize(), NULL, &pixelShader));
 	D3D_SET_OBJECT_NAME(pixelShader, path);
 
 	*ppOutput = pixelShader;

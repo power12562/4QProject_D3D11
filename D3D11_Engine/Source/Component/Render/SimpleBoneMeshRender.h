@@ -34,6 +34,11 @@ public:
 	virtual ~SimpleBoneMeshRender() override;
 	virtual void Serialized(std::ofstream& ofs);
 	virtual void Deserialized(std::ifstream& ifs);
+private:
+	/*Deserialized된 항목들.*/
+	inline static std::vector<SimpleBoneMeshRender*> DeserializedListVec;
+	/*Deserialized 종료 후 호출해야하는 함수(GameObjectFactory에서 호출)*/
+	static void EndDeserialized();
 
 public:
 	virtual void Start() 		 override;

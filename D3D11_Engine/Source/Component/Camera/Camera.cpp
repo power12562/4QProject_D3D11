@@ -71,12 +71,9 @@ Ray Camera::ScreenPointToRay(int pointX, int pointY)
 	float screenWidth = (float)clientSize.cx; // 화면 너비
 	float screenHeight = (float)clientSize.cy; // 화면 높이
 
-	//화면에 정의된 Viewport
-	D3D11_VIEWPORT& viewPort = d3dRenderer.ViewPortsVec.front();
-
 	// NDC로 변환 (x, y는 -1에서 1 사이 값으로 변환)
-	float ndcX = (2.0f * (mouseX - viewPort.TopLeftX)) / viewPort.Width - 1.0f;
-	float ndcY = 1.0f - (2.0f * (mouseY - viewPort.TopLeftY)) / viewPort.Height;  // y축 반전 처리
+	float ndcX = (2.0f * mouseX) / (float)clientSize.cx - 1.0f;
+	float ndcY = 1.0f - (2.0f * mouseY) / (float)clientSize.cy;  // y축 반전 처리
 	float nearZ = 0.f;
 	float farZ = 1.0f;
 	XMFLOAT3 nearPoint(ndcX, ndcY, nearZ);
@@ -111,12 +108,19 @@ void Camera::Update()
 {
 	if (mainCam == this)
 	{
+		DefferdRenderer& renderer = D3D11_GameApp::GetRenderer();
+		const SIZE& size = D3D11_GameApp::GetClientSize();
+		float width = size.cx;
+		float height = size.cy;
+
 		view = XMMatrixLookToLH(transform.position, transform.Forward, transform.Up);
 		inversView = XMMatrixInverse(nullptr, view);
 
-		D3D11_VIEWPORT& mainViewPort = d3dRenderer.ViewPortsVec[0];
-		projection = XMMatrixPerspectiveFovLH(FOV * Mathf::Deg2Rad, mainViewPort.Width / mainViewPort.Height, Near, Far);
+		projection = XMMatrixPerspectiveFovLH(FOV * Mathf::Deg2Rad, width / height, Near, Far);
 		inversProjection = XMMatrixInverse(nullptr, projection);
+
+		renderer.SetCameraMatrix(inversView);
+		renderer.SetProjection(FOV, Near, Far);
 	}
 }
 

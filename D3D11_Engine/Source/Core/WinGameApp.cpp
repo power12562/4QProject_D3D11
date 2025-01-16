@@ -5,6 +5,7 @@
 #include <cassert>
 #include <cstdio>
 #include <clocale>
+#include <RendererCore.h>
 
 #include <imgui.h>
 #include <imgui_impl_win32.h>
@@ -33,8 +34,6 @@ void WinGameApp::Initialize(HINSTANCE hinstance)
 	freopen_s(&_tempFile, "CONOUT$", "w", stdout);
 #endif // _DEBUG
 	WinInit(hinstance);
-	d3dRenderer.Init();
-	InitImGUI();
 }
 
 void WinGameApp::Run()
@@ -91,8 +90,6 @@ void WinGameApp::Uninitialize()
 #ifdef _DEBUG
 	FreeConsole();
 #endif // _DEBUG
-	UninitImGUI();
-	d3dRenderer.Uninit();
 }
 
 void WinGameApp::ClampScreenMaxSize(SIZE& size)
@@ -135,7 +132,7 @@ void WinGameApp::WinClientResize(HWND hwnd, int width, int height)
 {
 	SIZE size{ width , height };
 	RECT clientRect = { 0, 0, width, height };
-	AdjustWindowRect(&clientRect, d3dRenderer.IsSwapChainWindowed() ? RunApp->windowStyleEX : WS_POPUP, FALSE);
+	AdjustWindowRect(&clientRect, RunApp->windowStyleEX, FALSE);
 	SIZE windowSize{ clientRect.right - clientRect.left , clientRect.bottom - clientRect.top };
 	SIZE windowClientOffset{ windowSize.cx - size.cx, windowSize.cy - size.cy };
 	ClampScreenMaxSize(windowSize);
@@ -261,7 +258,7 @@ bool WinGameApp::WinInit(HINSTANCE hInstance)
 	return true;
 }
 
-void WinGameApp::InitImGUI()
+void WinGameApp::InitImGUI(ID3D11Device* pDevice, ID3D11DeviceContext* pDeviceContext)
 {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -272,7 +269,7 @@ void WinGameApp::InitImGUI()
 
 	// Setup Platform/Renderer backends
 	ImGui_ImplWin32_Init(GetHWND());
-	ImGui_ImplDX11_Init(d3dRenderer.GetDevice(), d3dRenderer.GetDeviceContext());
+	ImGui_ImplDX11_Init(pDevice, pDeviceContext);
 }
 
 void WinGameApp::UninitImGUI()

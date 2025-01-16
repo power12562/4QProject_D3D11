@@ -282,14 +282,12 @@ void SceneManager::LateUpdateScene()
 
 void SceneManager::RenderScene()
 {
-	d3dRenderer.ClearRTV();
 	if (ImGuiLodingFunc)
 	{
-		d3dRenderer.SetRTVdefault();
 		Scene::ImGUIBegineDraw();
 		ImGuiLodingFunc();
 		Scene::ImGUIEndDraw();
-		d3dRenderer.Present();
+		D3D11_GameApp::Present();
 	}
 	else
 	{

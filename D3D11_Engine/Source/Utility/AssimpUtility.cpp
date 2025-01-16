@@ -109,7 +109,7 @@ namespace Utility
 					basePath += utfConvert::utf8_to_wstring(path.C_Str());
 					if (!compressPopup(basePath.c_str(), ETextureType::Albedo))
 					{
-						meshRender->SetTexture2D(basePath.c_str(), ETextureType::Albedo);
+						meshRender->materialAsset.SetTexture2D(basePath.c_str(), ETextureType::Albedo);
 					}					
 				}
 			}
@@ -132,7 +132,7 @@ namespace Utility
 					basePath += L"\\";
 					basePath += utfConvert::utf8_to_wstring(path.C_Str());
 					if (!compressPopup(basePath.c_str(), ETextureType::Normal))
-						meshRender->SetTexture2D(basePath.c_str(), ETextureType::Normal);
+						meshRender->materialAsset.SetTexture2D(basePath.c_str(), ETextureType::Normal);
 				}
 			}
 			if (AI_SUCCESS == ai_material->GetTexture(aiTextureType_SPECULAR, 0, &path))
@@ -143,7 +143,7 @@ namespace Utility
 					basePath += L"\\";
 					basePath += utfConvert::utf8_to_wstring(path.C_Str());
 					if (!compressPopup(basePath.c_str(), ETextureType::Specular))
-						meshRender->SetTexture2D(basePath.c_str(), ETextureType::Specular);
+						meshRender->materialAsset.SetTexture2D(basePath.c_str(), ETextureType::Specular);
 				}
 			}
 			if (AI_SUCCESS == ai_material->GetTexture(aiTextureType_EMISSIVE, 0, &path))
@@ -154,7 +154,7 @@ namespace Utility
 					basePath += L"\\";
 					basePath += utfConvert::utf8_to_wstring(path.C_Str());
 					if (!compressPopup(basePath.c_str(), ETextureType::Emissive))
-						meshRender->SetTexture2D(basePath.c_str(), ETextureType::Emissive);
+						meshRender->materialAsset.SetTexture2D(basePath.c_str(), ETextureType::Emissive);
 				}
 			}
 			if (AI_SUCCESS == ai_material->GetTexture(aiTextureType_OPACITY, 0, &path))
@@ -165,7 +165,7 @@ namespace Utility
 					basePath += L"\\";
 					basePath += utfConvert::utf8_to_wstring(path.C_Str());
 					if (!compressPopup(basePath.c_str(), ETextureType::Opacity))
-						meshRender->SetTexture2D(basePath.c_str(), ETextureType::Opacity);
+						meshRender->materialAsset.SetTexture2D(basePath.c_str(), ETextureType::Opacity);
 
 					meshRender->isForward = true;
 					std::wstring path = HLSLManager::EngineShaderPath;
@@ -194,7 +194,7 @@ namespace Utility
 					basePath += L"\\";
 					basePath += utfConvert::utf8_to_wstring(path.C_Str());
 					if (!compressPopup(basePath.c_str(), ETextureType::Metalness))
-						meshRender->SetTexture2D(basePath.c_str(), ETextureType::Metalness);
+						meshRender->materialAsset.SetTexture2D(basePath.c_str(), ETextureType::Metalness);
 
 					if (surface == SURFACE_TYPE::PBR)
 					{
@@ -219,7 +219,7 @@ namespace Utility
 					basePath += L"\\";
 					basePath += utfConvert::utf8_to_wstring(path.C_Str());
 					if (!compressPopup(basePath.c_str(), ETextureType::Roughness))
-						meshRender->SetTexture2D(basePath.c_str(), ETextureType::Roughness);
+						meshRender->materialAsset.SetTexture2D(basePath.c_str(), ETextureType::Roughness);
 
 					if (surface == SURFACE_TYPE::PBR)
 					{

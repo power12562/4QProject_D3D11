@@ -5,6 +5,8 @@
 
 #pragma comment(lib, "Dbghelp.lib")
 
+struct ID3D11Device;
+struct ID3D11DeviceContext;
 class WinGameApp
 {
 protected:
@@ -73,7 +75,7 @@ private:
 	bool WinInit(HINSTANCE hInstance);
 
 protected:
-	void InitImGUI();
+	void InitImGUI(ID3D11Device* pDevice, ID3D11DeviceContext* pDeviceContext);
 	void UninitImGUI();
 
 private:

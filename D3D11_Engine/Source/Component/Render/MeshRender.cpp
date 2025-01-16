@@ -86,8 +86,14 @@ void MeshRender::Render()
 	//포워드 여부
 	meshDrawCommand.materialData.pixelShader.isForward = this->isForward;
 
+	//바운딩 박스
+	meshDrawCommand.meshData.boundingBox = gameObject.GetOBBToWorld();
+
 	//업데이트 호출
 	UpdateMeshDrawCommand();
+
+	//드로우 요청
+	D3D11_GameApp::GetRenderer().AddDrawCommand(meshDrawCommand);
 }
 
 void MeshRender::SetVS(const wchar_t* path)

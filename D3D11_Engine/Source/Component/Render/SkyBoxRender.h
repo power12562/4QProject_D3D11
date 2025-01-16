@@ -24,6 +24,7 @@ protected:
 	virtual void FixedUpdate() override;
 	virtual void Update() override;
 	virtual void LateUpdate() override;
+	virtual void UpdateMeshDrawCommand() override;
 
 public:
 	void SetSkyBox(TEXTURE_TYPE type, const wchar_t* path);

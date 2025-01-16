@@ -106,6 +106,11 @@ void SkyBoxRender::LateUpdate()
 {
 }
 
+void SkyBoxRender::UpdateMeshDrawCommand()
+{
+
+}
+
 void SkyBoxRender::SetSkyBox(TEXTURE_TYPE type, const wchar_t* path)
 {
     materialAsset.SetTexture2D(path, type);
@@ -137,24 +142,25 @@ void SkyBoxRender::SetSkyBox(TEXTURE_TYPE type, const wchar_t* path)
     if(brdf_lut && diffuse_ibl && specular_ibl)
     {
         //처리 필요
+        DefferdRenderer* renderer = &D3D11_GameApp::GetRenderer();
 
-        //renderer->RemoveBinadble("BRDF_LUT_PS");
-        //renderer->AddBinadble("BRDF_LUT_PS", Binadble{ EShaderType::Pixel, EShaderBindable::ShaderResource, 30, (ID3D11ShaderResourceView*)(*brdf_lut)});
+        renderer->RemoveBinadble("BRDF_LUT_PS");
+        renderer->AddBinadble("BRDF_LUT_PS", Binadble{ EShaderType::Pixel, EShaderBindable::ShaderResource, 30, (ID3D11ShaderResourceView*)(*brdf_lut)});
 
-        //renderer->RemoveBinadble("BRDF_LUT_CS");
-        //renderer->AddBinadble("BRDF_LUT_CS", Binadble{ EShaderType::Compute, EShaderBindable::ShaderResource, 30, (ID3D11ShaderResourceView*)(*brdf_lut) });
+        renderer->RemoveBinadble("BRDF_LUT_CS");
+        renderer->AddBinadble("BRDF_LUT_CS", Binadble{ EShaderType::Compute, EShaderBindable::ShaderResource, 30, (ID3D11ShaderResourceView*)(*brdf_lut) });
       
-        //renderer->RemoveBinadble("Diffuse_IBL_PS");
-        //renderer->AddBinadble("Diffuse_IBL_PS", Binadble{ EShaderType::Pixel, EShaderBindable::ShaderResource, 31, (ID3D11ShaderResourceView*)(*diffuse_ibl)});
+        renderer->RemoveBinadble("Diffuse_IBL_PS");
+        renderer->AddBinadble("Diffuse_IBL_PS", Binadble{ EShaderType::Pixel, EShaderBindable::ShaderResource, 31, (ID3D11ShaderResourceView*)(*diffuse_ibl)});
         
-         //renderer->RemoveBinadble("Diffuse_IBL_CS");
-        //renderer->AddBinadble("Diffuse_IBL_CS", Binadble{ EShaderType::Compute, EShaderBindable::ShaderResource, 31, (ID3D11ShaderResourceView*)(*diffuse_ibl) });
+        renderer->RemoveBinadble("Diffuse_IBL_CS");
+        renderer->AddBinadble("Diffuse_IBL_CS", Binadble{ EShaderType::Compute, EShaderBindable::ShaderResource, 31, (ID3D11ShaderResourceView*)(*diffuse_ibl) });
 
-        //renderer->RemoveBinadble("Specular_IBL_PS");
-        //renderer->AddBinadble("Specular_IBL_PS", Binadble{ EShaderType::Pixel, EShaderBindable::ShaderResource, 32, (ID3D11ShaderResourceView*)(*specular_ibl)});
+        renderer->RemoveBinadble("Specular_IBL_PS");
+        renderer->AddBinadble("Specular_IBL_PS", Binadble{ EShaderType::Pixel, EShaderBindable::ShaderResource, 32, (ID3D11ShaderResourceView*)(*specular_ibl)});
        
-        //renderer->RemoveBinadble("Specular_IBL_CS");
-        //renderer->AddBinadble("Specular_IBL_CS", Binadble{ EShaderType::Compute, EShaderBindable::ShaderResource, 32, (ID3D11ShaderResourceView*)(*specular_ibl) });   
+        renderer->RemoveBinadble("Specular_IBL_CS");
+        renderer->AddBinadble("Specular_IBL_CS", Binadble{ EShaderType::Compute, EShaderBindable::ShaderResource, 32, (ID3D11ShaderResourceView*)(*specular_ibl) });   
     }
 }
 

@@ -30,7 +30,7 @@ void SimpleBoneMeshRender::Serialized(std::ofstream& ofs)
 	Write::data(ofs, Enable);
 	Write::Color(ofs, baseColor);
 	Write::data(ofs, isForward);
-	Write::data(ofs, GetMeshID);
+	Write::data(ofs, GetMeshID());
 	Write::wstring(ofs, GetVSpath());
 	Write::wstring(ofs, GetPSpath());
 
@@ -121,6 +121,18 @@ void SimpleBoneMeshRender::Deserialized(std::ifstream& ifs)
 
 	vertices.shrink_to_fit();
 	indices.shrink_to_fit();
+
+	DeserializedListVec.push_back(this);
+}
+
+void SimpleBoneMeshRender::EndDeserialized()
+{
+	for (auto& item : SimpleBoneMeshRender::DeserializedListVec)
+	{
+		item->AddBonesFromRoot();
+	}
+	SimpleBoneMeshRender::DeserializedListVec.clear();
+	SimpleBoneMeshRender::DeserializedListVec.shrink_to_fit();
 }
 
 void SimpleBoneMeshRender::Start()
