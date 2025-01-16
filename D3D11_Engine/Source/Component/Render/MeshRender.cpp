@@ -35,6 +35,48 @@ void MeshRender::Render()
 	meshDrawCommand.meshData.shaderResources.clear();
 	meshDrawCommand.materialData.shaderResources.clear();
 
+	//테스트용
+	for (size_t i = 0; i < (size_t)ETextureType::Null; i++)
+	{
+		ETextureType type = (ETextureType)i;
+		Binadble binadble{};
+		binadble.shaderType   = EShaderType::Pixel;
+		binadble.bindableType = EShaderBindable::ShaderResource;
+		binadble.slot = i;
+		switch (type)
+		{
+		case ETextureType::Albedo:
+			binadble.bind = textureManager.GetDefaultTexture(DEFAULT_TEXTURE::ONE);
+			break;
+		case ETextureType::Normal:
+			binadble.bind = textureManager.GetDefaultTexture(DEFAULT_TEXTURE::ZERO);
+			break;
+		case ETextureType::Specular:
+			binadble.bind = textureManager.GetDefaultTexture(DEFAULT_TEXTURE::ONE);
+			break;
+		case ETextureType::Emissive:
+			binadble.bind = textureManager.GetDefaultTexture(DEFAULT_TEXTURE::ZERO);
+			break;
+		case ETextureType::Opacity:
+			binadble.bind = textureManager.GetDefaultTexture(DEFAULT_TEXTURE::ONE);
+			break;
+		case ETextureType::Metalness:
+			binadble.bind = textureManager.GetDefaultTexture(DEFAULT_TEXTURE::ZERO);
+			break;
+		case ETextureType::Roughness:
+			binadble.bind = textureManager.GetDefaultTexture(DEFAULT_TEXTURE::ZERO);
+			break;
+		case ETextureType::AmbientOcculusion:
+			binadble.bind = textureManager.GetDefaultTexture(DEFAULT_TEXTURE::ONE);
+			break;
+		case ETextureType::Null:
+			break;
+		default:
+			break;
+		}
+		meshDrawCommand.materialData.shaderResources.push_back(binadble);
+	}
+
 	//TransformBufferData 업데이트(더티 체크 필요할듯?)
 	transformBuffer.Set(
 		TransformBufferData
