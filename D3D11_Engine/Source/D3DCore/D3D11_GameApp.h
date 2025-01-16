@@ -1,6 +1,9 @@
 #pragma once
 #include <Core/WinGameApp.h>
 #include <cstdint>
+#include <DefferdRenderer.h>
+#include <Texture.h>
+#include <dxgi1_4.h>
 
 #pragma comment(lib,"dxgi.lib")
 #pragma comment(lib, "d3d11.lib")
@@ -352,8 +355,11 @@ class D3D11_GameApp : public WinGameApp
 	static void ProcessKeyboard(UINT message, WPARAM wParam, LPARAM lParam);
 private:
 	inline static D3D11_GameApp* RunApp = nullptr;
+	inline static std::unique_ptr<DefferdRenderer> MainRenderer;
 
 public:
+	static void Present();
+	static DefferdRenderer& GetRenderer() { return *MainRenderer; }
 	static void GameEnd();
 
 	//해상도 변경
@@ -380,5 +386,22 @@ private:
 
 private:
 	float fixedElapsedTime = 0;
+
+private:
+	struct DXGI
+	{
+		void Init();
+		void Uninit();
+
+		IDXGIFactory4* pDXGIFactory = nullptr;
+		std::vector<IDXGIAdapter3*> DXGIAdapters;
+		std::vector<std::vector<IDXGIOutput1*>> DXGIOutputs;
+
+		IDXGISwapChain1* pSwapChain = nullptr;
+		std::unique_ptr<Texture> backBuffer;
+	private:
+		void CreateSwapChain();
+	}
+	IDXGI;
 };
 

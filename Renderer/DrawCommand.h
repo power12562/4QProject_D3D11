@@ -7,6 +7,7 @@
 #include "Shader.h"
 #include "Texture.h"
 #include "RendererBuffer.h"
+#include "SamplerState.h"
 #include <Directxtk/SimpleMath.h>
 #include <vector>
 

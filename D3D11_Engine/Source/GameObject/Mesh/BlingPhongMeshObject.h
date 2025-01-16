@@ -12,10 +12,10 @@ public:
 	virtual void Serialized(std::ofstream& ofs) override;
 	virtual void Deserialized(std::ifstream& ifs) override;
 public:
-	void SetMaterial(const char* name);
+	void SetMaterial(const wchar_t* name);
 	inline cb_BlingPhongMaterial& GetMaterial() { return *material; }
 	_declspec (property(get = GetMaterial)) cb_BlingPhongMaterial& Material;
 protected:
 	std::shared_ptr<cb_BlingPhongMaterial> material;
-	std::string materialName;
+	std::wstring materialName;
 };

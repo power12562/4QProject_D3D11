@@ -43,10 +43,10 @@ private:
 public:
 	virtual void Start() 		 override;
 protected:
-	virtual void FixedUpdate()	 override;
-	virtual void Update() 		 override;
-	virtual void LateUpdate()	 override;
-	virtual void Render() 		 override;
+	virtual void FixedUpdate()	 override {};
+	virtual void Update() 		 override {};
+	virtual void LateUpdate()	 override {};
+	virtual void UpdateMeshDrawCommand() override;
 
 public:
 	virtual void CreateMesh() override;
@@ -60,27 +60,8 @@ public:
 	void AddBonesFromRoot();
 
 private:
-	inline static size_t MatrixPalletCounter = 0;
-	inline static std::queue<size_t> RealseCounterQueue;
-	inline std::string MakeMatrixPalleteKey();
-	std::shared_ptr<MatrixPallete> matrixPallete = {};
-	std::string matrixPalleteKey;
-	int matrixPalleteRegisterIndex = -1;
-	size_t MyMatrixPalletCounter = 0;
+	MatrixPallete matrixPallete = {};
 	std::vector<BoneObject*> boneList;
+	ConstantBuffer matrixPalleteConstBuffer;
 };
-
-inline std::string SimpleBoneMeshRender::MakeMatrixPalleteKey()
-{
-	if (!RealseCounterQueue.empty())
-	{
-		MyMatrixPalletCounter = RealseCounterQueue.front();
-		RealseCounterQueue.pop();
-	}
-	else
-	{
-		MyMatrixPalletCounter = MatrixPalletCounter++;
-	}
-	return std::format("MatrixPallete ({})", MyMatrixPalletCounter);
-}
 

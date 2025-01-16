@@ -4,10 +4,8 @@
 #include <Component/Animation/TransformAnimation.h>
 #include <Component/Camera/Camera.h>
 #include <Component/Base/RenderComponent.h>
-#include <D3DCore/D3DRenderer.h>
 #include <Manager/SceneManager.h>
 #include <Manager/InstanceIDManager.h>
-#include <D3DCore/D3DConstBuffer.h>
 #include <Utility/utfConvert.h>
 #include <Math/Mathf.h>
 
