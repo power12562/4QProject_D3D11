@@ -68,6 +68,8 @@ void MaterialAsset::SetTexture2D(const wchar_t* path, uint32_t slot)
 	currTexturePath.emplace_back(path);
 	texturesSlot.emplace_back(slot);
 	texturesV2.emplace_back();
+
+
 	Texture& textures = texturesV2.back();
 	ComPtr<ID3D11ShaderResourceView> textuer2D;
 	textureManager.CreateSharingTexture(path, &textuer2D);
@@ -120,23 +122,28 @@ void MaterialAsset::Serialized(std::ofstream& ofs)
 void MaterialAsset::Deserialized(std::ifstream& ifs)
 {
 	using namespace Binary;
-
-	texturesSlot.resize(Read::data<size_t>(ifs));
-	Read::std_vector(ifs, texturesSlot);
-
-	texturesV2.resize(Read::data<size_t>(ifs));
-
-
-	currTexturePath.resize(Read::data<size_t>(ifs));
+	texturesV2.clear();
 	for (size_t i = 0; i < currTexturePath.size(); i++)
 	{
 		if (currTexturePath[i].size())
 		{
 			textureManager.ReleaseSharingTexture(currTexturePath[i].c_str());
 		}
+	}
+	currTexturePath.clear();
+	texturesSlot.clear();
+
+	texturesSlot.resize(Read::data<size_t>(ifs));
+	Read::std_vector(ifs, texturesSlot);
+	auto size = Read::data<size_t>(ifs);
+	texturesV2.resize(size);
+
+	currTexturePath.resize(Read::data<size_t>(ifs));
+	for (size_t i = 0; i < currTexturePath.size(); i++)
+	{
 		currTexturePath[i] = Read::wstring(ifs);
 	}
-
+	
 	for (size_t i = 0; i < currTexturePath.size(); i++)
 	{
 		ComPtr<ID3D11ShaderResourceView> textuer2D;
