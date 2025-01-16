@@ -19,10 +19,4 @@ void NewRendererTestScene::ImGUIRender()
 	ImGui::Begin("Hierarchy");
 	ImGui::EditHierarchyView();
 	ImGui::End();
-
-	ImGui::Begin("Light");
-	{
-		ImGui::EditLight(DirectionalLight::DirectionalLights.get());
-	}
-	ImGui::End();
 }

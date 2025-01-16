@@ -1,5 +1,4 @@
 #include "PBRDirectionalLight.h"
-#include <D3DCore/D3DConstBuffer.h>
 
 namespace DirectionalLight
 {

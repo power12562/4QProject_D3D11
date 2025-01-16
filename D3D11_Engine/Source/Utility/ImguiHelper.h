@@ -5,12 +5,12 @@
 #include <imgui_impl_win32.h>
 #include <imgui_impl_dx11.h>
 #include <ImGuiFileDialog/ImGuiFileDialog.h>
+#include <Component/Render/MeshRender.h>
 
 class GameObject;
 class CameraMoveHelper;
 class Camera;
 class Scene;
-class D3DTexture2D;
 struct cb_PBRMaterial;
 struct PBRDirectionalLight;
 struct cb_PBRDirectionalLight;
@@ -38,8 +38,6 @@ namespace ImGui
 	void EditTransformHierarchy(Transform* pTransform);
 	void EditHierarchyView();
 
-	void EditD3DRenderer();
-
 	void EditTransform(GameObject* gameObject);
 
 	void EditCamera(const char* label, Camera* pCamera, CameraMoveHelper* pCameraMoveHelper = nullptr);
@@ -49,9 +47,7 @@ namespace ImGui
 	void EditLight(cb_PBRDirectionalLight* Light);
 
 	/*압축 팝업 활성화.*/
-	bool ShowCompressPopup(const wchar_t* path, D3DTexture2D* texture2D, int texType);
-	/*압축중인 텍스쳐 존재하면 압축 끝나면 다시 로드하도록 설정*/
-	bool ReloadTextureCompressEnd(const wchar_t* path, D3DTexture2D* texture2D, int texType);
+	bool ShowCompressPopup(const wchar_t* path, ETextureType texType);
 	/*압축중인 텍스쳐 존재하면 압축 끝나고 삭제 하도록 설정*/
 	bool DestroyObjTextureCompressEnd(GameObject* obj);
 

@@ -11,13 +11,13 @@ void CubeObject::Start()
 void CubeObject::Serialized(std::ofstream& ofs)
 {
 	using namespace Binary;
-	Write::string(ofs, materialName);
+	Write::wstring(ofs, materialName);
 	Write::PBRMaterial(ofs, *material);
 }
 
 void CubeObject::Deserialized(std::ifstream& ifs)
 {
 	using namespace Binary;
-	SetMaterial(Read::string(ifs).c_str());
+	SetMaterial(Read::wstring(ifs).c_str());
 	*material = Read::PBRMaterial(ifs);
 }

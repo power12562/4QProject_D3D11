@@ -145,6 +145,7 @@
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="RendererBuffer.h" />
     <ClInclude Include="RendererCore.h" />
+    <ClInclude Include="SamplerState.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="ShaderResource.h" />
     <ClInclude Include="StructuredBuffer.h" />
@@ -159,6 +160,7 @@
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="RendererBuffer.cpp" />
     <ClCompile Include="RendererCore.cpp" />
+    <ClCompile Include="SamplerState.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="ShaderResource.cpp" />
     <ClCompile Include="StructuredBuffer.cpp" />

@@ -101,23 +101,6 @@ namespace Utility
 	void RetrieveIndexBufferData(ID3D11DeviceContext* context, ID3D11Device* device, ID3D11Buffer* indexBuffer, void* outputData, size_t bufferSize);
 }
 
-struct DRAW_INDEX_DATA
-{
-	// 버텍스 버퍼.
-	ID3D11Buffer* pVertexBuffer = nullptr;	
-	// 버텍스 하나의 크기.
-	unsigned int vertexBufferStride = 0;	
-	// 버텍스 버퍼의 오프셋.
-	unsigned int vertexBufferOffset = 0;					
-
-	// 인덱스 버퍼.
-	ID3D11Buffer* pIndexBuffer = nullptr;	
-	// 인덱스 개수.
-	int indicesCount = 0;									
-};
-
-using DRAW_INDEX_RESOURCE = std::shared_ptr<DRAW_INDEX_DATA>;
-
 #ifdef _DEBUG
 #define D3D_SET_OBJECT_NAME(pObject, pName) D3D_SET_OBJECT_NAME_N_W(pObject, (UINT)wcslen(pName), pName)
 #else

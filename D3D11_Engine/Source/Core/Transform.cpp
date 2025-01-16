@@ -1,7 +1,6 @@
 #include "Transform.h"
 #include <Math/Mathf.h>
 #include <GameObject/Base/GameObject.h>	
-#include <D3DCore/D3DRenderer.h>
 				
 void Transform::reserveUpdateList(size_t capacity)
 {
