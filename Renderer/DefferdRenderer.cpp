@@ -422,7 +422,7 @@ void DefferdRenderer::Render()
 	}
 
 	// Gbuffer 라이팅 처리
-	if (1)
+	if (0)
 	{
 		ID3D11RenderTargetView* nullRenderBuffersRTV[4]{ nullptr, };
 		ID3D11RenderTargetView* deferredBufferRTV[1]{ deferredBuffer };
