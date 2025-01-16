@@ -1,14 +1,16 @@
 #pragma once
 #include <D3DCore/D3D11_GameApp.h>
+
 #include <Manager/SceneManager.h>
 #include <Renderer.h>
 #include <DefferdRenderer.h>
 #include <StructuredBuffer.h>
-
+#include <NodeEditor\NodeEditor.h>
 
 
 class RendererTestApp : public WinGameApp
 {
+	std::unique_ptr<ShaderNodeEditor> nodeEditor;
 public:
 	RendererTestApp();
 	~RendererTestApp();
@@ -40,6 +42,8 @@ private:
 	class CubeObject* testObject;
 	class GameObject* testObject2;
 	class GameObject* testObject3;
+
+
 
 	// End Test
 	///////////////////////////////////////

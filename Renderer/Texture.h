@@ -67,3 +67,4 @@ private:
 	ComPtr<ID3D11DepthStencilView> depthStencilView{};
 	ComPtr<ID3D11UnorderedAccessView> unorderedAccessView{};
 };
+

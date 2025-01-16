@@ -74,11 +74,13 @@
     <OutDir>$(SolutionDir)lib\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)$(Platform)\$(Configuration)\</IntDir>
     <IncludePath>$(SolutionDir)Renderer\;$(IncludePath)</IncludePath>
+    <ExternalIncludePath>$(SolutionDir)ImguiNodeEditor\include\;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)lib\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)$(Platform)\$(Configuration)\</IntDir>
     <IncludePath>$(SolutionDir)Renderer\;$(IncludePath)</IncludePath>
+    <ExternalIncludePath>$(SolutionDir)ImguiNodeEditor\include\;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -158,6 +160,10 @@
     <ClInclude Include="Source\Sound\FMODFramework.h" />
     <ClInclude Include="Source\Physics\PhysicsLayerManager\PhysicsLayerManager.h" />
     <ClInclude Include="Source\Physics\PhysicsScene\PhysicsSceneEventCallback.h" />
+    <ClInclude Include="Source\NodeEditor\NodeFactory.h" />
+    <ClInclude Include="Source\NodeEditor\json.hpp" />
+    <ClInclude Include="Source\NodeEditor\ShaderNodes.h" />
+    <ClInclude Include="Source\NodeEditor\NodeEditor.h" />
     <ClInclude Include="Source\Component\Rigidbody\Rigidbody.h" />
     <ClInclude Include="Source\Core\GameInputSystem.h" />
     <ClInclude Include="Source\Core\TKeyTracker.h" />
@@ -250,6 +256,9 @@
     <ClCompile Include="Source\Sound\SoundSystem.cpp" />
     <ClCompile Include="Source\Physics\PhysicsLayerManager\PhysicsLayerManager.cpp" />
     <ClCompile Include="Source\Physics\PhysicsScene\PhysicsSceneEventCallback.cpp" />
+    <ClCompile Include="Source\NodeEditor\NodeFactory.cpp" />
+    <ClCompile Include="Source\NodeEditor\ShaderNodes.cpp" />
+    <ClCompile Include="Source\NodeEditor\NodeEditor.cpp" />
     <ClCompile Include="Source\Component\Rigidbody\Rigidbody.cpp" />
     <ClCompile Include="Source\Core\GameInputSystem.cpp" />
     <ClCompile Include="Source\Manager\InputManager.cpp" />
@@ -470,6 +479,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\EngineShader\BRDF.hlsli" />
+    <None Include="Source\EngineShader\GBufferMaterial.hlsli" />
     <None Include="Source\EngineShader\Light.hlsli" />
     <None Include="Source\EngineShader\SkyBoxShared.hlsli" />
     <None Include="Source\EngineShader\Shared.hlsli" />

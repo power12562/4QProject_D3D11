@@ -1,4 +1,6 @@
-﻿#include "RendererTestApp.h"
+﻿
+
+#include "RendererTestApp.h"
 #include <dxgi1_6.h>
 #include <filesystem>
 #pragma comment(lib, "dxgi")
@@ -53,6 +55,11 @@ void RendererTestApp::Start()
 	TestInit();
 
     renderer->SetRenderTarget(backBuffer);
+	nodeEditor = std::make_unique<ShaderNodeEditor>();
+
+
+
+
 }
 
 void RendererTestApp::Update()
@@ -63,7 +70,7 @@ void RendererTestApp::Update()
 
     ImGui_ImplDX11_NewFrame();
     ImGui_ImplWin32_NewFrame();
-    ImGui::NewFrame();
+    ImGui::NewFrame(); 
 
     ImGui::Begin("Renderer Test App");
     if (ImGui::Button("Recompile Shader") || ImGui::IsKeyDown(ImGuiKey_F2))
@@ -127,12 +134,13 @@ void RendererTestApp::Update()
     static int count = 0;
     static int beforeCount = 0;
     static std::chrono::nanoseconds elpasTime{};
-    double deltaTime;
+    double deltaTime = 0;
     previousTime = currentTime;
     currentTime = clock::now();
 
-    auto duration = currentTime - previousTime;
+    std::chrono::nanoseconds duration = currentTime - previousTime;
 	elpasTime += duration;
+	deltaTime = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
 
     ++count;
     //1초
@@ -145,6 +153,7 @@ void RendererTestApp::Update()
 	ImGui::Text("fps : %d", beforeCount);
     ImGui::End();
 
+    nodeEditor->Update();
     Transform::UpdateMatrix();
     Transform::ClearUpdateList();
 	
@@ -179,6 +188,7 @@ void RendererTestApp::Render()
 
 void RendererTestApp::Uninitialize()
 {
+    nodeEditor.reset();
     sceneManager.AddObjects();
     sceneManager.currScene.reset();
     gameObjectFactory.UninitializeMemoryPool();
@@ -235,7 +245,7 @@ void RendererTestApp::TestInit()
 
     Texture albedo;
     textureManager.CreateSharingTexture(L"Resource/Texture/1735656899.jpg", &srv);
-    albedo.LoadTexture(srv.Get());
+    albedo.LoadTexture(srv.Get()); 
 
 	testObject->GetComponent<CubeMeshRender>().texturesV2.emplace_back(albedo);
     testObject->GetComponent<CubeMeshRender>().texturesSlot.emplace_back(0);

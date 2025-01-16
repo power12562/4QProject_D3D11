@@ -1,26 +1,25 @@
 
 #include "../EngineShader/Shared.hlsli"
+#include "../EngineShader/GBufferMaterial.hlsli"
 
-Texture2D albedoTexture : register(t0);
 
-float3 Effect()
+Texture2D t_3023778357952 : register(t1);
+
+
+GBufferMaterial GetCustomGBufferMaterial(PS_INPUT input)
 {
-	return float3(1.0, 0.0, 1.0);
+    GBufferMaterial material = GetDefaultGBufferMaterial(input);
+
+float3 c_3023778357952 =  t_3023778357952.Sample(DefaultSampler, input.Tex).rgb;
+float3 c_g3023778357952 =  t_3023778357952.Sample(DefaultSampler, input.Tex).g;
+float3 c_r3023778357952 =  t_3023778357952.Sample(DefaultSampler, input.Tex).r;
+
+material.albedo = c_3023778357952;
+material.metallic = c_r3023778357952;
+material.roughness = c_g3023778357952;
+
+    return material;
 }
 
-
-
-
-//#define FORWARD
-#define GetAlbedo 0
-#define GetRoughness 0
-#define GetMetallic 0
-
-
-#define GetEmissive  Effect()
-#define GetAmbiatOcclusion 1
-#define GetSpecular 0
-
-
+#define GetGBufferMaterial GetCustomGBufferMaterial
 #include "../EngineShader/BasePassPS.hlsl"
-
