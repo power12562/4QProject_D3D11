@@ -74,6 +74,7 @@ void MaterialAsset::SetTexture2D(const wchar_t* path, uint32_t slot)
 	ComPtr<ID3D11ShaderResourceView> textuer2D;
 	textureManager.CreateSharingTexture(path, &textuer2D);
 	textures.LoadTexture(textuer2D.Get());
+	textuer2D->AddRef();
 }
 
 void MaterialAsset::ReleaseTexture(uint32_t slot)
@@ -132,24 +133,22 @@ void MaterialAsset::Deserialized(std::ifstream& ifs)
 	}
 	currTexturePath.clear();
 	texturesSlot.clear();
+	std::vector<uint32_t>		tempTexturesSlot;
+	std::vector<std::wstring>	tempCurrTexturePath;
 
-	texturesSlot.resize(Read::data<size_t>(ifs));
-	Read::std_vector(ifs, texturesSlot);
+	tempTexturesSlot.resize(Read::data<size_t>(ifs));
+	Read::std_vector(ifs, tempTexturesSlot);
 	auto size = Read::data<size_t>(ifs);
-	texturesV2.resize(size);
 
-	currTexturePath.resize(Read::data<size_t>(ifs));
-	for (size_t i = 0; i < currTexturePath.size(); i++)
+	tempCurrTexturePath.resize(Read::data<size_t>(ifs));
+	for (size_t i = 0; i < tempCurrTexturePath.size(); i++)
 	{
-		currTexturePath[i] = Read::wstring(ifs);
+		tempCurrTexturePath[i] = Read::wstring(ifs);
 	}
 	
-	for (size_t i = 0; i < currTexturePath.size(); i++)
+	for (size_t i = 0; i < tempCurrTexturePath.size(); i++)
 	{
-		ComPtr<ID3D11ShaderResourceView> textuer2D;
-		textureManager.CreateSharingTexture(currTexturePath[i].c_str(), &textuer2D);
-		texturesV2[i].LoadTexture(textuer2D.Get());
-		textuer2D->AddRef();
+		SetTexture2D(tempCurrTexturePath[i].c_str(), tempTexturesSlot[i]);
 	}
 	pixelShaderData = Read::string(ifs );
 	SetPixelShader(pixelShaderData);
