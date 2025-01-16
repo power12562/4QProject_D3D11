@@ -166,10 +166,6 @@ void Scene::ImGuizmoDraw()
 							{
 								return typeid(CameraObject) == typeid(*object);
 							});
-						std::erase_if(list, [](GameObject* object)
-							{
-								return !object->IsCameraCulling();
-							});
 						std::sort(list.begin(), list.end(), [&mainCamera](GameObject* a, GameObject* b)
 							{
 								auto fastDistance = [](const Vector3& p1, const Vector3& p2) {

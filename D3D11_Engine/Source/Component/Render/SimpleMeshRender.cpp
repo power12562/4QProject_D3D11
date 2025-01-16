@@ -3,6 +3,7 @@
 #include <Light\SimpleDirectionalLight.h>
 #include <Manager/ResourceManager.h>
 #include <Utility/SerializedUtility.h>
+#include <Manager/TextureManager.h>
 #include <Math/Mathf.h>
 
 SimpleMeshRender::SimpleMeshRender()
