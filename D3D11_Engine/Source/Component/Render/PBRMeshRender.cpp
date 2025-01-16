@@ -16,7 +16,6 @@ void PBRMeshRender::Start()
 		GameObject::DestroyComponent(this);
 		return;
 	}
-	
 	SimpleMeshRender::Start();
 
 	//BRDF LookUp Table Sampler

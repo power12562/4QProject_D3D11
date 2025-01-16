@@ -422,7 +422,7 @@ void DefferdRenderer::Render()
 	}
 
 	// Gbuffer 라이팅 처리
-	if (1)
+	if (0)
 	{
 		ID3D11RenderTargetView* nullRenderBuffersRTV[4]{ nullptr, };
 		ID3D11RenderTargetView* deferredBufferRTV[1]{ deferredBuffer };
@@ -462,7 +462,7 @@ void DefferdRenderer::Render()
 		std::ranges::copy(renderBuffers, renderBuffersSRV);
 
 
-		immediateContext->ClearRenderTargetView(deferredBuffer, DirectX::SimpleMath::Color{ 0.0f,0.0f ,0.0f ,0.0f });
+		immediateContext->ClearRenderTargetView(deferredBuffer, DirectX::SimpleMath::Color{ 0.0f, 0.0f , 0.0f , 0.0f });
 		immediateContext->CSSetShader(deferredCS, nullptr, 0);
 		immediateContext->OMSetRenderTargets(std::size(nullRenderBuffersRTV), nullRenderBuffersRTV, nullptr);
 		immediateContext->CSSetShaderResources(0, std::size(renderBuffersSRV), renderBuffersSRV);

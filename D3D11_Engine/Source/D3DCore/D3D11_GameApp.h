@@ -4,12 +4,12 @@
 #include <DefferdRenderer.h>
 #include <Texture.h>
 #include <dxgi1_4.h>
+#include <windows.h>
 
 #pragma comment(lib,"dxgi.lib")
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib,"d3dcompiler.lib")
 
-#include <windows.h>
 
 enum class MouseVK : unsigned short 
 {
@@ -379,6 +379,10 @@ protected:
 
 	void SetBorderlessWindowed(); //경계 없는 창으로 설정
 	void SetOptimalScreenSize(); //화면 해상도 자동으로 설정
+private:
+	void InitMainRenderer();
+	void UninitMainRenderer();
+
 private:
 	virtual void Start() override final;
 	virtual void Update() override final;

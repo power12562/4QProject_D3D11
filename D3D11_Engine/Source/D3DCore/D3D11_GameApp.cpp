@@ -9,6 +9,7 @@
 #include <Light/SimpleDirectionalLight.h>
 #include <Core/GameInputSystem.h>
 #include <Manager/InputManager.h>
+#include <Manager/HLSLManager.h>
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -129,13 +130,7 @@ void D3D11_GameApp::Initialize(HINSTANCE hinstance)
 {
 	WinGameApp::Initialize(hinstance);
 	inputManager.Initialize();
-	MainRenderer = std::make_unique<DefferdRenderer>();
-	MainRenderer->directLight.PushLight("Main Light", DirectionLightData
-		{
-			.Color = {1,1,1,1},
-			.Directoin = {0,-1,1},
-			.Intensity = 1
-		});
+	InitMainRenderer();
 	IDXGI.Init();
 	RendererUtility::SetSwapChain(IDXGI.pSwapChain);
 
@@ -150,7 +145,7 @@ void D3D11_GameApp::Uninitialize()
 	WinGameApp::UninitImGUI();
 	RendererUtility::SetSwapChain(nullptr);
 	IDXGI.Uninit();
-	MainRenderer.reset();
+	UninitMainRenderer();
 	inputManager.Uninitialize();
 	WinGameApp::Uninitialize();
 }
@@ -213,6 +208,39 @@ void D3D11_GameApp::SetBorderlessWindowed()
 void D3D11_GameApp::SetOptimalScreenSize()
 {
 	clientSize = { 0, 0 };
+}
+
+void D3D11_GameApp::InitMainRenderer()
+{
+	MainRenderer = std::make_unique<DefferdRenderer>();
+	MainRenderer->directLight.PushLight("Main Light", DirectionLightData
+		{
+			.Color = {1,1,1,1},
+			.Directoin = {0,-1,1},
+			.Intensity = 1
+		});
+
+	{
+		ComPtr<ID3D11ComputeShader> computeShader = nullptr;
+		hlslManager.CreateSharingShader(L"Resource/EngineShader/DeferredRender.hlsl", &computeShader);
+		MainRenderer->deferredCS.LoadShader(computeShader.Get());
+	}
+	{
+		ComPtr<ID3D11PixelShader> pixelShader = nullptr;
+		hlslManager.CreateSharingShader(L"Resource/EngineShader/DeferredRenderPS.hlsl", &pixelShader);
+		MainRenderer->deferredPS.LoadShader(pixelShader.Get());
+	}
+	{
+		ComPtr<ID3D11VertexShader> vertexShader = nullptr;
+		ComPtr<ID3D11InputLayout> inputLayout = nullptr;
+		hlslManager.CreateSharingShader(L"Resource/EngineShader/FullScreenTriangle.hlsl", &vertexShader, &inputLayout);
+		MainRenderer->fullScreenVS.LoadShader(vertexShader.Get(), inputLayout.Get());
+	}
+}
+
+void D3D11_GameApp::UninitMainRenderer()
+{
+	MainRenderer.reset();
 }
 
 void D3D11_GameApp::DXGI::Init()
