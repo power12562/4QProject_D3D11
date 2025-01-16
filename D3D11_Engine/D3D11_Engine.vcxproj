@@ -250,6 +250,7 @@
     <ClInclude Include="Source\Utility\SpinLock.h" />
     <ClInclude Include="Source\Utility\utfConvert.h" />
     <ClInclude Include="Source\Component\Collider\SphereCollider.h" />
+    <ClInclude Include="Source\Utility\WinUtility.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Component\SoundManager\SoundManager.cpp" />
@@ -328,6 +329,7 @@
     <ClCompile Include="Source\Utility\SpinLock.cpp" />
     <ClCompile Include="Source\Utility\utfConvert.cpp" />
     <ClCompile Include="Source\Component\Collider\SphereCollider.cpp" />
+    <ClCompile Include="Source\Utility\WinUtility.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\EngineShader\BasePassPS.hlsl">

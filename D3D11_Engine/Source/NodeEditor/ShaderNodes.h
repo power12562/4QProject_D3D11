@@ -8,6 +8,7 @@
 #include <directxtk\SimpleMath.h>
 #include "json.hpp"
 #include "NodeFactory.h"
+#include "Texture.h"
 
 
 using ShaderPin = int;
@@ -187,21 +188,22 @@ private:
 	Vector4 value;
 };
 
-
+#include "Manager\TextureManager.h"
 class TextureNode : public ShaderNode
 {
 public:
 	TextureNode();
-	virtual ~TextureNode() = default;
+	virtual ~TextureNode();
 
 public:
-	void Set(std::string& value);
+	void Set(const std::filesystem::path& value);
 	void draw() override;
 	virtual void Serialize(nlohmann::json& j) override;
 	virtual void Deserialize(const nlohmann::json& j) override;
 
 private:
-	std::string texturePath;
+	std::filesystem::path texturePath;
+	Texture texture;
 };
 
 
