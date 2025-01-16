@@ -232,6 +232,7 @@ void RendererTestApp::TestInit()
 	testObject2 = Utility::LoadFBX(L"Resource/char/char.fbx", false, SURFACE_TYPE::PBR);
     testObject2->transform.position = Vector3(-2.0f, 0.0f, 0.0f);
 	testObject2->transform.scale = Vector3(0.01f, 0.01f, 0.01f);
+    //testObject2->GetComponent<PBRMeshRender>().SetPixelShader(L"Resource/Shader/Effect.hlsl");
 
 
     testObject3 = Utility::LoadFBX(L"Resource/char/char.fbx", false, SURFACE_TYPE::PBR);
@@ -242,6 +243,11 @@ void RendererTestApp::TestInit()
 
     std::ranges::copy(Utility::CollectMeshComponents(testObject2) | pipe, std::back_inserter(renderList));
     std::ranges::copy(Utility::CollectMeshComponents(testObject3) | pipe, std::back_inserter(renderList));
+
+    for (auto& i : renderList)
+    {
+        i->SetPixelShader(L"Resource/Shader/Effect.hlsl");
+    }
 
     Texture albedo;
     textureManager.CreateSharingTexture(L"Resource/Texture/1735656899.jpg", &srv);

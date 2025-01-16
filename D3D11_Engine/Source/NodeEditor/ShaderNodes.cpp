@@ -1,4 +1,5 @@
 #include "ShaderNodes.h"
+#include "Utility/WinUtility.h"
 
 ShaderNode::ShaderNode()
 {
@@ -496,21 +497,60 @@ TextureNode::TextureNode()
 
 }
 
-void TextureNode::Set(std::string& value)
+TextureNode::~TextureNode()
 {
+	if ((ID3D11ShaderResourceView*)texture)
+	{
+		texture.~Texture();
+		textureManager.ReleaseSharingTexture(texturePath.c_str());
+	}
+}
+
+void TextureNode::Set(const std::filesystem::path& value)
+{
+	if (!std::filesystem::exists(value))
+	{
+		return;
+	}
+	if ((ID3D11ShaderResourceView*)texture)
+	{
+		texture.~Texture();
+		textureManager.ReleaseSharingTexture(texturePath.c_str());
+	}
+
 	texturePath = value;
+
+	ComPtr<ID3D11ShaderResourceView> srv;
+	textureManager.CreateSharingTexture(value.c_str(), &srv);
+	srv->AddRef();
+
+	texture.LoadTexture(srv.Get());
 }
 
 void TextureNode::draw()
 {
+	if (ImGui::Button("Load Texture"))
+	{
+		auto path = WinUtility::GetOpenFilePath();
+		if (!path.empty())
+		{
+			Set(path);
+		}
+	}
+	ImGui::Image((ID3D11ShaderResourceView*)texture, { 100, 100 });
 }
 
 void TextureNode::Serialize(nlohmann::json& j)
 {
+	j["path"] = texturePath.string();
 }
 
 void TextureNode::Deserialize(const nlohmann::json& j)
 {
+	if (j.find("path") != j.cend())
+	{
+		Set(j["path"].get<std::string>());
+	}
 }
 
 
