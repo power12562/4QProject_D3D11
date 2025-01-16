@@ -4,6 +4,7 @@
 #include <Core/Transform.h>
 #include <functional>
 #include <filesystem>
+#include <map>
 
 class MeshRender;
 class GameObject;
@@ -18,6 +19,8 @@ enum class SURFACE_TYPE
 namespace Utility
 {
 	bool ParseFileName(aiString& str);
+
+	std::map<std::wstring, std::vector<MeshRender*>> CollectMeshComponents(GameObject* root);
 
 	GameObject* LoadFBX(const wchar_t* path, 
 		std::function<void(MeshRender*)> initMesh,

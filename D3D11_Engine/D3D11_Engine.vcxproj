@@ -119,7 +119,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>Default</LanguageStandard_C>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(ProjectDir)Source\;$(ProjectDir)Source\InverseKinematics\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Source\;$(ProjectDir)Source\InverseKinematics\include\;$(SolutionDir)ThirdParty\fmod\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -140,7 +140,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>Default</LanguageStandard_C>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(ProjectDir)Source\;$(ProjectDir)Source\InverseKinematics\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Source\;$(ProjectDir)Source\InverseKinematics\include\;$(SolutionDir)ThirdParty\fmod\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>MaxSpeed</Optimization>
       <WholeProgramOptimization>true</WholeProgramOptimization>
     </ClCompile>
@@ -155,6 +155,11 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Component\SoundManager\SoundManager.h" />
+    <ClInclude Include="Source\Sound\SoundSystem.h" />
+    <ClInclude Include="Source\Sound\FMODFramework.h" />
+    <ClInclude Include="Source\Physics\PhysicsLayerManager\PhysicsLayerManager.h" />
+    <ClInclude Include="Source\Physics\PhysicsScene\PhysicsSceneEventCallback.h" />
     <ClInclude Include="Source\NodeEditor\NodeFactory.h" />
     <ClInclude Include="Source\NodeEditor\json.hpp" />
     <ClInclude Include="Source\NodeEditor\ShaderNodes.h" />
@@ -167,6 +172,7 @@
     <ClInclude Include="Source\Physics\enum\ForceMode.h" />
     <ClInclude Include="Source\Physics\PhysicsActor\PhysicsActor.h" />
     <ClInclude Include="Source\Physics\PhysicsMaterial\PhysicsMaterial.h" />
+    <ClInclude Include="Source\Physics\PhysicsMaterial\PhysicsMaterialCombineMode.h" />
     <ClInclude Include="Source\Physics\PhysicsScene\PhysicsScene.h" />
     <ClInclude Include="Source\Physics\PhysicsManager.h" />
     <ClInclude Include="Source\Component\Collider\BoxCollider.h" />
@@ -216,6 +222,7 @@
     <ClInclude Include="Source\D3DCore\D3DRenderer.h" />
     <ClInclude Include="Source\Core\DXTKInputSystem.h" />
     <ClInclude Include="Source\Manager\HLSLManager.h" />
+    <ClInclude Include="Source\Physics\PhysXFramework.h" />
     <ClInclude Include="Source\Physics\Struct\CollisionInfo.h" />
     <ClInclude Include="Source\Physics\Struct\RaycastResult.h" />
     <ClInclude Include="Source\Utility\ExceptionUtility.h" />
@@ -245,6 +252,10 @@
     <ClInclude Include="Source\Component\Collider\SphereCollider.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Component\SoundManager\SoundManager.cpp" />
+    <ClCompile Include="Source\Sound\SoundSystem.cpp" />
+    <ClCompile Include="Source\Physics\PhysicsLayerManager\PhysicsLayerManager.cpp" />
+    <ClCompile Include="Source\Physics\PhysicsScene\PhysicsSceneEventCallback.cpp" />
     <ClCompile Include="Source\NodeEditor\NodeFactory.cpp" />
     <ClCompile Include="Source\NodeEditor\ShaderNodes.cpp" />
     <ClCompile Include="Source\NodeEditor\NodeEditor.cpp" />
@@ -252,6 +263,7 @@
     <ClCompile Include="Source\Core\GameInputSystem.cpp" />
     <ClCompile Include="Source\Manager\InputManager.cpp" />
     <ClCompile Include="Source\Physics\PhysicsActor\PhysicsActor.cpp" />
+    <ClCompile Include="Source\Physics\PhysicsMaterial\PhysicsMaterial.cpp" />
     <ClCompile Include="Source\Physics\PhysicsScene\PhysicsScene.cpp" />
     <ClCompile Include="Source\Physics\PhysicsManager.cpp" />
     <ClCompile Include="Source\Component\Collider\BoxCollider.cpp" />
@@ -475,6 +487,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="Source\Physics\readme.txt" />
+    <Text Include="Source\Sound\readme.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

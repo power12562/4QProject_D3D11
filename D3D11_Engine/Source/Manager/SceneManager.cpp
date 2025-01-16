@@ -7,6 +7,7 @@
 #include <ranges>
 #include <algorithm>
 #include <Manager/InstanceIDManager.h>
+#include <Core/TimeSystem.h>
 
 SceneManager& sceneManager = SceneManager::GetInstance();
 
@@ -45,6 +46,7 @@ void SceneManager::LoadScene(const wchar_t* scenePath)
 
 	gameObjectFactory.DeserializedScene(currScene.get(), scenePath);
 	gameObjectFactory.CompactObjectMemoryPool();
+	PhysicsManager::ClearPhysicsScene();
 }
 
 void SceneManager::AddScene(const wchar_t* scenePath)
@@ -268,6 +270,7 @@ std::vector<GameObject*> SceneManager::FindObjects(const wchar_t* name)
 void SceneManager::FixedUpdateScene()
 {
 	currScene->FixedUpdate();
+	currScene->PhysicsUpdate(TimeSystem::FixedTimeStep);
 }
 
 void SceneManager::UpdateScene()

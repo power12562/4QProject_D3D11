@@ -36,11 +36,12 @@ public:
 
 	DirectionLightBuffer directLight;
 private:
-	std::vector<MeshDrawCommand> allDrawCommandsOrigin{};
-	std::vector<MeshDrawCommand*> allDrawCommands{};
-	std::vector<MeshDrawCommand*> deferredDrawCommands{};
-	std::vector<MeshDrawCommand*> forwardDrawCommands{};
-	std::vector<MeshDrawCommand*> alphaDrawCommands{};
+	std::vector<MeshDrawCommand2> allDrawCommandsOrigin{};
+	std::vector<MeshDrawCommand2*> allDrawCommands{};
+	std::vector<MeshDrawCommand2*> deferredDrawCommands{};
+	std::vector<MeshDrawCommand2*> forwardDrawCommands{};
+	std::vector<MeshDrawCommand2*> alphaDrawCommands{};
+	std::vector<Binadble> drawCommandBindable{};
 
 	Texture renderTarget{};
 
@@ -102,7 +103,7 @@ private:
 	ComPtr<ID3D11SamplerState> samplerState;
 
 private:
-	void ProcessDrawCommands(std::vector<MeshDrawCommand*>& drawCommands, bool isWithMaterial = true);
+	void ProcessDrawCommands(std::vector<MeshDrawCommand2*>& drawCommands, bool isWithMaterial = true);
 	void BindBinadble(const Binadble& bindable);
 };
 

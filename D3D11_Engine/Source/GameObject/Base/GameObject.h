@@ -6,17 +6,27 @@
 #include <Manager/GameObjectFactory.h>
 #include <Utility/ExceptionUtility.h>
 
+#include <Physics/Struct/CollisionInfo.h>
+
+
 #pragma warning( disable : 4267)
 
 class Component;
 class TransformAnimation;
 class RenderComponent;
+class Rigidbody;
+class Collider;
+class BoxCollider;
+class SphereCollider;
+class CapsuleCollider;
+
 class GameObject
 {		 
 	SERIALIZED_OBJECT(GameObject)
 	friend class Scene;
 	friend class SceneManager;
 	friend class D3DRenderer;
+	friend class PhysicsManager;
 public:
 	GameObject();
 	/*이름, 인스턴스 아이디 부여 후 호출되는 함수.*/
@@ -62,7 +72,10 @@ public:
 	/*TransformAnimation은 하나만 존재 가능.*/
 	template <>
 	TransformAnimation& AddComponent();
+	std::vector<Collider*>& GetEveryCollider();
 
+
+public:
 	/*컴포넌트 가져오기*/
 	template <typename T>
 	T& GetComponent();
@@ -99,10 +112,22 @@ private:
 	void Render();
 private:
 	void EraseComponent(Component* component);
+public:
+	virtual void OnCollisionEnter(CollisionInfo info) {};
+	virtual void OnCollisionStay(CollisionInfo info) {};
+	virtual void OnCollisionExit(CollisionInfo info) {};
+	virtual void OnTriggerEnter(CollisionInfo info) {};
+	virtual void OnTriggerStay(CollisionInfo info) {};
+	virtual void OnTriggerExit(CollisionInfo info) {};
+
+
+
+
 
 private:
 	std::vector<std::unique_ptr<Component>> componentList;
 	std::vector<RenderComponent*> renderList;
+	std::vector<Collider*> colliders;
 public:
 	std::weak_ptr<GameObject> GetWeakPtr() { return myptr; }
 private:
@@ -111,6 +136,18 @@ private:
 	bool checkActive = true;
 	inline bool CheckActive() const { return checkActive != Active; }
 	void UpdateChildActive(Transform* rootTransform);
+
+
+
+
+
+protected:
+	class PhysicsActor* physicsActor{ nullptr };
+	unsigned int phyiscsLayer{ 0 };
+public:
+	class PhysicsActor* GetPhysicsActor() { return physicsActor; }
+	void SetPhysicsLayer(unsigned int slot);
+	unsigned int GetPhysicsLayer() { return phyiscsLayer; }
 };
 
 template<typename T>
@@ -127,6 +164,11 @@ inline T& GameObject::AddComponent()
 	{
 		renderList.push_back(nComponent);
 	}
+	if constexpr (std::is_base_of_v<Collider, T>)
+	{
+		colliders.push_back(nComponent);
+	}
+
 	return *nComponent;
 }
 
