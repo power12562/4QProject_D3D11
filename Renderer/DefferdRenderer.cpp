@@ -335,7 +335,7 @@ void DefferdRenderer::Render()
 		XMMATRIX view;
 		XMMATRIX projection;
 		DirectionLightBuffer::ComputeLightMatrix(visibilityBox,
-												 -lightData.Directoin,
+												 Vector3(lightData.Directoin),
 												 view, 
 												 projection);
 		CameraBufferData cameraData{};
@@ -462,7 +462,7 @@ void DefferdRenderer::Render()
 		std::ranges::copy(renderBuffers, renderBuffersSRV);
 
 
-		immediateContext->ClearRenderTargetView(deferredBuffer, DirectX::SimpleMath::Color{ 0.0f,0.0f ,0.0f ,0.0f });
+		immediateContext->ClearRenderTargetView(deferredBuffer, DirectX::SimpleMath::Color{ 0.0f, 0.0f , 0.0f , 0.0f });
 		immediateContext->CSSetShader(deferredCS, nullptr, 0);
 		immediateContext->OMSetRenderTargets(std::size(nullRenderBuffersRTV), nullRenderBuffersRTV, nullptr);
 		immediateContext->CSSetShaderResources(0, std::size(renderBuffersSRV), renderBuffersSRV);

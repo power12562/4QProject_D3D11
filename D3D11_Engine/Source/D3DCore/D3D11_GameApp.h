@@ -1,12 +1,15 @@
 #pragma once
 #include <Core/WinGameApp.h>
 #include <cstdint>
+#include <DefferdRenderer.h>
+#include <Texture.h>
+#include <dxgi1_4.h>
+#include <windows.h>
 
 #pragma comment(lib,"dxgi.lib")
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib,"d3dcompiler.lib")
 
-#include <windows.h>
 
 enum class MouseVK : unsigned short 
 {
@@ -352,8 +355,11 @@ class D3D11_GameApp : public WinGameApp
 	static void ProcessKeyboard(UINT message, WPARAM wParam, LPARAM lParam);
 private:
 	inline static D3D11_GameApp* RunApp = nullptr;
+	inline static std::unique_ptr<DefferdRenderer> MainRenderer;
 
 public:
+	static void Present();
+	static DefferdRenderer& GetRenderer() { return *MainRenderer; }
 	static void GameEnd();
 
 	//해상도 변경
@@ -374,11 +380,32 @@ protected:
 	void SetBorderlessWindowed(); //경계 없는 창으로 설정
 	void SetOptimalScreenSize(); //화면 해상도 자동으로 설정
 private:
+	void InitMainRenderer();
+	void UninitMainRenderer();
+
+private:
 	virtual void Start() override final;
 	virtual void Update() override final;
 	virtual void Render() override final;
 
 private:
 	float fixedElapsedTime = 0;
+
+private:
+	struct DXGI
+	{
+		void Init();
+		void Uninit();
+
+		IDXGIFactory4* pDXGIFactory = nullptr;
+		std::vector<IDXGIAdapter3*> DXGIAdapters;
+		std::vector<std::vector<IDXGIOutput1*>> DXGIOutputs;
+
+		IDXGISwapChain1* pSwapChain = nullptr;
+		std::unique_ptr<Texture> backBuffer;
+	private:
+		void CreateSwapChain();
+	}
+	IDXGI;
 };
 

@@ -29,7 +29,7 @@ void EditerTestScene::ImGUIRender()
 
 	ImGui::Begin("Light");
 	{
-		ImGui::EditLight(DirectionalLight::DirectionalLights.get());
+		//ImGui::EditLight(DirectionalLight::DirectionalLights.get());
 	}
 	ImGui::End();
 }

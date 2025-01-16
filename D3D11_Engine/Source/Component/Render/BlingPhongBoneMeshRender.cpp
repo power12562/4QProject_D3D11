@@ -4,23 +4,39 @@
 
 void BlingPhongBoneMeshRender::Start()
 {
-	SimpleBoneMeshRender::Start();
-	RenderFlags |= RENDER_FORWARD;
-
-	BlingPhongMeshObject* meshObj = dynamic_cast<BlingPhongMeshObject*>(&gameObject);
-	if (meshObj)
+	meshObj = dynamic_cast<BlingPhongMeshObject*>(&gameObject);
+	if (!meshObj)
 	{
-		int index = constBuffer.CreatePSConstantBuffers<cb_PBRDirectionalLight>(DirectionalLight::DirectionalLights_key);
-
-		std::string materialKey = meshObj->GetNameToString();
-		index = constBuffer.CreatePSConstantBuffers<cb_BlingPhongMaterial>(materialKey.c_str());
-		{
-			using namespace std::string_literals;
-			std::wstring vertexPath(HLSLManager::EngineShaderPath + L"VertexSkinningShader.hlsl"s);
-			SetVertexShader(vertexPath.c_str());
-
-			std::wstring pixelPath(HLSLManager::EngineShaderPath + L"BlingPhongPixelShader.hlsl"s);
-			SetPixelShader(pixelPath.c_str());
-		}
+		Debug_wprintf(L"Warning : BlingPhongBoneMeshRender can only be added to BlingPhongMeshObject.\n");
+		GameObject::DestroyComponent(this);
+		return;
 	}
+
+	SimpleBoneMeshRender::Start();
+	isForward = true;
+
+	{
+		using namespace std::string_literals;
+		std::wstring vertexPath(HLSLManager::EngineShaderPath + L"VertexSkinningShader.hlsl"s);
+		SetVS(vertexPath.c_str());
+
+		std::wstring pixelPath(HLSLManager::EngineShaderPath + L"BlingPhongPixelShader.hlsl"s);
+		SetPS(pixelPath.c_str());
+	}
+}
+
+void BlingPhongBoneMeshRender::UpdateMeshDrawCommand()
+{
+	SimpleBoneMeshRender::UpdateMeshDrawCommand();
+	//머터리얼 업데이트
+	material.Set(meshObj->Material);
+	meshDrawCommand.materialData.shaderResources.push_back(
+		Binadble
+		{
+			.shaderType = EShaderType::Pixel,
+			.bindableType = EShaderBindable::ConstantBuffer,
+			.slot = 4,
+			.bind = (ID3D11Buffer*)material
+		}
+	);
 }

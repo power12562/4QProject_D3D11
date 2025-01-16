@@ -17,10 +17,3 @@ struct alignas(16) cb_PBRDirectionalLight
     void PushLight();
     void PopLight();
 };
-
-namespace DirectionalLight
-{
-    constexpr char DirectionalLights_key[] = "DirectionalLights";
-    extern std::shared_ptr<cb_PBRDirectionalLight> DirectionalLights;
-};
-

@@ -9,9 +9,9 @@ public:
 	enum TEXTURE_TYPE
 	{
 		ENV,
-		Diffuse_IBL,
-		Specular_IBL,
-		BRDF_LUT,
+		BRDF_LUT = 30,
+		Diffuse_IBL = 31,
+		Specular_IBL = 32,
 		Count,
 	};
 
@@ -24,7 +24,7 @@ protected:
 	virtual void FixedUpdate() override;
 	virtual void Update() override;
 	virtual void LateUpdate() override;
-	virtual void Render() override;
+	virtual void UpdateMeshDrawCommand() override;
 
 public:
 	void SetSkyBox(TEXTURE_TYPE type, const wchar_t* path);

@@ -1,24 +1,24 @@
 #include "BlingPhongMeshObject.h"
-#include <D3DCore/D3DConstBuffer.h>
 #include <Utility/SerializedUtility.h>
 #include <Component/Render/BlingPhongBoneMeshRender.h>
 #include <Component/Render/BlingPhongMeshRender.h>
+#include <Manager/ResourceManager.h>
 
 void BlingPhongMeshObject::Start()
 {
-	SetMaterial(GetNameToString().c_str());
+	SetMaterial(GetName().c_str());
 }
 
-void BlingPhongMeshObject::SetMaterial(const char* name)
+void BlingPhongMeshObject::SetMaterial(const wchar_t* name)
 {
 	materialName = name;
-	material = D3DConstBuffer::GetData<cb_BlingPhongMaterial>(name);
+	material = GetResourceManager<cb_BlingPhongMaterial>().GetResource(name); 
 }
 
 void BlingPhongMeshObject::Serialized(std::ofstream& ofs)
 {
 	using namespace Binary;
-	Write::string(ofs, materialName);
+	Write::wstring(ofs, materialName);
 	Write::data(ofs, material.get(), sizeof(cb_BlingPhongMaterial));
 	size_t MeshCount = 0;
 	for (size_t i = 0; i < GetComponentCount(); i++)
@@ -58,7 +58,7 @@ void BlingPhongMeshObject::Serialized(std::ofstream& ofs)
 void BlingPhongMeshObject::Deserialized(std::ifstream& ifs)
 {
 	using namespace Binary;
-	SetMaterial(Read::string(ifs).c_str());
+	SetMaterial(Read::wstring(ifs).c_str());
 	Read::data(ifs, material.get(), sizeof(cb_BlingPhongMaterial));
 	size_t meshCount = Read::data<size_t>(ifs);
 	if (meshCount > 0)

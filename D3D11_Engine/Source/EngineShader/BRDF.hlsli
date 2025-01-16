@@ -11,9 +11,9 @@ TextureCube Specular_IBL : register(t32);
 float3 BRDF(float3 albedo, float metalic, float roughness, float3 F0, float3 N, float3 V, float3 L)
 {
 	//float3 L = normalize(-Lights[i].LightDir.xyz); // 광원 방향
-	float3 H = normalize(L + V); // Half Vector
-	float NoL = max(0.0, dot(N, L)); // N·L 계산
-	float HoV = max(0.0, dot(L, H)); // H·V 계산
+	float3 H = normalize(-L + V); // Half Vector
+	float NoL = max(0.0, dot(N, -L)); // N·L 계산
+	float HoV = max(0.0, dot(H, V)); // H·V 계산
 	float NoH = max(0.0, dot(N, H)); // N·H 계산
 	float NoV = max(0.0, dot(N, V)); // N·V 계산
         

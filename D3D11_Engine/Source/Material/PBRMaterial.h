@@ -1,8 +1,8 @@
 #pragma once
 #include <directxtk/simplemath.h>
-#include <D3DCore/D3DConstBuffer.h>
 #include <memory>
 
+using CBbool = int;
 struct alignas(16) cb_PBRMaterial
 {
     DirectX::SimpleMath::Color Albedo{1,1,1,1};

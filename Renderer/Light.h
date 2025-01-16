@@ -10,8 +10,7 @@
 struct DirectionLightData
 {
 	Vector4 Color;
-	Vector3 Directoin;
-	float Intensity;
+	Vector4 Directoin;
 	Matrix VP;
 };
 
