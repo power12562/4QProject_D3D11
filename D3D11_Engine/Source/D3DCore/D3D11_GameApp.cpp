@@ -216,7 +216,7 @@ void D3D11_GameApp::InitMainRenderer()
 	MainRenderer->directLight.PushLight("Main Light", DirectionLightData
 		{
 			.Color = {1, 1, 1, 1},
-			.Directoin = { -1,-1, -1, 1 }
+			.Directoin = { 1, 1, 1, 1 }
 		});
 
 	{

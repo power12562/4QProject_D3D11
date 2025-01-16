@@ -1,5 +1,6 @@
 #pragma once
 #include <Scene/Base/Scene.h>
+#include <NodeEditor\NodeEditor.h>
 
 class RendererTestScene : public Scene
 {
@@ -9,4 +10,6 @@ public:
 	virtual void Start() override;
 
 	virtual void ImGUIRender();
-};
+	std::unique_ptr<ShaderNodeEditor> nodeEditor;
+	std::vector<MeshRender*> meshList;
+};	

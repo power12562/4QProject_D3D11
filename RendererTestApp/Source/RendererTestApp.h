@@ -5,46 +5,13 @@
 #include <Renderer.h>
 #include <DefferdRenderer.h>
 #include <StructuredBuffer.h>
-#include <NodeEditor\NodeEditor.h>
 
+#include <D3DCore/D3D11_GameApp.h>
+#include <Manager/SceneManager.h>
 
-class RendererTestApp : public WinGameApp
+class RendererTestApp : public D3D11_GameApp
 {
-	std::unique_ptr<ShaderNodeEditor> nodeEditor;
 public:
 	RendererTestApp();
 	~RendererTestApp();
-
-public:
-	virtual void Start() override;
-	virtual void Update() override;
-	virtual void Render() override;
-	void Uninitialize();
-
-private:
-	std::unique_ptr<DefferdRenderer> renderer;
-
-	ComPtr<struct IDXGISwapChain1> swapChain;
-	Texture backBuffer;
-
-
-	std::vector<class MeshRender*> renderList;
-private:
-	void DXGIInit();
-
-
-private:
-	///////////////////////////////////////
-	// Begin Test
-
-	void TestInit();
-	VertexShader vertexShader;
-	class CubeObject* testObject;
-	class GameObject* testObject2;
-	class GameObject* testObject3;
-
-
-
-	// End Test
-	///////////////////////////////////////
 };

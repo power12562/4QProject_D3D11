@@ -95,9 +95,10 @@ void MaterialAsset::Serialized(std::ofstream& ofs)
 
 	size_t texturesSize = texturesV2.size();
 	Write::data(ofs, texturesSize);
-	Write::std_vector(ofs, texturesV2);
+
 
 	size_t pathSize = currTexturePath.size();
+	Write::data(ofs, pathSize);
 	for (auto& path : currTexturePath)
 	{
 		Write::wstring(ofs, path);
@@ -112,11 +113,18 @@ void MaterialAsset::Deserialized(std::ifstream& ifs)
 	Read::std_vector(ifs, texturesSlot);
 
 	texturesV2.resize(Read::data<size_t>(ifs));
-	Read::std_vector(ifs, texturesV2);
+
 
 	currTexturePath.resize(Read::data<size_t>(ifs));
 	for (size_t i = 0; i < currTexturePath.size(); i++)
 	{
 		currTexturePath[i] = Read::wstring(ifs);
+	}
+
+	for (size_t i = 0; i < currTexturePath.size(); i++)
+	{
+		ComPtr<ID3D11ShaderResourceView> textuer2D;
+		textureManager.CreateSharingTexture(currTexturePath[i].c_str(), &textuer2D);
+		texturesV2[i].LoadTexture(textuer2D.Get());
 	}
 }

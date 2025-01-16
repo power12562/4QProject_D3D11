@@ -270,6 +270,8 @@ void WinGameApp::InitImGUI(ID3D11Device* pDevice, ID3D11DeviceContext* pDeviceCo
 	// Setup Platform/Renderer backends
 	ImGui_ImplWin32_Init(GetHWND());
 	ImGui_ImplDX11_Init(pDevice, pDeviceContext);
+
+	ImGui::GetIO().Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\malgun.ttf", 20.0f, nullptr, ImGui::GetIO().Fonts->GetGlyphRangesKorean());
 }
 
 void WinGameApp::UninitImGUI()

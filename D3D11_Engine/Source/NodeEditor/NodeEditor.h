@@ -28,7 +28,7 @@ class ShaderNodeEditor : public NodeEditor
 public:
 	ShaderNodeEditor(std::filesystem::path path = "NodeEditor.Proj") : NodeEditor(path) {}
 	virtual void UpdateImp() override;
-	void GenerateShaderCode();
+	void Export(std::filesystem::path savePath = "Resource/Shader/Effect.hlsl");
 	
 };
 

@@ -62,6 +62,8 @@ struct RegistorVariable : public Variable
 {
 	ERegisterSlot::Type registorSlot;
 	int slotNum;
+	/** 텍스처용 임시 */
+	std::filesystem::path path;
 };
 
 struct Execution : public ShaderDataProcess
@@ -75,6 +77,7 @@ struct Define : public ShaderDataProcess
 	std::string name;
 	std::string initializationExpression;
 };
+
 
 static std::ostream& operator<<(std::ostream& os, const LocalVariable& data)
 {
