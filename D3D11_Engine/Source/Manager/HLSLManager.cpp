@@ -1,10 +1,13 @@
 #include "HLSLManager.h"
+#include <D3DCore/D3D11_GameApp.h>
+#include <Utility/D3D11Utility.h>
 #include <d3d11shader.h>
 #include <d3dcompiler.h>
 #include <Utility/Console.h>
-#include <Utility/D3D11Utility.h>
 #include <intrin.h>
 #include <Renderer.h>
+#include <Utility\MemoryUtility.h>
+#include <cassert>
 
 HLSLManager& hlslManager = HLSLManager::GetInstance();
 

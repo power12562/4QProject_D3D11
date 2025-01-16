@@ -11,10 +11,3 @@ struct alignas(16) cb_DirectionalLight
 };
 #pragma warning(default : 4305)
 
-namespace SimpleDirectionalLight 
-{
-    constexpr char cb_light_key[] = "SimpleDirectionalLight";
-    extern std::shared_ptr<cb_DirectionalLight> cb_light;
-};
-
-

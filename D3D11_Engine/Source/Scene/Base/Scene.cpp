@@ -113,8 +113,8 @@ void Scene::ImGuizmoDraw()
 		{
 			ImGuizmo::BeginFrame();
 			const SIZE& clientSize = D3D11_GameApp::GetClientSize();
-			float width = clientSize.cx;
-			float height = clientSize.cy;
+			float width = (float)clientSize.cx;
+			float height = (float)clientSize.cy;
 			ImGuizmo::SetRect(0, 0, width, height);
 			const Matrix& cameraVM = mainCamera->GetVM();
 			const Matrix& cameraPM = mainCamera->GetPM();

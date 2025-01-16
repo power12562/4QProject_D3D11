@@ -130,6 +130,12 @@ void D3D11_GameApp::Initialize(HINSTANCE hinstance)
 	WinGameApp::Initialize(hinstance);
 	inputManager.Initialize();
 	MainRenderer = std::make_unique<DefferdRenderer>();
+	MainRenderer->directLight.PushLight("Main Light", DirectionLightData
+		{
+			.Color = {1,1,1,1},
+			.Directoin = {0,-1,1},
+			.Intensity = 1
+		});
 	IDXGI.Init();
 	RendererUtility::SetSwapChain(IDXGI.pSwapChain);
 
@@ -316,13 +322,11 @@ void D3D11_GameApp::DXGI::CreateSwapChain()
 #ifdef _DEBUG
 	creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
-	IDXGISwapChain* swapChain = nullptr;
 	result = pDXGIFactory->CreateSwapChainForHwnd(
 		pDevice, WinGameApp::GetHWND(), &swapDesc, &fullScreenDesc, nullptr, &pSwapChain);
 	Check(result);
 
-	result = (swapChain->QueryInterface(IID_PPV_ARGS(&pSwapChain)));
+	result = (pSwapChain->QueryInterface(IID_PPV_ARGS(&pSwapChain)));
 	Check(result);
-	SafeRelease(swapChain);
 }
 

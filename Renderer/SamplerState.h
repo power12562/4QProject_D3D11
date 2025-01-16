@@ -25,3 +25,8 @@ public:
 private:
 	ComPtr<ID3D11SamplerState> sampler;
 };
+
+struct D3D11SamplerDescHash
+{
+	std::size_t operator()(const D3D11_SAMPLER_DESC& desc) const;
+};

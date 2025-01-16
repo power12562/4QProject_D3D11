@@ -110,8 +110,8 @@ void Camera::Update()
 	{
 		DefferdRenderer& renderer = D3D11_GameApp::GetRenderer();
 		const SIZE& size = D3D11_GameApp::GetClientSize();
-		float width = size.cx;
-		float height = size.cy;
+		float width = (float)size.cx;
+		float height = (float)size.cy;
 
 		view = XMMatrixLookToLH(transform.position, transform.Forward, transform.Up);
 		inversView = XMMatrixInverse(nullptr, view);

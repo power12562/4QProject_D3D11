@@ -55,3 +55,27 @@ bool operator==(const D3D11_SAMPLER_DESC& lhs, const D3D11_SAMPLER_DESC& rhs)
 		lhs.MinLOD == rhs.MinLOD &&
 		lhs.MaxLOD == rhs.MaxLOD;
 }
+
+std::size_t D3D11SamplerDescHash::operator()(const D3D11_SAMPLER_DESC& desc) const
+{
+	std::size_t hash = 0;
+
+	// 각 멤버에 std::hash 적용
+	hash ^= std::hash<int>()(desc.Filter);
+	hash ^= std::hash<int>()(desc.AddressU) << 1;
+	hash ^= std::hash<int>()(desc.AddressV) << 2;
+	hash ^= std::hash<int>()(desc.AddressW) << 3;
+	hash ^= std::hash<float>()(desc.MipLODBias) << 4;
+	hash ^= std::hash<int>()(desc.MaxAnisotropy) << 5;
+	hash ^= std::hash<int>()(desc.ComparisonFunc) << 6;
+
+	// BorderColor는 배열이라 개별적으로 해싱
+	for (int i = 0; i < 4; ++i) {
+		hash ^= std::hash<float>()(desc.BorderColor[i]) << (7 + i);
+	}
+
+	hash ^= std::hash<float>()(desc.MinLOD) << 11;
+	hash ^= std::hash<float>()(desc.MaxLOD) << 12;
+
+	return hash;
+}
