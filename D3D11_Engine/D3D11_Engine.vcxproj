@@ -155,8 +155,9 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Manager\SoundManager.h" />
     <ClInclude Include="Source\Utility\Random.h" />
-    <ClInclude Include="Source\Component\SoundManager\SoundManager.h" />
+    <ClInclude Include="Source\Component\AudioClip\AudioClip.h" />
     <ClInclude Include="Source\Sound\SoundSystem.h" />
     <ClInclude Include="Source\Sound\FMODFramework.h" />
     <ClInclude Include="Source\Physics\PhysicsLayerManager\PhysicsLayerManager.h" />
@@ -252,8 +253,9 @@
     <ClInclude Include="Source\Utility\WinUtility.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Manager\SoundManager.cpp" />
     <ClCompile Include="Source\Utility\Random.cpp" />
-    <ClCompile Include="Source\Component\SoundManager\SoundManager.cpp" />
+    <ClCompile Include="Source\Component\AudioClip\AudioClip.cpp" />
     <ClCompile Include="Source\Sound\SoundSystem.cpp" />
     <ClCompile Include="Source\Physics\PhysicsLayerManager\PhysicsLayerManager.cpp" />
     <ClCompile Include="Source\Physics\PhysicsScene\PhysicsSceneEventCallback.cpp" />

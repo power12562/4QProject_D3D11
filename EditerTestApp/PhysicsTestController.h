@@ -6,9 +6,9 @@
 class PhysicsTestController : public Component
 {
 	bool press_p{ false };
-	SoundManager* sm{ nullptr };
+	AudioClip* sm{ nullptr };
 	int music_idx = 0;
-	std::vector<std::shared_ptr<Sound>> sounds;
+	std::vector<Sound*> sounds;
 
 public:
 	virtual void Start();

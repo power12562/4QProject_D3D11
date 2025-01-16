@@ -14,6 +14,7 @@
 #include <Manager/TextureManager.h>
 #include <Manager/GameObjectFactory.h>
 #include <Manager/InputManager.h>
+#include <Manager/SoundManager.h>
 
 //PhysX
 #include <Physics/PhysXFramework.h>
@@ -58,7 +59,7 @@
 #include <Component/Collider/CapsuleCollider.h>
 #include <Component/Collider/SphereCollider.h>
 
-#include <Component/SoundManager/SoundManager.h>
+#include <Component/AudioClip/AudioClip.h>
 
 
 //Lights

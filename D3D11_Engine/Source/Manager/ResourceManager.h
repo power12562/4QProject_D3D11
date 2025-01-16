@@ -8,6 +8,9 @@
 #include <Utility/Console.h>
 #include <DrawCommand.h>
 
+#include <Sound/FMODFramework.h>
+#include <Sound/SoundSystem.h>
+
 class Resource
 {
 public:
@@ -61,6 +64,7 @@ public:
     }
 	std::shared_ptr<T> operator[](const wchar_t* key) { return GetResource(key); }
 };
+
 
 template<typename T>
 ResourceManager<T>& GetResourceManager()

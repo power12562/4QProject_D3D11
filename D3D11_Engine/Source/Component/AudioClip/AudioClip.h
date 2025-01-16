@@ -2,22 +2,22 @@
 #include "Sound/FMODFramework.h"
 #include "Component/Base/Component.h"
 
-class SoundManager : public Component
+class AudioClip : public Component
 {
 	static constexpr float VOLUME_MAX = 100.0f;
 
 	FMOD::Channel* channel{ nullptr };
-	std::shared_ptr<FMOD::Sound> currentSound{ nullptr };
+	FMOD::Sound* currentSound{ nullptr };
 	float volume{ 1.0f };
 
 	bool pause{ false };
 	bool mute{ false };
 
 public:
-	void SetSound(std::shared_ptr<FMOD::Sound>, bool loop = false);
+	void SetSound(FMOD::Sound*, bool loop = false);
 
 	void Play();
-	void Play(std::shared_ptr<FMOD::Sound>, bool loop = false);
+	void Play(FMOD::Sound*, bool loop = false);
 	
 	void Pause();
 	void Resume();

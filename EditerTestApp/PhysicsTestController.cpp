@@ -5,16 +5,12 @@
 
 void PhysicsTestController::Start()
 {
-	auto nyan = GetResourceManager<Sound>().AddResource(L"sample_sound1", L"./Resource/Sound/nyan_cat.mp3");
-	sounds.push_back(nyan);
-	auto viva = GetResourceManager<Sound>().AddResource(L"sample_sound2", L"./Resource/Sound/Coldplay - Viva La Vida (Official Video).mp3");
-	sounds.push_back(viva);
-	auto happy = GetResourceManager<Sound>().AddResource(L"sample_sound3", L"./Resource/Sound/Pharrell Williams - Happy (Video).mp3");
-	sounds.push_back(happy);
-	auto africa = GetResourceManager<Sound>().AddResource(L"sample_sound4", L"./Resource/Sound/Shakira - Waka Waka (This Time for Africa) (The Official 2010 FIFA World Cup Song).mp3");
-	sounds.push_back(africa);
+	sounds.push_back(SoundManager::GetInstance().AddSound(L"sample_sound1", L"./Resource/Sound/nyan_cat.mp3"));
+	sounds.push_back(SoundManager::GetInstance().AddSound(L"sample_sound2", L"./Resource/Sound/Coldplay - Viva La Vida (Official Video).mp3"));
+	sounds.push_back(SoundManager::GetInstance().AddSound(L"sample_sound3", L"./Resource/Sound/Pharrell Williams - Happy (Video).mp3"));
+	sounds.push_back(SoundManager::GetInstance().AddSound(L"sample_sound4", L"./Resource/Sound/Shakira - Waka Waka (This Time for Africa) (The Official 2010 FIFA World Cup Song).mp3"));
 
-	sm = &(AddComponent<SoundManager>());
+	sm = &(AddComponent<AudioClip>());
 	sm->SetVolume(0.33f);
 
 	std::random_device rd;
