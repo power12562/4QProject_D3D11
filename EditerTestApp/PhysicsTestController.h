@@ -4,7 +4,7 @@
 class PhysicsTestController : public Component
 {
 public:
-	virtual void Start() {}
+	virtual void Start();
 protected:
 	virtual void FixedUpdate() {}
 	virtual void Update();
