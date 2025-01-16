@@ -3,6 +3,7 @@
 
 #include "../EngineShader/Shared.hlsli"
 #include "../EngineShader/Light.hlsli"
+#include "../EngineShader/GBufferMaterial.hlsli"
 
 /** Shader Flags
  * USE_ALPHA
@@ -12,41 +13,11 @@
  */
 
 
-#ifndef GetAlpha
-#define GetAlpha 1.0
-#endif
 
-#ifndef GetClipAlpha
-#define GetClipAlpha 0.3333
-#endif
+#ifndef GetGBufferMaterial 
+#define GetGBufferMaterial GetDefaultGBufferMaterial
+#endif //GetGBufferMaterial
 
-#ifndef GetAlbedo
-#define GetAlbedo 1.0
-#endif
-
-#ifndef GetMetallic
-#define GetMetallic 1.0
-#endif
-
-#ifndef GetSpecular
-#define GetSpecular 1.0
-#endif
-
-#ifndef GetRoughness
-#define GetRoughness 0.5
-#endif
-
-#ifndef GetAmbiatOcclusion
-#define GetAmbiatOcclusion 0.8
-#endif
-
-#ifndef GetNormal
-#define GetNormal float3(0.0, 0.0, 1.0)
-#endif
-
-#ifndef GetEmissive
-#define GetEmissive float3(0.0, 0.0, 0.0)
-#endif
 
 struct PSResult
 {
@@ -63,21 +34,21 @@ struct PSResult
 #endif
 PSResult main(PS_INPUT input)
 {
-	float opacity = GetAlpha;
+	GBufferMaterial material = GetGBufferMaterial(input);
+	float opacity = material.alpha;
 
 #ifdef ALPHA_TEST
     clip( opacity - GetClipAlpha );
 #endif
 	
 	PSResult result = (PSResult)1;
-	
-	float3 albedo = GetAlbedo;
-	float metallic = GetMetallic;
-	float specular = GetSpecular;
-	float roughness = GetRoughness;
-	float3 normal = GetNormal;
-	float3 emissiveColor = GetEmissive;
-	float ambiantOcclusion = GetAmbiatOcclusion;
+	float3 albedo = material.albedo;
+	float metallic = material.metallic;
+	float specular = material.specular;
+	float roughness = material.roughness;
+	float3 normal = material.normal;
+	float3 emissiveColor = material.emissive;
+	float ambiantOcclusion = material.ambiantOcclusion;
 	
 	float3x3 TBN = float3x3(input.Tangent, input.BiTangent, input.Normal);
 	float3 N = normalize(mul(normal, TBN));

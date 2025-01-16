@@ -64,7 +64,7 @@ float3 DefaultLit(float3 albedo, float metallic, float roughness, float3 F0, flo
 		finalColor += BRDF(albedo, metallic, roughness, F0, N, V, GetDirection(DirecLights[i])) * GetRadiance(DirecLights[i]) * shadowFactor;
 	}
 
-	finalColor += BRDF_IBL(albedo, metallic, roughness, F0, N, V) * (1 - ambiantOcclusion);
+	finalColor += BRDF_IBL(albedo, metallic, roughness, F0, N, V) * ambiantOcclusion;
 	
 	return finalColor;
 }

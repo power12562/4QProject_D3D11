@@ -110,8 +110,8 @@ DefferdRenderer::DefferdRenderer()
 	init.CreateNoWriteDepthStencilState(&noWriteDSS);
 	init.CreateNoRenderState(&noRenderState);
 	init.CreateAlphaRenderState(&alphaRenderState);
-
-
+	D3D11_SAMPLER_DESC samplerDesc = CD3D11_SAMPLER_DESC(D3D11_DEFAULT);
+	device->CreateSamplerState(&samplerDesc, &samplerState);
 	
 	CameraBufferData cameraData{};
 	cameraBuffer.Init(cameraData);
@@ -245,7 +245,7 @@ void DefferdRenderer::SetRenderTarget(_In_ Texture& target)
 
 		result = device->CreateTexture2D(&desc, nullptr, &texture);
 		Check(result);
-		depthStencilTexture.LoadTexture(texture.Get(), usage, &srvDesc);\
+		depthStencilTexture.LoadTexture(texture.Get(), usage, &srvDesc);
 	}
 	{
 		HRESULT result;
@@ -323,7 +323,10 @@ void DefferdRenderer::Render()
 										 });
 
 	immediateContext->OMSetDepthStencilState(nullptr, 0);
-	
+
+	ID3D11ShaderResourceView* nullSRVPtr[1] = { nullptr };
+	immediateContext->PSSetShaderResources(20, 1, nullSRVPtr);
+	immediateContext->CSSetShaderResources(20, 1, nullSRVPtr);
 	// 溅档快甘 积己
 	for (size_t i = 0; i < directLight.size(); i++)
 	{
@@ -419,7 +422,7 @@ void DefferdRenderer::Render()
 	}
 
 	// Gbuffer 扼捞泼 贸府
-	if (0)
+	if (1)
 	{
 		ID3D11RenderTargetView* nullRenderBuffersRTV[4]{ nullptr, };
 		ID3D11RenderTargetView* deferredBufferRTV[1]{ deferredBuffer };
@@ -436,14 +439,19 @@ void DefferdRenderer::Render()
 		immediateContext->VSSetShader(fullScreenVS, nullptr, 0);
 		immediateContext->PSSetShader(deferredPS, nullptr, 0);
 
+		immediateContext->VSSetShaderResources(0, std::size(depthBuffersSRV), depthBuffersSRV);
 		immediateContext->PSSetShaderResources(0, std::size(renderBuffersSRV), renderBuffersSRV);
 		immediateContext->PSSetShaderResources(4, std::size(depthBuffersSRV), depthBuffersSRV);
-
+		immediateContext->PSSetSamplers(0, 1, &samplerState);
+		immediateContext->PSSetSamplers(1, 1, &samplerState);
+		immediateContext->PSSetSamplers(2, 1, &samplerState);
 		immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		immediateContext->Draw(3, 0);
 
 		ID3D11ShaderResourceView* nullSRV[5]{};
 		immediateContext->PSSetShaderResources(0, std::size(nullSRV), nullSRV);
+		immediateContext->VSSetShaderResources(0, std::size(nullSRV), nullSRV);
+
 	}
 	else
 	{
