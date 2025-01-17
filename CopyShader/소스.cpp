@@ -36,7 +36,7 @@ public:
 
         for (auto e : result)
         {
-            std::cerr << e << std::endl;
+            std::cout << e << std::endl;
         }
 
         if (result.size() == 2)
@@ -53,6 +53,7 @@ public:
 
 int main(int argc, char* argv[])
 {
+    std::cout << "CopyShader Start" << std::endl;
     std::filesystem::path dest;
     std::filesystem::path src;
     if (argc == 2)
