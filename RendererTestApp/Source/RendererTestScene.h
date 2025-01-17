@@ -11,5 +11,6 @@ public:
 
 	virtual void ImGUIRender();
 	std::unique_ptr<ShaderNodeEditor> nodeEditor;
+	std::unique_ptr<ShaderNodeEditor> nodeEditor2;
 	std::vector<MeshRender*> meshList;
 };	

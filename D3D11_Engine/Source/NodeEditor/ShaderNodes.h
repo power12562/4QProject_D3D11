@@ -191,7 +191,6 @@ private:
 	Vector4 value;
 };
 
-#include "Manager\TextureManager.h"
 class TextureNode : public ShaderNode
 {
 public:
@@ -264,8 +263,12 @@ public:
 	NodeFlow();
 	virtual ~NodeFlow();
 public:
-
 	std::shared_ptr<ShaderNode> Create(std::string_view typeName);
+	template<typename T>
+	std::shared_ptr<T> Create(std::string_view typeName)
+	{
+		return std::dynamic_pointer_cast<T>(nodeFactory.Create(typeName));
+	}
 	class ShaderResultNode* GetResultNode() { return resultNode; }
 	ShaderNodeReturn& GetShaderNodeReturn() { return shaderNodeReturn; }
 

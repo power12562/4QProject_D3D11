@@ -58,8 +58,6 @@ void MaterialAsset::SetPixelShader(std::string shaderCode)
 	ComPtr<ID3D11PixelShader> rhiPixelShader;
 	hlslManager.CreateSharingShader(shaderCode.data(), shaderCode.size(), &rhiPixelShader);
 	pixelShader.LoadShader(rhiPixelShader.Get());
-	///////////////////////////////////////////////////////////////////
-	// ¸ð¸£°Ù´Ù
 }
 
 void MaterialAsset::SetTexture2D(const wchar_t* path, uint32_t slot)

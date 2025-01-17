@@ -15,35 +15,12 @@ std::shared_ptr<ShaderNode> NodeFlow::Create(std::string_view typeName)
 
 NodeEditor::NodeEditor(std::filesystem::path path) : path{}
 {
+	Load(path);
 	//myGrid = std::make_shared<ImFlow::ImNodeFlow>();
 	//nodeFactory.Set(myGrid);
 	//resultNode = myGrid->addNode<ShaderResultNode>({ 100, 100 }).get();
 	//auto temp = myGrid->addNode<ConstantVector3Node>({ 0, 0 }).get();
 	//temp->outPin(std::string((char*)u8"값"))->createLink(resultNode->inPin((const char*)u8"알베도"));
-
-
-	Load(path);
-	this->path = path;
-
-
-
-
-
-	myGrid->rightClickPopUpContent(
-		[this](ImFlow::BaseNode* node)
-		{
-			if (ImGui::MenuItem((char*)u8"텍스처"))
-			{
-				myGrid->Create("TextureNode");
-			}
-		});
-
-
-	myGrid->droppedLinkPopUpContent([](ImFlow::Pin* dragged)
-									{
-
-									});
-
 }
 
 NodeEditor::~NodeEditor()
@@ -59,7 +36,10 @@ NodeEditor::~NodeEditor()
 
 void NodeEditor::Update()
 {
-	ImGui::Begin("Example App",nullptr, ImGuiWindowFlags_MenuBar);
+	if (!isPopUp) return;
+	
+	ImGui::Begin(fileName.c_str(), &isPopUp, ImGuiWindowFlags_MenuBar);
+	
 	UpdateImp();
 	ImVec2 mousePos = ImGui::GetMousePos();  // 마우스 위치
 	bool isMouseClicked = ImGui::IsMouseClicked(0);  // 좌클릭 확인
@@ -91,9 +71,6 @@ void NodeEditor::Update()
 
 	myGrid->update();
 
-	static ImVec2 dragStartPos = ImVec2(0, 0);  // 드래그 시작 위치
-	static ImVec2 dragEndPos = ImVec2(0, 0);    // 드래그 끝 위치
-	static bool isDragging = false;              // 드래그 상태 확인
 
 	// 마우스 클릭 및 드래그 시작 확인
 	if (ImGui::IsMouseClicked(0))
@@ -119,7 +96,17 @@ void NodeEditor::Update()
 
 		// 드래그 영역을 그리기
 		ImDrawList* draw_list = ImGui::GetWindowDrawList();
-		draw_list->AddRect(dragStartPos, dragEndPos, IM_COL32(255, 255, 255, 255));
+		float minX = (std::min)(dragStartPos.x, dragEndPos.x);
+		float maxX = (std::max)(dragStartPos.x, dragEndPos.x);
+		float minY = (std::min)(dragStartPos.y, dragEndPos.y);
+		float maxY = (std::max)(dragStartPos.y, dragEndPos.y);
+
+		//화면 영역만
+		minX = (std::max)(minX, myGrid->getPos().x);
+		minY = (std::max)(minY, myGrid->getPos().y);
+		maxX = (std::min)(maxX, myGrid->getPos().x + myGrid->getGrid().size().x);
+		maxY = (std::min)(maxY, myGrid->getPos().y + myGrid->getGrid().size().y);
+		draw_list->AddRect(ImVec2(minX, minY), ImVec2(maxX, maxY), IM_COL32(255, 255, 255, 255));
 
 
 		// 마우스가 놓였을 때 선택 처리
@@ -129,15 +116,15 @@ void NodeEditor::Update()
 
 			dragStartPos = myGrid->screen2grid(dragStartPos);
 			dragEndPos = myGrid->screen2grid(dragEndPos);
+			minX = (std::min)(dragStartPos.x, dragEndPos.x);
+			maxX = (std::max)(dragStartPos.x, dragEndPos.x);
+			minY = (std::min)(dragStartPos.y, dragEndPos.y);
+			maxY = (std::max)(dragStartPos.y, dragEndPos.y);
 
 			for (ImFlow::BaseNode* node : myGrid->getNodes() | std::views::transform([](auto& item) { return item.second.get(); }))
 			{
 				ImVec2 nodePos = node->getPos();
 				auto nodeSize = node->getSize();
-				float minX = (std::min)(dragStartPos.x, dragEndPos.x);
-				float maxX = (std::max)(dragStartPos.x, dragEndPos.x);
-				float minY = (std::min)(dragStartPos.y, dragEndPos.y);
-				float maxY = (std::max)(dragStartPos.y, dragEndPos.y);
 
 				// 노드와 드래그 박스가 겹치는지 확인
 				if (nodePos.x < maxX && nodePos.x + nodeSize.x > minX &&
@@ -226,12 +213,33 @@ void NodeEditor::Save()
 
 void NodeEditor::Load(std::filesystem::path path)
 {
+	isPopUp = true;
+	path.replace_extension(".Proj");
 	if (std::filesystem::exists(this->path))
 	{
 		Save();
 	}
+	fileName = path.filename().string();
 	myGrid = std::make_shared<NodeFlow>();
 	this->path = path;
+
+
+
+	myGrid->rightClickPopUpContent(
+		[this](ImFlow::BaseNode* node)
+		{
+			if (ImGui::MenuItem((char*)u8"텍스처"))
+			{
+				myGrid->Create("TextureNode");
+			}
+		});
+
+
+	myGrid->droppedLinkPopUpContent([](ImFlow::Pin* dragged)
+									{
+
+									});
+
 
 	std::ifstream file(path);
 	if (!file.is_open())
@@ -276,6 +284,8 @@ void NodeEditor::Load(std::filesystem::path path)
 			left->createLink(right.get());
 		}
 	}
+
+
 }
 
 void ShaderNodeEditor::UpdateImp()
@@ -305,7 +315,7 @@ void ShaderNodeEditor::UpdateImp()
 	}
 };
 
-void ShaderNodeEditor::Export(std::filesystem::path savePath)
+void ShaderNodeEditor::Export()
 {
 	std::vector<std::shared_ptr<ShaderDataProcess>> originalNodeReturn;
 

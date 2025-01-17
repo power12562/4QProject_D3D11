@@ -17,6 +17,8 @@ void RendererTestScene::Start()
 	auto skyBox = NewGameObject<SkyBoxObject>(L"skyBox");
 
 	nodeEditor = std::make_unique<ShaderNodeEditor>();
+	nodeEditor2 = std::make_unique<ShaderNodeEditor>("NodeEditor2");
+	//nodeEditor->SetResultNode<TextureNode>("Resource/Texture/1735656899.jpg", EShaderResult::Normal);
 	auto pipe = std::views::transform([](auto& pair) { return pair.second; }) | std::ranges::views::join;
 
 	std::ranges::copy(Utility::CollectMeshComponents(cube) | pipe, std::back_inserter(meshList));
@@ -44,6 +46,7 @@ void RendererTestScene::Start()
 void RendererTestScene::ImGUIRender()
 {
     nodeEditor->Update();
+	nodeEditor2->Update();
 
 	ImGui::Begin("Hierarchy");
 	ImGui::EditHierarchyView();
@@ -60,7 +63,6 @@ void RendererTestScene::ImGUIRender()
             MeshRender::ReloadShaderAll();
 			for (auto& i : meshList)
 			{
-				i->SetPS(L"Resource/Shader/Effect.hlsl");
 				i->materialAsset.OpenAsset(L"Resource/Texture/Test.MaterialAsset");
 			}
         }

@@ -1,5 +1,6 @@
 #include "ShaderNodes.h"
 #include "Utility/WinUtility.h"
+#include "Manager\TextureManager.h"
 
 ShaderNode::ShaderNode()
 {
@@ -414,7 +415,7 @@ TextureNode::TextureNode()
 
 			return 0;
 		});
-	addOUT<ShaderPin>((char*)u8"r")->behaviour(
+	addOUT<ShaderPin>((char*)u8"R")->behaviour(
 		[this]()
 		{
 			auto var = std::make_shared<RegistorVariable>();
@@ -424,7 +425,7 @@ TextureNode::TextureNode()
 
 			auto var2 = std::make_shared<LocalVariable>();
 			var2->type = "float3";
-			var2->identifier = std::format({ "c_r{}" }, getUID());
+			var2->identifier = std::format({ "c_R{}" }, getUID());
 			var2->initializationExpression = std::format({ " {}.Sample(DefaultSampler, input.Tex).r" }, var->identifier);
 
 
@@ -434,7 +435,7 @@ TextureNode::TextureNode()
 
 			return 0;
 		});
-	addOUT<ShaderPin>((char*)u8"g")->behaviour(
+	addOUT<ShaderPin>((char*)u8"G")->behaviour(
 		[this]()
 		{
 			auto var = std::make_shared<RegistorVariable>();
@@ -444,7 +445,7 @@ TextureNode::TextureNode()
 
 			auto var2 = std::make_shared<LocalVariable>();
 			var2->type = "float3";
-			var2->identifier = std::format({ "c_g{}" }, getUID());
+			var2->identifier = std::format({ "c_G{}" }, getUID());
 			var2->initializationExpression = std::format({ " {}.Sample(DefaultSampler, input.Tex).g" }, var->identifier);
 
 
