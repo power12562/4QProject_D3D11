@@ -428,7 +428,7 @@ void DefferdRenderer::Render()
 	}
 
 	// Gbuffer 라이팅 처리
-	if (1)
+	if (0)
 	{
 		ID3D11RenderTargetView* nullRenderBuffersRTV[4]{ nullptr, };
 		ID3D11RenderTargetView* deferredBufferRTV[1]{ deferredBuffer };
@@ -548,6 +548,7 @@ void DefferdRenderer::SetProjection(float fov, float nearZ, float farZ)
 
 void DefferdRenderer::ProcessDrawCommand(MeshDrawCommand& drawCommands)
 {
+	if (!drawCommands.meshData.vertexBuffer) return;
 	ID3D11Buffer* vertexBuffer[1] = { drawCommands.meshData.vertexBuffer };
 	UINT stride = drawCommands.meshData.vertexStride;
 	UINT offset = 0;
