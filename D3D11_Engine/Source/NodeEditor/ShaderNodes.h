@@ -10,9 +10,6 @@
 #include "NodeFactory.h"
 #include "Texture.h"
 
-
-using ShaderPin = int;
-
 using Vector2 = DirectX::SimpleMath::Vector2;
 using Vector3 = DirectX::SimpleMath::Vector3;
 using Vector4 = DirectX::SimpleMath::Vector4;
@@ -78,6 +75,11 @@ struct Define : public ShaderDataProcess
 	std::string initializationExpression;
 };
 
+template<typename T>
+struct ShaderPin
+{
+	std::shared_ptr<Variable> value;
+};
 
 static std::ostream& operator<<(std::ostream& os, const LocalVariable& data)
 {
@@ -102,9 +104,6 @@ static std::ostream& operator<<(std::ostream& os, const Define& data)
 struct ShaderNodeReturn
 {
 	std::vector<std::shared_ptr<ShaderDataProcess>> data;
-
-	/** 최근 노드의 결과값 */
-	std::shared_ptr<Variable> result;
 };
 
 class ISerializable
@@ -123,6 +122,11 @@ public:
 public:
 	virtual void Serialize(nlohmann::json& j){}
 	virtual void Deserialize(const nlohmann::json& j){}
+
+	static void UnLabelPinRenderer(ImFlow::Pin* p);
+	static std::function<bool(ImFlow::Pin*, ImFlow::Pin*)> SameType();
+	static std::function<bool(ImFlow::Pin*, ImFlow::Pin*)> SameTypeBrotherPin();
+
 };
 
 class ConstantValueNode : public ShaderNode
@@ -206,6 +210,35 @@ public:
 private:
 	std::filesystem::path texturePath;
 	Texture texture;
+};
+
+
+class AddNode : public ShaderNode
+{
+public:
+	AddNode();
+	virtual ~AddNode() = default;
+};
+
+class SubNode : public ShaderNode
+{
+public:
+	SubNode();
+	virtual ~SubNode() = default;
+};
+
+class MullNode : public ShaderNode
+{
+public:
+	MullNode();
+	virtual ~MullNode() = default;
+};
+
+class DivNode : public ShaderNode
+{
+public:
+	DivNode();
+	virtual ~DivNode() = default;
 };
 
 

@@ -46,7 +46,13 @@ namespace ImFlow
      * Intended to be used in union with smart_bezier();
      */
     inline static bool smart_bezier_collider(const ImVec2& p, const ImVec2& p1, const ImVec2& p2, float radius);
-
+    inline bool smart_bezier_collider_Rect(
+        const ImVec2& p1_1, // Assuming p1_1 is p1
+        const ImVec2& p1_2, // Assuming p1_2 is p2
+        const ImVec2& rect_min, // Top-left corner of the rectangle
+        const ImVec2& rect_max, // Bottom-right corner of the rectangle
+        float radius = 0.0f // Optional radius for padding
+    );
     // -----------------------------------------------------------------------------------------------------------------
     // CLASSES PRE-DEFINITIONS
 
@@ -227,6 +233,8 @@ namespace ImFlow
          * @return [TRUE] If the link is selected in the current frame
          */
         [[nodiscard]] bool isSelected() const { return m_selected; }
+
+        void DragSelect(ImVec2 min, ImVec2 max);
     private:
         Pin* m_left;
         Pin* m_right;

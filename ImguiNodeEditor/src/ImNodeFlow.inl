@@ -30,6 +30,114 @@ namespace ImFlow
         ImVec2 p11 = p1 + ImVec2(delta, vert);
         return ImProjectOnCubicBezier(p, p1, p11, p22, p2).Distance < radius;
     }
+    inline ImVec2 GetCubicBezierPoint(float t, const ImVec2& p0, const ImVec2& p1, const ImVec2& p2, const ImVec2& p3)
+    {
+        float u = 1.0f - t;
+        float tt = t * t;
+        float uu = u * u;
+        float uuu = uu * u;
+        float ttt = tt * t;
+
+        ImVec2 point = uuu * p0; // first term
+        point += 3 * uu * t * p1; // second term
+        point += 3 * u * tt * p2; // third term
+        point += ttt * p3; // fourth term
+
+        return point;
+    }
+
+    // Helper function to compute the bounding box of a cubic Bezier curve
+    inline void GetCubicBezierBoundingBox(const ImVec2& p0, const ImVec2& p1, const ImVec2& p2, const ImVec2& p3, ImVec2& out_min, ImVec2& out_max)
+    {
+        // Initialize min and max with the first point
+        out_min = p0;
+        out_max = p0;
+
+        // Function to update min and max
+        auto update_min_max = [&](const ImVec2& p)
+            {
+                if (p.x < out_min.x) out_min.x = p.x;
+                if (p.y < out_min.y) out_min.y = p.y;
+                if (p.x > out_max.x) out_max.x = p.x;
+                if (p.y > out_max.y) out_max.y = p.y;
+            };
+
+        // Sample points on the curve to estimate the bounding box
+        const int sample_count = 100;
+        for (int i = 1; i <= sample_count; ++i)
+        {
+            float t = static_cast<float>(i) / sample_count;
+            ImVec2 point = GetCubicBezierPoint(t, p0, p1, p2, p3);
+            update_min_max(point);
+        }
+    }
+
+    // Implementation of smart_bezier_collider_Rect
+    inline bool smart_bezier_collider_Rect(
+        const ImVec2& p1_1, // Assuming p1_1 is p1
+        const ImVec2& p1_2, // Assuming p1_2 is p2
+        const ImVec2& rect_min, // Top-left corner of the rectangle
+        const ImVec2& rect_max, // Bottom-right corner of the rectangle
+        float radius // Optional radius for padding
+    )
+    {
+        // Compute control points based on your smart_bezier logic
+        ImVec2 p1 = p1_1;
+        ImVec2 p2 = p1_2;
+
+        float distance = std::sqrt(std::pow((p2.x - p1.x), 2.f) + std::pow((p2.y - p1.y), 2.f));
+        float delta = distance * 0.45f;
+        if (p2.x < p1.x) delta += 0.2f * (p1.x - p2.x);
+
+        // float vert = (p2.x < p1.x - 20.f) ? 0.062f * distance * (p2.y - p1.y) * 0.005f : 0.f;
+        float vert = 0.f;
+
+        ImVec2 p22 = p2 - ImVec2(delta, vert);
+        if (p2.x < p1.x - 50.f) delta *= -1.f;
+        ImVec2 p11 = p1 + ImVec2(delta, vert);
+
+        // Define control points
+        ImVec2 p0 = p1;
+        ImVec2 p3 = p2;
+        ImVec2 p_control1 = p11;
+        ImVec2 p_control2 = p22;
+
+        // First, perform a bounding box check
+        ImVec2 bezier_min, bezier_max;
+        GetCubicBezierBoundingBox(p0, p_control1, p_control2, p3, bezier_min, bezier_max);
+
+        // Expand rectangle by radius
+        ImVec2 expanded_min = rect_min - ImVec2(radius, radius);
+        ImVec2 expanded_max = rect_max + ImVec2(radius, radius);
+
+        // Check if bounding boxes intersect
+        bool bbox_intersect =
+            bezier_max.x >= expanded_min.x &&
+            bezier_min.x <= expanded_max.x &&
+            bezier_max.y >= expanded_min.y &&
+            bezier_min.y <= expanded_max.y;
+
+        if (!bbox_intersect)
+            return false; // No collision
+
+        // If bounding boxes intersect, proceed with detailed collision check
+        // Sample points along the Bezier curve and check if any point is inside the rectangle
+        const int sample_count = 100;
+        for (int i = 0; i <= sample_count; ++i)
+        {
+            float t = static_cast<float>(i) / sample_count;
+            ImVec2 point = GetCubicBezierPoint(t, p0, p_control1, p_control2, p3);
+
+            // Expand rectangle by radius for collision
+            if (point.x >= (rect_min.x - radius) && point.x <= (rect_max.x + radius) &&
+                point.y >= (rect_min.y - radius) && point.y <= (rect_max.y + radius))
+            {
+                return true; // Collision detected
+            }
+        }
+
+        return false; // No collision detected
+    }
 
     // -----------------------------------------------------------------------------------------------------------------
     // HANDLER

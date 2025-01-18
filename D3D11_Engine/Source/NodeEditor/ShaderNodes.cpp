@@ -13,11 +13,59 @@ NodeFlow* ShaderNode::GetHandler()
 	return dynamic_cast<NodeFlow*>(getHandler());
 }
 
+void ShaderNode::UnLabelPinRenderer(ImFlow::Pin* p)
+{
+	ImGui::SetCursorPos(p->getPos());
+	ImGui::Dummy({ 40, 20 });
+	p->drawDecoration();
+	p->drawSocket();
+}
+
+std::function<bool(ImFlow::Pin*, ImFlow::Pin*)> ShaderNode::SameType()
+{
+	return 
+		[](ImFlow::Pin* out, ImFlow::Pin* in)
+		{
+			if (out->getDataType() == typeid(ShaderPin<void>) || in->getDataType() == typeid(ShaderPin<void>))
+				return true;
+			
+			return out->getDataType() == in->getDataType();
+		};
+}
+
+std::function<bool(ImFlow::Pin*, ImFlow::Pin*)> ShaderNode::SameTypeBrotherPin()
+{
+	return
+		[](ImFlow::Pin* out, ImFlow::Pin* in)
+		{
+			for (auto& item  : in->getParent()->getIns())
+			{
+				if (item.get() != in)
+				{
+					if (item->isConnected())
+					{
+						if (out->getDataType() == typeid(ShaderPin<void>) || 
+							item->getLink().lock()->left()->getDataType() == typeid(ShaderPin<void>))
+							return true;
+						return out->getDataType() == item->getLink().lock()->left()->getDataType();
+					}
+					else
+					{
+						return true;
+					}
+				}
+			}
+
+			return true;
+		};
+}
+
+
 ConstantValueNode::ConstantValueNode()
 {
 	Set(0.0f);
 	setStyle(ImFlow::NodeStyle::green());
-	addOUT<ShaderPin>((char*)u8"값")->behaviour(
+	addOUT<ShaderPin<float>>((char*)u8"값")->behaviour(
 		[this]()
 		{
 			auto var = std::make_shared<LocalVariable>();
@@ -25,11 +73,8 @@ ConstantValueNode::ConstantValueNode()
 			var->identifier = std::format({ "c_{}" }, getUID());
 			var->initializationExpression = std::format({ "{}" }, value);
 
-
 			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
-			GetHandler()->GetShaderNodeReturn().result = var;
-
-			return 0;
+			return ShaderPin<float>{ var };
 		});
 }
 
@@ -58,13 +103,14 @@ void ConstantValueNode::Serialize(nlohmann::json& j)
 void ConstantValueNode::Deserialize(const nlohmann::json& j)
 {
 	value = j["value"];
+	Set(value);
 }
 
 ConstantVector2Node::ConstantVector2Node()
 {
 	Set(value);
 	setStyle(ImFlow::NodeStyle::green());
-	addOUT<ShaderPin>((char*)u8"값")->behaviour(
+	addOUT<ShaderPin<Vector2>>((char*)u8"값")->behaviour(
 		[this]()
 		{
 			auto var = std::make_shared<LocalVariable>();
@@ -73,11 +119,9 @@ ConstantVector2Node::ConstantVector2Node()
 			var->initializationExpression = std::format({ "float2({}, {})" }, value.x, value.y);
 
 			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
-			GetHandler()->GetShaderNodeReturn().result = var;
-
-			return 0;
+			return ShaderPin<Vector2>{ var };
 		});
-	addOUT<ShaderPin>("x")->behaviour(
+	addOUT<ShaderPin<float>>("x")->behaviour(
 		[this]()
 		{
 			auto var = std::make_shared<LocalVariable>();
@@ -86,11 +130,9 @@ ConstantVector2Node::ConstantVector2Node()
 			var->initializationExpression = std::format({ "{}" }, value.x);
 
 			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
-			GetHandler()->GetShaderNodeReturn().result = var;
-
-			return 0;
+			return ShaderPin<float>{ var };
 		});
-	addOUT<ShaderPin>("y")->behaviour(
+	addOUT<ShaderPin<float>>("y")->behaviour(
 		[this]()
 		{
 			auto var = std::make_shared<LocalVariable>();
@@ -99,9 +141,7 @@ ConstantVector2Node::ConstantVector2Node()
 			var->initializationExpression = std::format({ "{}" }, value.y);
 
 			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
-			GetHandler()->GetShaderNodeReturn().result = var;
-
-			return 0;
+			return ShaderPin<float>{ var };
 		});
 }
 void ConstantVector2Node::Set(const Vector2& value)
@@ -142,13 +182,14 @@ void ConstantVector2Node::Deserialize(const nlohmann::json& j)
 {
 	value.x = j["value.x"];
 	value.y = j["value.y"];
+	Set(value);
 }
 
 ConstantVector3Node::ConstantVector3Node()
 {
 	Set(value);
 	setStyle(ImFlow::NodeStyle::green());
-	addOUT<ShaderPin>((char*)u8"값")->behaviour(
+	addOUT<ShaderPin<Vector3>>((char*)u8"값")->behaviour(
 		[this]()
 		{
 			auto var = std::make_shared<LocalVariable>();
@@ -157,11 +198,9 @@ ConstantVector3Node::ConstantVector3Node()
 			var->initializationExpression = std::format({ "float3({}, {}, {})" }, value.x, value.y, value.z);
 
 			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
-			GetHandler()->GetShaderNodeReturn().result = var;
-
-			return 0;
+			return ShaderPin<Vector3>{ var };
 		});
-	addOUT<ShaderPin>("x")->behaviour(
+	addOUT<ShaderPin<float>>("x")->behaviour(
 		[this]()
 		{
 			auto var = std::make_shared<LocalVariable>();
@@ -170,11 +209,9 @@ ConstantVector3Node::ConstantVector3Node()
 			var->initializationExpression = std::format({ "{}" }, value.x);
 
 			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
-			GetHandler()->GetShaderNodeReturn().result = var;
-
-			return 0;
+			return ShaderPin<float>{ var };
 		});
-	addOUT<ShaderPin>("y")->behaviour(
+	addOUT<ShaderPin<float>>("y")->behaviour(
 		[this]()
 		{
 			auto var = std::make_shared<LocalVariable>();
@@ -183,11 +220,9 @@ ConstantVector3Node::ConstantVector3Node()
 			var->initializationExpression = std::format({ "{}" }, value.y);
 
 			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
-			GetHandler()->GetShaderNodeReturn().result = var;
-
-			return 0;
+			return ShaderPin<float>{ var };
 		});
-	addOUT<ShaderPin>("z")->behaviour(
+	addOUT<ShaderPin<float>>("z")->behaviour(
 		[this]()
 		{
 			auto var = std::make_shared<LocalVariable>();
@@ -196,9 +231,7 @@ ConstantVector3Node::ConstantVector3Node()
 			var->initializationExpression = std::format({ "{}" }, value.z);
 
 			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
-			GetHandler()->GetShaderNodeReturn().result = var;
-
-			return 0;
+			return ShaderPin<float>{ var };
 		});
 }
 
@@ -251,13 +284,14 @@ void ConstantVector3Node::Deserialize(const nlohmann::json& j)
 	value.x = j["value.x"];
 	value.y = j["value.y"];
 	value.z = j["value.z"];
+	Set(value);
 }
 
 ConstantVector4Node::ConstantVector4Node()
 {
 	Set(value);
 	setStyle(ImFlow::NodeStyle::green());
-	addOUT<ShaderPin>((char*)u8"값")->behaviour(
+	addOUT<ShaderPin<Vector4>>((char*)u8"값")->behaviour(
 		[this]()
 		{
 			auto var = std::make_shared<LocalVariable>();
@@ -266,11 +300,9 @@ ConstantVector4Node::ConstantVector4Node()
 			var->initializationExpression = std::format({ "float4({}, {}, {}, {})" }, value.x, value.y, value.z, value.w);
 
 			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
-			GetHandler()->GetShaderNodeReturn().result = var;
-
-			return 0;
+			return ShaderPin<Vector4>{ var };
 		});
-	addOUT<ShaderPin>("x")->behaviour(
+	addOUT<ShaderPin<float>>("x")->behaviour(
 		[this]()
 		{
 			auto var = std::make_shared<LocalVariable>();
@@ -279,11 +311,9 @@ ConstantVector4Node::ConstantVector4Node()
 			var->initializationExpression = std::format({ "{}" }, value.x);
 
 			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
-			GetHandler()->GetShaderNodeReturn().result = var;
-
-			return 0;
+			return ShaderPin<float>{ var };
 		});
-	addOUT<ShaderPin>("y")->behaviour(
+	addOUT<ShaderPin<float>>("y")->behaviour(
 		[this]()
 		{
 			auto var = std::make_shared<LocalVariable>();
@@ -292,11 +322,9 @@ ConstantVector4Node::ConstantVector4Node()
 			var->initializationExpression = std::format({ "{}" }, value.y);
 
 			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
-			GetHandler()->GetShaderNodeReturn().result = var;
-
-			return 0;
+			return ShaderPin<float>{ var };
 		});
-	addOUT<ShaderPin>("z")->behaviour(
+	addOUT<ShaderPin<float>>("z")->behaviour(
 		[this]()
 		{
 			auto var = std::make_shared<LocalVariable>();
@@ -305,11 +333,9 @@ ConstantVector4Node::ConstantVector4Node()
 			var->initializationExpression = std::format({ "{}" }, value.z);
 
 			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
-			GetHandler()->GetShaderNodeReturn().result = var;
-
-			return 0;
+			return ShaderPin<float>{ var };
 		});
-	addOUT<ShaderPin>("w")->behaviour(
+	addOUT<ShaderPin<float>>("w")->behaviour(
 		[this]()
 		{
 			auto var = std::make_shared<LocalVariable>();
@@ -318,9 +344,7 @@ ConstantVector4Node::ConstantVector4Node()
 			var->initializationExpression = std::format({ "{}" }, value.w);
 
 			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
-			GetHandler()->GetShaderNodeReturn().result = var;
-
-			return 0;
+			return ShaderPin<float>{ var };
 		});
 }
 
@@ -384,17 +408,18 @@ void ConstantVector4Node::Deserialize(const nlohmann::json& j)
 	value.y = j["value.y"];
 	value.z = j["value.z"];
 	value.w = j["value.w"];
+	Set(value);
 }
 
 TextureNode::TextureNode()
 {
-	setTitle("Texture Sample");
+	setTitle((char*)u8"텍스처");
 	Set(texturePath);
 	setStyle(ImFlow::NodeStyle::cyan());
 
-	addIN<ShaderPin>("uv", 0, ImFlow::ConnectionFilter::None());
+	addIN<ShaderPin<void>>("uv", {}, SameType());
 
-	addOUT<ShaderPin>((char*)u8"RGB")->behaviour(
+	addOUT<ShaderPin<Vector3>>((char*)u8"RGB")->behaviour(
 		[this]()
 		{
 			auto var = std::make_shared<RegistorVariable>();
@@ -411,11 +436,9 @@ TextureNode::TextureNode()
 
 			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
 			GetHandler()->GetShaderNodeReturn().data.emplace_back(var2);
-			GetHandler()->GetShaderNodeReturn().result = var2;
-
-			return 0;
+			return ShaderPin<Vector3>{ var2 };
 		});
-	addOUT<ShaderPin>((char*)u8"R")->behaviour(
+	addOUT<ShaderPin<float>>((char*)u8"R")->behaviour(
 		[this]()
 		{
 			auto var = std::make_shared<RegistorVariable>();
@@ -431,11 +454,9 @@ TextureNode::TextureNode()
 
 			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
 			GetHandler()->GetShaderNodeReturn().data.emplace_back(var2);
-			GetHandler()->GetShaderNodeReturn().result = var2;
-
-			return 0;
+			return ShaderPin<float>{ var2 };
 		});
-	addOUT<ShaderPin>((char*)u8"G")->behaviour(
+	addOUT<ShaderPin<float>>((char*)u8"G")->behaviour(
 		[this]()
 		{
 			auto var = std::make_shared<RegistorVariable>();
@@ -451,11 +472,9 @@ TextureNode::TextureNode()
 
 			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
 			GetHandler()->GetShaderNodeReturn().data.emplace_back(var2);
-			GetHandler()->GetShaderNodeReturn().result = var2;
-
-			return 0;
+			return ShaderPin<float>{ var2 };
 		});
-	addOUT<ShaderPin>((char*)u8"B")->behaviour(
+	addOUT<ShaderPin<float>>((char*)u8"B")->behaviour(
 		[this]()
 		{
 			auto var = std::make_shared<RegistorVariable>();
@@ -471,11 +490,9 @@ TextureNode::TextureNode()
 
 			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
 			GetHandler()->GetShaderNodeReturn().data.emplace_back(var2);
-			GetHandler()->GetShaderNodeReturn().result = var2;
-
-			return 0;
+			return ShaderPin<float>{ var2 };
 		});
-	addOUT<ShaderPin>((char*)u8"RGBA")->behaviour(
+	addOUT<ShaderPin<Vector4>>((char*)u8"RGBA")->behaviour(
 		[this]()
 		{
 			auto var = std::make_shared<RegistorVariable>();
@@ -491,9 +508,7 @@ TextureNode::TextureNode()
 
 			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
 			GetHandler()->GetShaderNodeReturn().data.emplace_back(var2);
-			GetHandler()->GetShaderNodeReturn().result = var2;
-
-			return 0;
+			return ShaderPin<Vector4>{ var2 };
 		});
 
 
@@ -560,12 +575,16 @@ ShaderResultNode::ShaderResultNode()
 {
 	setStyle(ImFlow::NodeStyle::red());
 	setTitle("BRDF");
-	
 
-	for (auto& name : EShaderResult::pinNames)
-	{
-		addIN<ShaderPin>(name, 0, ImFlow::ConnectionFilter::None());
-	}
+	addIN<ShaderPin<Vector3>>(EShaderResult::pinNames[EShaderResult::Albedo], {}, SameType());
+	addIN<ShaderPin<Vector3>>(EShaderResult::pinNames[EShaderResult::Normal], {}, SameType());
+	addIN<ShaderPin<float>>(EShaderResult::pinNames[EShaderResult::Metallic], {}, SameType());
+	addIN<ShaderPin<float>>(EShaderResult::pinNames[EShaderResult::Roughness], {}, SameType());
+	addIN<ShaderPin<float>>(EShaderResult::pinNames[EShaderResult::Alpha], {}, SameType());
+	addIN<ShaderPin<float>>(EShaderResult::pinNames[EShaderResult::Specular], {}, SameType());
+	addIN<ShaderPin<float>>(EShaderResult::pinNames[EShaderResult::EnvironmentOcclusion], {}, SameType());
+	addIN<ShaderPin<Vector3>>(EShaderResult::pinNames[EShaderResult::Emissive], {}, SameType());
+
 }
 
 NodeFlow::NodeFlow()
@@ -576,3 +595,108 @@ NodeFlow::NodeFlow()
 
 NodeFlow::~NodeFlow() = default;
 
+AddNode::AddNode()
+{
+	setTitle((char*)u8"더하기");
+	setStyle(ImFlow::NodeStyle::cyan());
+
+	addIN<ShaderPin<void>>("a", {}, SameTypeBrotherPin())->renderer(UnLabelPinRenderer);
+	addIN<ShaderPin<void>>("b", {}, SameTypeBrotherPin())->renderer(UnLabelPinRenderer);
+
+	addOUT<ShaderPin<void>>("")->behaviour(
+		[this]()
+		{
+			auto a = getInVal<ShaderPin<void>>("a");
+			auto b = getInVal<ShaderPin<void>>("b");
+
+			if (a.value->type != b.value->type)
+			{
+				return ShaderPin<void>{};
+			}
+
+			auto var = std::make_shared<LocalVariable>();
+			var->type = a.value->type;
+			var->identifier = std::format({ "c_{}" }, getUID());
+			var->initializationExpression = std::format({ "{} + {}" }, a.value->identifier, b.value->identifier);
+
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
+			return ShaderPin<void>{ var };
+		})->renderer(UnLabelPinRenderer);
+}
+
+SubNode::SubNode()
+{
+	setTitle((char*)u8"빼기");
+	setStyle(ImFlow::NodeStyle::cyan());
+
+	addIN<ShaderPin<void>>("a", {}, SameTypeBrotherPin())->renderer(UnLabelPinRenderer);
+	addIN<ShaderPin<void>>("b", {}, SameTypeBrotherPin())->renderer(UnLabelPinRenderer);
+
+	addOUT<ShaderPin<void>>("")->behaviour(
+		[this]()
+		{
+			auto a = getInVal<ShaderPin<void>>("a");
+			auto b = getInVal<ShaderPin<void>>("b");
+
+			if (a.value->type != b.value->type)
+			{
+				return ShaderPin<void>{};
+			}
+
+			auto var = std::make_shared<LocalVariable>();
+			var->type = a.value->type;
+			var->identifier = std::format({ "c_{}" }, getUID());
+			var->initializationExpression = std::format({ "{} - {}" }, a.value->identifier, b.value->identifier);
+
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
+			return ShaderPin<void>{ var };
+		})->renderer(UnLabelPinRenderer);
+}
+
+MullNode::MullNode()
+{
+	setTitle((char*)u8"곱하기");
+	setStyle(ImFlow::NodeStyle::cyan());
+
+	addIN<ShaderPin<void>>("a", {}, SameType())->renderer(UnLabelPinRenderer);
+	addIN<ShaderPin<void>>("b", {}, SameType())->renderer(UnLabelPinRenderer);
+
+	addOUT<ShaderPin<void>>("")->behaviour(
+		[this]()
+		{
+			auto a = getInVal<ShaderPin<void>>("a");
+			auto b = getInVal<ShaderPin<void>>("b");
+
+			auto var = std::make_shared<LocalVariable>();
+			var->type = a.value->type;
+			var->identifier = std::format({ "c_{}" }, getUID());
+			var->initializationExpression = std::format({ "{} * {}" }, a.value->identifier, b.value->identifier);
+
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
+			return ShaderPin<void>{ var };
+		})->renderer(UnLabelPinRenderer);
+}
+
+DivNode::DivNode()
+{
+	setTitle((char*)u8"나누기");
+	setStyle(ImFlow::NodeStyle::cyan());
+
+	addIN<ShaderPin<void>>("a", {}, SameType())->renderer(UnLabelPinRenderer);
+	addIN<ShaderPin<void>>("b", {}, SameType())->renderer(UnLabelPinRenderer);
+
+	addOUT<ShaderPin<void>>("")->behaviour(
+		[this]()
+		{
+			auto a = getInVal<ShaderPin<void>>("a");
+			auto b = getInVal<ShaderPin<void>>("b");
+
+			auto var = std::make_shared<LocalVariable>();
+			var->type = a.value->type;
+			var->identifier = std::format({ "c_{}" }, getUID());
+			var->initializationExpression = std::format({ "{} / {}" }, a.value->identifier, b.value->identifier);
+
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
+			return ShaderPin<void>{ var };
+		})->renderer(UnLabelPinRenderer);
+}

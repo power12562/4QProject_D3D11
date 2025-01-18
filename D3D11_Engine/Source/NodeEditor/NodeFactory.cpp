@@ -15,7 +15,11 @@ ShaderNodeFactory::ShaderNodeFactory()
 	ADD_FACTORY_NODE(ConstantVector3Node);
 	ADD_FACTORY_NODE(ConstantVector4Node);
 	ADD_FACTORY_NODE(TextureNode);
-	
+	ADD_FACTORY_NODE(AddNode);
+	ADD_FACTORY_NODE(SubNode);
+	ADD_FACTORY_NODE(MullNode);
+	ADD_FACTORY_NODE(DivNode);
+
 	nodeCreateFuncs["ShaderResultNode"] = 
 		[](ImFlow::ImNodeFlow* nodeFlow) -> std::shared_ptr<ShaderNode> 
 		{ 
@@ -38,5 +42,6 @@ void ShaderNodeFactory::Set(NodeFlow* grid)
 
 std::shared_ptr<ShaderNode> ShaderNodeFactory::Create(std::string_view type)
 {
+	assert(nodeCreateFuncs[type.data()]);
 	return nodeCreateFuncs[type.data()](myGrid);
 }

@@ -3,6 +3,7 @@
 #include "ShaderNodes.h"
 #include <ranges>
 #include <chrono>
+#include <set>
 #include "Utility/WinUtility.h"
 #include "Asset\MaterialAsset.h"
 
@@ -64,6 +65,22 @@ void NodeEditor::Update()
 		if (ImGui::IsKeyDown(ImGuiKey_T))
 		{
 			myGrid->Create("TextureNode");
+		}
+		if (ImGui::IsKeyDown(ImGuiKey_A))
+		{
+			myGrid->Create("AddNode");
+		}
+		if (ImGui::IsKeyDown(ImGuiKey_S))
+		{
+			myGrid->Create("SubNode");
+		}
+		if (ImGui::IsKeyDown(ImGuiKey_M))
+		{
+			myGrid->Create("MullNode");
+		}
+		if (ImGui::IsKeyDown(ImGuiKey_D))
+		{
+			myGrid->Create("DivNode");
 		}
 	}
 
@@ -132,8 +149,11 @@ void NodeEditor::Update()
 				{
 					node->selected(true);
 				}
+			}
 
-
+			for (const auto& link : myGrid->getLinks() | std::views::transform([](const auto& item) { return item.lock().get(); }))
+			{
+				link->DragSelect({ minX, minY }, { maxX, maxY });
 			}
 		}
 
@@ -228,9 +248,41 @@ void NodeEditor::Load(std::filesystem::path path)
 	myGrid->rightClickPopUpContent(
 		[this](ImFlow::BaseNode* node)
 		{
-			if (ImGui::MenuItem((char*)u8"텍스처"))
+			if (ImGui::MenuItem((char*)u8"float (1)"))
+			{
+				myGrid->Create("ConstantValueNode");
+			}
+			if (ImGui::MenuItem((char*)u8"float2 (2)"))
+			{
+				myGrid->Create("ConstantVector2Node");
+			}
+			if (ImGui::MenuItem((char*)u8"float3 (3)"))
+			{
+				myGrid->Create("ConstantVector3Node");
+			}
+			if (ImGui::MenuItem((char*)u8"float4 {4}"))
+			{
+				myGrid->Create("ConstantVector4Node");
+			}
+			if (ImGui::MenuItem((char*)u8"텍스처 (T)"))
 			{
 				myGrid->Create("TextureNode");
+			}
+			if (ImGui::MenuItem((char*)u8"더하기 (A)"))
+			{
+				myGrid->Create("AddNode");
+			}
+			if (ImGui::MenuItem((char*)u8"빼기 (S)"))
+			{
+				myGrid->Create("SubNode");
+			}
+			if (ImGui::MenuItem((char*)u8"곱하기 (M)"))
+			{
+				myGrid->Create("MullNode");
+			}
+			if (ImGui::MenuItem((char*)u8"나누기 (D)"))
+			{
+				myGrid->Create("DivNode");
 			}
 		});
 
@@ -315,40 +367,43 @@ void ShaderNodeEditor::UpdateImp()
 	}
 };
 
+
 void ShaderNodeEditor::Export()
 {
 	std::vector<std::shared_ptr<ShaderDataProcess>> originalNodeReturn;
+	std::vector<std::shared_ptr<ShaderDataProcess>>& processVector = myGrid->GetShaderNodeReturn().data;
+	processVector.clear();
+
+
 
 	for (size_t i = 0; i < EShaderResult::MAX; i++)
 	{
-		std::vector<std::shared_ptr<ShaderDataProcess>>& processVector = myGrid->GetShaderNodeReturn().data;
-
-		processVector.clear();
-
-		myGrid->GetResultNode()->getInVal<ShaderPin>(EShaderResult::pinNames[i]);
+		auto value = myGrid->GetResultNode()->getInVal<ShaderPin<void>>(EShaderResult::pinNames[i]);
 
 		for (auto& item : processVector)
 		{
 			originalNodeReturn.emplace_back(item);
 		}
 
-		if (myGrid->GetShaderNodeReturn().result)
+		if (value.value)
 		{
 			auto execution = std::make_shared<Execution>();
 			execution->leftIdentifier = EShaderResult::hlslName[i];
-			execution->rightIdentifier = myGrid->GetShaderNodeReturn().result->identifier;
+			execution->rightIdentifier = value.value->identifier;
 			originalNodeReturn.emplace_back(execution);
 		}
 
 		processVector.clear();
-		myGrid->GetShaderNodeReturn().result = {};
-		myGrid->get_recursion_blacklist().clear();
 	}
 
 	std::vector<Define*> defines;
 	std::vector<RegistorVariable*> registerValues;
 	std::vector<LocalVariable*> localValues;
 	std::vector<Execution*> executions;
+
+	std::set<std::shared_ptr<RegistorVariable>> uniqueSet;
+	std::set<std::shared_ptr<LocalVariable>> uniqueSet2;
+	std::set<std::shared_ptr<Execution>> uniqueSet3;
 
 	for (auto& item : originalNodeReturn)
 	{
@@ -358,26 +413,27 @@ void ShaderNodeEditor::Export()
 		}
 		else if (auto data = std::dynamic_pointer_cast<RegistorVariable>(item))
 		{
-			registerValues.emplace_back(data.get());
+			if (uniqueSet.insert(data).second)
+			{
+				registerValues.emplace_back(data.get());
+			}
 		}
 		else if (auto data = std::dynamic_pointer_cast<LocalVariable>(item))
 		{
-			localValues.emplace_back(data.get());
+			if (uniqueSet2.insert(data).second)
+			{
+				localValues.emplace_back(data.get());
+			}
 		}
 		else if (auto data = std::dynamic_pointer_cast<Execution>(item))
 		{
-			executions.emplace_back(data.get());
+			if (uniqueSet3.insert(data).second)
+			{
+				executions.emplace_back(data.get());
+			}
 		}
 		 
 	}
-	std::ranges::sort(defines, [](auto& a, auto& b) { return a->name < b->name; });
-	defines.erase(std::ranges::unique(defines, [](auto& a, auto& b) { return a->name == b->name; }).begin(), defines.end());
-	
-	std::ranges::sort(registerValues, [](auto& a, auto& b) { return a->identifier < b->identifier; });
-	registerValues.erase(std::ranges::unique(registerValues, [](auto& a, auto& b) { return a->identifier == b->identifier; }).begin(), registerValues.end());
-
-	std::ranges::sort(localValues, [](auto& a, auto& b) { return a->identifier < b->identifier; });
-	localValues.erase(std::ranges::unique(localValues, [](auto& a, auto& b) { return a->identifier == b->identifier; }).begin(), localValues.end());
 
 	std::stringstream defineLine;
 	std::stringstream registerValueLine;

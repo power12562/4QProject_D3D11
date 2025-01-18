@@ -32,6 +32,17 @@ namespace ImFlow {
             m_right->deleteLink();
     }
 
+    void Link::DragSelect(ImVec2 min, ImVec2 max)
+    {
+        ImVec2 start = m_left->pinPoint();
+        ImVec2 end = m_right->pinPoint();
+        if (smart_bezier_collider_Rect(start, end, min, max, 2.5f))
+        {
+            m_selected = true;
+        }
+
+    }
+
     Link::~Link() {
         m_left->deleteLink();
     }
