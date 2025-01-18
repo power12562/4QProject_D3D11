@@ -14,9 +14,8 @@ std::shared_ptr<ShaderNode> NodeFlow::Create(std::string_view typeName)
 	return nodeFactory.Create(typeName);
 }
 
-NodeEditor::NodeEditor(std::filesystem::path path) : path{}
+NodeEditor::NodeEditor() : path{}
 {
-	Load(path);
 	//myGrid = std::make_shared<ImFlow::ImNodeFlow>();
 	//nodeFactory.Set(myGrid);
 	//resultNode = myGrid->addNode<ShaderResultNode>({ 100, 100 }).get();
@@ -42,53 +41,23 @@ void NodeEditor::Update()
 	ImGui::Begin(fileName.c_str(), &isPopUp, ImGuiWindowFlags_MenuBar);
 	
 	UpdateImp();
-	ImVec2 mousePos = ImGui::GetMousePos();  // 마우스 위치
-	bool isMouseClicked = ImGui::IsMouseClicked(0);  // 좌클릭 확인
-	if (isMouseClicked)
-	{
-		if (ImGui::IsKeyDown(ImGuiKey_1))
-		{
-			myGrid->Create("ConstantValueNode");
-		}
-		if (ImGui::IsKeyDown(ImGuiKey_2))
-		{
-			myGrid->Create("ConstantVector2Node");
-		}
-		if (ImGui::IsKeyDown(ImGuiKey_3))
-		{
-			myGrid->Create("ConstantVector3Node");
-		}
-		if (ImGui::IsKeyDown(ImGuiKey_4))
-		{
-			myGrid->Create("ConstantVector4Node");
-		}
-		if (ImGui::IsKeyDown(ImGuiKey_T))
-		{
-			myGrid->Create("TextureNode");
-		}
-		if (ImGui::IsKeyDown(ImGuiKey_A))
-		{
-			myGrid->Create("AddNode");
-		}
-		if (ImGui::IsKeyDown(ImGuiKey_S))
-		{
-			myGrid->Create("SubNode");
-		}
-		if (ImGui::IsKeyDown(ImGuiKey_M))
-		{
-			myGrid->Create("MullNode");
-		}
-		if (ImGui::IsKeyDown(ImGuiKey_D))
-		{
-			myGrid->Create("DivNode");
-		}
-	}
 
 
+	ImGui::PushItemWidth(200);
+	ImGui::PushID("shadingModel");
+	ImGui::Combo("", (int*)&myGrid->shadingModel, EShadingModel::name, IM_ARRAYSIZE(EShadingModel::name));
+	ImGui::PopID();
+	ImGui::PushID("blendMode");
+	ImGui::Combo("", (int*)&myGrid->blendMode, EBlendMode::name, IM_ARRAYSIZE(EBlendMode::name));
+	ImGui::PopID();
+	ImGui::PopItemWidth();
+
+	ImGui::SameLine();
 
 	myGrid->update();
 
 
+	ImVec2 mousePos = ImGui::GetMousePos();  // 마우스 위치
 	// 마우스 클릭 및 드래그 시작 확인
 	if (ImGui::IsMouseClicked(0))
 	{
@@ -163,6 +132,30 @@ void NodeEditor::Update()
 		Save();
 	}
 
+	if (ImGui::BeginMenuBar())
+	{
+		if (ImGui::BeginMenu((char*)u8"파일", true))
+		{
+			if (ImGui::MenuItem((char*)u8"저장", "Ctrl + S", nullptr, true))
+			{
+				Save();
+			}
+
+			if (ImGui::MenuItem((char*)u8"열기", nullptr, nullptr, true))
+			{
+				Save();
+				auto newpath = WinUtility::GetOpenFilePath(path.c_str());
+				Load(newpath);
+			}
+
+			if (ImGui::MenuItem((char*)u8"내보내기", nullptr, nullptr, true))
+			{
+				Export();
+			}
+			ImGui::EndMenu();
+		}
+		ImGui::EndMenuBar();
+	}
 	ImGui::End();
 
 }
@@ -177,6 +170,10 @@ void NodeEditor::Save()
 	}
 
 	nlohmann::json j;
+
+	j["shadingModel"] = myGrid->shadingModel;
+	j["blendMode"] = myGrid->blendMode;
+
 	for (ImFlow::BaseNode* item : myGrid->getNodes() | std::views::transform([](const auto& item) {return item.second.get();}))
 	{
 		nlohmann::json nodeJson;
@@ -242,57 +239,7 @@ void NodeEditor::Load(std::filesystem::path path)
 	fileName = path.filename().string();
 	myGrid = std::make_shared<NodeFlow>();
 	this->path = path;
-
-
-
-	myGrid->rightClickPopUpContent(
-		[this](ImFlow::BaseNode* node)
-		{
-			if (ImGui::MenuItem((char*)u8"float (1)"))
-			{
-				myGrid->Create("ConstantValueNode");
-			}
-			if (ImGui::MenuItem((char*)u8"float2 (2)"))
-			{
-				myGrid->Create("ConstantVector2Node");
-			}
-			if (ImGui::MenuItem((char*)u8"float3 (3)"))
-			{
-				myGrid->Create("ConstantVector3Node");
-			}
-			if (ImGui::MenuItem((char*)u8"float4 {4}"))
-			{
-				myGrid->Create("ConstantVector4Node");
-			}
-			if (ImGui::MenuItem((char*)u8"텍스처 (T)"))
-			{
-				myGrid->Create("TextureNode");
-			}
-			if (ImGui::MenuItem((char*)u8"더하기 (A)"))
-			{
-				myGrid->Create("AddNode");
-			}
-			if (ImGui::MenuItem((char*)u8"빼기 (S)"))
-			{
-				myGrid->Create("SubNode");
-			}
-			if (ImGui::MenuItem((char*)u8"곱하기 (M)"))
-			{
-				myGrid->Create("MullNode");
-			}
-			if (ImGui::MenuItem((char*)u8"나누기 (D)"))
-			{
-				myGrid->Create("DivNode");
-			}
-		});
-
-
-	myGrid->droppedLinkPopUpContent([](ImFlow::Pin* dragged)
-									{
-
-									});
-
-
+	myGrid->path = path;
 	std::ifstream file(path);
 	if (!file.is_open())
 	{
@@ -301,8 +248,15 @@ void NodeEditor::Load(std::filesystem::path path)
 	nlohmann::json j;
 	file >> j;
 	file.close();
+	if (j.find("shadingModel") != j.end())
+	{
+		myGrid->shadingModel = j["shadingModel"];
+	}
+	if (j.find("blendMode") != j.end())
+	{
+		myGrid->blendMode = j["blendMode"];
+	}
 
-	
 	std::map<ImFlow::NodeUID, std::shared_ptr<ImFlow::BaseNode>> nodes;
 	for (auto& item : j["nodes"])
 	{
@@ -342,31 +296,133 @@ void NodeEditor::Load(std::filesystem::path path)
 
 void ShaderNodeEditor::UpdateImp()
 {
-	if (ImGui::BeginMenuBar())
+	bool isMouseClicked = ImGui::IsMouseClicked(0);  // 좌클릭 확인
+	if (isMouseClicked)
 	{
-		if (ImGui::BeginMenu((char*)u8"파일", true))
+		if (ImGui::IsKeyDown(ImGuiKey_1))
 		{
-			if (ImGui::MenuItem((char*)u8"저장", "Ctrl + S", nullptr, true))
-			{
-				Save();
-			}
-
-			if (ImGui::MenuItem((char*)u8"열기", nullptr, nullptr, true))
-			{
-
-				//Save();
-			}
-			
-			if (ImGui::MenuItem((char*)u8"내보내기", nullptr, nullptr, true))
-			{
-				Export();
-			}
-			ImGui::EndMenu();
+			myGrid->Create("ConstantValueNode");
 		}
-		ImGui::EndMenuBar();
+		if (ImGui::IsKeyDown(ImGuiKey_2))
+		{
+			myGrid->Create("ConstantVector2Node");
+		}
+		if (ImGui::IsKeyDown(ImGuiKey_3))
+		{
+			myGrid->Create("ConstantVector3Node");
+		}
+		if (ImGui::IsKeyDown(ImGuiKey_4))
+		{
+			myGrid->Create("ConstantVector4Node");
+		}
+		if (ImGui::IsKeyDown(ImGuiKey_T))
+		{
+			myGrid->Create("TextureNode");
+		}
+		if (ImGui::IsKeyDown(ImGuiKey_A))
+		{
+			myGrid->Create("AddNode");
+		}
+		if (ImGui::IsKeyDown(ImGuiKey_S))
+		{
+			myGrid->Create("SubNode");
+		}
+		if (ImGui::IsKeyDown(ImGuiKey_M))
+		{
+			myGrid->Create("MullNode");
+		}
+		if (ImGui::IsKeyDown(ImGuiKey_D))
+		{
+			myGrid->Create("DivNode");
+		}
 	}
+
 };
 
+
+void ShaderNodeEditor::Load(std::filesystem::path path)
+{
+	NodeEditor::Load(path);
+
+
+
+	myGrid->rightClickPopUpContent(
+		[this](ImFlow::BaseNode* node)
+		{
+			if (!node)
+			{
+				if (ImGui::MenuItem((char*)u8"시간"))
+				{
+					myGrid->Create("TimeNode");
+				}
+				if (ImGui::MenuItem((char*)u8"float", "(1)"))
+				{
+					myGrid->Create("ConstantValueNode");
+				}
+				if (ImGui::MenuItem((char*)u8"float2", "(2)"))
+				{
+					myGrid->Create("ConstantVector2Node");
+				}
+				if (ImGui::MenuItem((char*)u8"float3", "(3)"))
+				{
+					myGrid->Create("ConstantVector3Node");
+				}
+				if (ImGui::MenuItem((char*)u8"float4", "(4)"))
+				{
+					myGrid->Create("ConstantVector4Node");
+				}
+				if (ImGui::MenuItem((char*)u8"텍스처", "(T)"))
+				{
+					myGrid->Create("TextureNode");
+				}
+				if (ImGui::MenuItem((char*)u8"더하기", "(A)"))
+				{
+					myGrid->Create("AddNode");
+				}
+				if (ImGui::MenuItem((char*)u8"빼기", "(S)"))
+				{
+					myGrid->Create("SubNode");
+				}
+				if (ImGui::MenuItem((char*)u8"곱하기", "(M)"))
+				{
+					myGrid->Create("MullNode");
+				}
+				if (ImGui::MenuItem((char*)u8"나누기", "(D)"))
+				{
+					myGrid->Create("DivNode");
+				}
+			}
+		});
+
+
+	myGrid->droppedLinkPopUpContent(
+		[this](ImFlow::Pin* dragged)
+		{
+			std::shared_ptr<ShaderNode> result;
+			if (ImGui::MenuItem((char*)u8"더하기", "(A)"))
+			{
+				result = myGrid->Create("AddNode");
+			}
+			if (ImGui::MenuItem((char*)u8"빼기", "(S)"))
+			{
+				result = myGrid->Create("SubNode");
+			}
+			if (ImGui::MenuItem((char*)u8"곱하기", "(M)"))
+			{
+				result = myGrid->Create("MulNode");
+			}
+			if (ImGui::MenuItem((char*)u8"나누기", "(D)"))
+			{
+				result = myGrid->Create("DivNode");
+			}
+			if (result && dragged->getType() == ImFlow::PinType::PinType_Output)
+			{
+				result->getIns().front()->createLink(dragged);
+			}
+		});
+
+
+}
 
 void ShaderNodeEditor::Export()
 {
@@ -463,6 +519,36 @@ void ShaderNodeEditor::Export()
 		executionsLine << *item << std::endl;
 	}
 
+	bool isFoward = false;
+
+	switch (myGrid->blendMode)
+	{
+	case EBlendMode::AlphaBlend:
+	{
+		defineLine << "#define BLEND_ALPHA" << std::endl;
+		defineLine << "#define ALPHA_TEST" << std::endl;
+		defineLine << "#define FORWARD" << std::endl;
+
+		isFoward = true;
+		break;
+	}
+	case EBlendMode::AlphaToCoverage:
+	{
+		defineLine << "#define ALPHA_TEST" << std::endl;
+		break;
+	}
+	case EBlendMode::Dithering:
+	{
+		defineLine << "#define DITHERING" << std::endl;
+		break;
+	}
+	case EBlendMode::Opaque:
+	{
+		break;
+	}
+	default:
+		break;
+	}
 
 
 
@@ -471,8 +557,23 @@ void ShaderNodeEditor::Export()
 #include "../EngineShader/Shared.hlsli"
 #include "../EngineShader/GBufferMaterial.hlsli"
 
+struct PerFrameConstants
+{{
+	float Time;
+	float Time0_1;
+	float2 pad; //추천좀....
+}};
+
+struct CustomBuffer
+{{
+// 인풋 따로 받게끔 ex) 색, 가중치 같은거
+}};
+PerFrameConstants frameData : register(b3);
+//CustomBuffer customData : register(b4);
+
 {0}
 {1}
+
 
 GBufferMaterial GetCustomGBufferMaterial(PS_INPUT input)
 {{
@@ -496,7 +597,7 @@ executionsLine.str()
 
 
 	MaterialAsset materialAsset;
-	materialAsset.SetPixelShader(content);
+	materialAsset.SetPixelShader(content, isFoward);
 
 	for (auto& item : registerValues)
 	{
@@ -504,7 +605,6 @@ executionsLine.str()
 
 		materialAsset.SetTexture2D(relativePath.c_str(), item->registorSlot);
 	}
-
 	materialAsset.SaveAsset();
 
 

@@ -51,8 +51,9 @@ void MaterialAsset::ReleaseSamplerState(uint32_t slot)
 	}
 }
 
-void MaterialAsset::SetPixelShader(std::string shaderCode)
+void MaterialAsset::SetPixelShader(std::string shaderCode, bool isForward)
 {
+	this->isForward = isForward;
 	pixelShaderData = shaderCode;
 
 	ComPtr<ID3D11PixelShader> rhiPixelShader;
@@ -149,5 +150,5 @@ void MaterialAsset::Deserialized(std::ifstream& ifs)
 		SetTexture2D(tempCurrTexturePath[i].c_str(), tempTexturesSlot[i]);
 	}
 	pixelShaderData = Read::string(ifs );
-	SetPixelShader(pixelShaderData);
+	SetPixelShader(pixelShaderData, false);
 }

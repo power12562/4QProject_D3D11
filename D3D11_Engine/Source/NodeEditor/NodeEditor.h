@@ -10,12 +10,14 @@ class NodeFlow;
 class NodeEditor
 {
 public:
-	NodeEditor(std::filesystem::path path);
+	NodeEditor();
 	virtual ~NodeEditor();
 
 	void Update();
 	void Save();
-	void Load(std::filesystem::path path);
+	virtual void Load(std::filesystem::path path);
+	virtual void Export() {};
+
 	virtual void UpdateImp() {};
 
 protected:
@@ -34,11 +36,16 @@ protected:
 class ShaderNodeEditor : public NodeEditor
 {
 public:
-	ShaderNodeEditor(std::filesystem::path path = "NodeEditor") : NodeEditor(path) {}
+	ShaderNodeEditor(std::filesystem::path path = "NodeEditor") : NodeEditor() 
+	{
+		Load(path);
+	}
 
 public:
+	virtual void Load(std::filesystem::path path) override;
+	virtual void Export() override;
+
 	virtual void UpdateImp() override;
-	void Export();
 
 	template<typename NodeType, typename ValueType>
 	void SetResultNode(ValueType value, EShaderResult::Type resultType)

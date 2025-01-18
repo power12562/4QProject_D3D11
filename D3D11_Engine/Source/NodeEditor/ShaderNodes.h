@@ -206,10 +206,26 @@ public:
 	void draw() override;
 	virtual void Serialize(nlohmann::json& j) override;
 	virtual void Deserialize(const nlohmann::json& j) override;
+	bool IsValidShaderPinType(ImFlow::Pin* out);
 
 private:
 	std::filesystem::path texturePath;
 	Texture texture;
+	int dimension;
+};
+
+class TimeNode : public ShaderNode
+{
+public:
+	TimeNode();
+	virtual ~TimeNode() = default;
+
+	static const char* timeName[2];
+public:
+	void draw() override;
+	virtual void Serialize(nlohmann::json& j) override;
+	virtual void Deserialize(const nlohmann::json& j) override;
+	int currItem{0};
 };
 
 
@@ -218,6 +234,9 @@ class AddNode : public ShaderNode
 public:
 	AddNode();
 	virtual ~AddNode() = default;
+
+public:
+	void draw() override;
 };
 
 class SubNode : public ShaderNode
@@ -225,13 +244,19 @@ class SubNode : public ShaderNode
 public:
 	SubNode();
 	virtual ~SubNode() = default;
+
+public:
+	void draw() override;
 };
 
-class MullNode : public ShaderNode
+class MulNode : public ShaderNode
 {
 public:
-	MullNode();
-	virtual ~MullNode() = default;
+	MulNode();
+	virtual ~MulNode() = default;
+
+public:
+	void draw() override;
 };
 
 class DivNode : public ShaderNode
@@ -239,6 +264,9 @@ class DivNode : public ShaderNode
 public:
 	DivNode();
 	virtual ~DivNode() = default;
+
+public:
+	void draw() override;
 };
 
 
@@ -290,6 +318,50 @@ public:
 };
 
 
+namespace EShadingModel
+{
+	enum Type
+	{
+		LIT,
+		UNLIT
+	};
+
+	static inline const char* name[] = { "LIT", "UNLIT" };
+}
+
+namespace EBlendMode
+{
+	enum Type
+	{
+		Opaque,
+		AlphaBlend,
+		Dithering,
+		AlphaToCoverage,
+		MAX,
+	};
+	static inline const char* name[] = 
+	{ 
+		"Opaque",
+		"AlphaBlend",
+		"Dithering",
+		"AlphaToCoverage"
+	};
+
+	static inline const char* feature = R"(
+Features		| transparent | alphaTest |	deferred | depthWrite | earlydepthstencil
+----------------|-------------|-----------|----------|------------|-------------------
+Opaque			| false		  | false	  |	true	 | true		  | true
+AlphaBlend		| true		  |	false	  |	false	 | false	  | true
+Dithering		| false		  |	true	  |	true	 | true		  | false
+AlphaToCoverage	| false		  |	true	  |	true	 | true		  | false
+)";
+
+	/// deferred = !transparent	
+	/// depthWrite = !transparent
+	/// earlydepthstencil = !alphaTest
+};
+
+
 class NodeFlow : public ImFlow::ImNodeFlow
 {
 public:
@@ -304,6 +376,10 @@ public:
 	}
 	class ShaderResultNode* GetResultNode() { return resultNode; }
 	ShaderNodeReturn& GetShaderNodeReturn() { return shaderNodeReturn; }
+
+	std::filesystem::path path;
+	EShadingModel::Type shadingModel{};
+	EBlendMode::Type blendMode{};
 
 private:
 	ShaderNodeFactory nodeFactory;

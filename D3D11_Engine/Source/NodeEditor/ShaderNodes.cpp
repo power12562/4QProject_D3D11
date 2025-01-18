@@ -417,7 +417,11 @@ TextureNode::TextureNode()
 	Set(texturePath);
 	setStyle(ImFlow::NodeStyle::cyan());
 
-	addIN<ShaderPin<void>>("uv", {}, SameType());
+	addIN<ShaderPin<void>>("UV", {}, 
+						   [this](ImFlow::Pin* out, ImFlow::Pin* in) -> bool
+						   {
+							   return IsValidShaderPinType(out);
+						   });
 
 	addOUT<ShaderPin<Vector3>>((char*)u8"RGB")->behaviour(
 		[this]()
@@ -445,6 +449,7 @@ TextureNode::TextureNode()
 			var->type = "Texture2D";
 			var->identifier = std::format({ "t_{}" }, getUID());
 			var->registorSlot = ERegisterSlot::Texture;
+			var->path = texturePath;
 
 			auto var2 = std::make_shared<LocalVariable>();
 			var2->type = "float3";
@@ -463,6 +468,7 @@ TextureNode::TextureNode()
 			var->type = "Texture2D";
 			var->identifier = std::format({ "t_{}" }, getUID());
 			var->registorSlot = ERegisterSlot::Texture;
+			var->path = texturePath;
 
 			auto var2 = std::make_shared<LocalVariable>();
 			var2->type = "float3";
@@ -481,6 +487,7 @@ TextureNode::TextureNode()
 			var->type = "Texture2D";
 			var->identifier = std::format({ "t_{}" }, getUID());
 			var->registorSlot = ERegisterSlot::Texture;
+			var->path = texturePath;
 
 			auto var2 = std::make_shared<LocalVariable>();
 			var2->type = "float";
@@ -499,6 +506,7 @@ TextureNode::TextureNode()
 			var->type = "Texture2D";
 			var->identifier = std::format({ "t_{}" }, getUID());
 			var->registorSlot = ERegisterSlot::Texture;
+			var->path = texturePath;
 
 			auto var2 = std::make_shared<LocalVariable>();
 			var2->type = "float4";
@@ -519,7 +527,7 @@ TextureNode::~TextureNode()
 	if ((ID3D11ShaderResourceView*)texture)
 	{
 		texture.~Texture();
-		textureManager.ReleaseSharingTexture(texturePath.c_str());
+		//textureManager.ReleaseSharingTexture(texturePath.c_str());
 	}
 }
 
@@ -532,16 +540,37 @@ void TextureNode::Set(const std::filesystem::path& value)
 	if ((ID3D11ShaderResourceView*)texture)
 	{
 		texture.~Texture();
-		textureManager.ReleaseSharingTexture(texturePath.c_str());
+		//textureManager.ReleaseSharingTexture(texturePath.c_str());
 	}
 
 	texturePath = value;
 
-	ComPtr<ID3D11ShaderResourceView> srv;
-	textureManager.CreateSharingTexture(value.c_str(), &srv);
-	srv->AddRef();
+	std::unique_ptr<DirectX::ScratchImage> image = std::make_unique<DirectX::ScratchImage>();
+	DirectX::TexMetadata metadata;
+	if (texturePath.extension() == ".dds")
+	{
+		DirectX::LoadFromDDSFile(texturePath.c_str(), DirectX::DDS_FLAGS_NONE, &metadata, *image);
+	}
+	else
+	{
+		DirectX::LoadFromWICFile(texturePath.c_str(), DirectX::WIC_FLAGS_NONE, &metadata, *image);
+	}
+	texture.CreateTexture(std::move(image), ETextureUsage::SRV);
+	dimension = metadata.dimension;
 
-	texture.LoadTexture(srv.Get());
+	//ComPtr<ID3D11ShaderResourceView> srv;
+	//textureManager.CreateSharingTexture(value.c_str(), &srv);
+	//srv->AddRef();
+
+	//texture.LoadTexture(srv.Get());
+	//D3D11_SHADER_RESOURCE_VIEW_DESC textureDesc;
+	//srv->GetDesc(&textureDesc);
+	//dimension = textureDesc.ViewDimension;
+	auto pin = this->inPin("UV");
+	if (pin->isConnected() && !IsValidShaderPinType(pin->getLink().lock()->left()))
+	{
+		pin->deleteLink();
+	}
 }
 
 void TextureNode::draw()
@@ -559,14 +588,52 @@ void TextureNode::draw()
 
 void TextureNode::Serialize(nlohmann::json& j)
 {
-	j["path"] = texturePath.string();
+	std::filesystem::path projPath = GetHandler()->path;
+	std::filesystem::path currPath = std::filesystem::current_path();
+
+	if (projPath.is_relative())
+	{
+		projPath = currPath / projPath.parent_path();
+	}
+
+	std::filesystem::path relativePath = std::filesystem::relative(texturePath, projPath);
+	j["path"] = relativePath.string();
 }
 
 void TextureNode::Deserialize(const nlohmann::json& j)
 {
 	if (j.find("path") != j.cend())
 	{
-		Set(j["path"].get<std::string>());
+		std::string pathStr = j["path"].get<std::string>();
+		if (pathStr.empty())
+		{
+			return;
+		}
+		std::filesystem::path projPath = GetHandler()->path;
+		std::filesystem::path currPath = std::filesystem::current_path();
+
+		if (projPath.is_relative())
+		{
+			projPath = currPath / projPath.parent_path();
+		}
+
+		texturePath = projPath / std::filesystem::path(pathStr);
+		Set(texturePath);
+	}
+}
+
+bool TextureNode::IsValidShaderPinType(ImFlow::Pin* out)
+{
+	switch (dimension)
+	{
+	case D3D11_RESOURCE_DIMENSION_TEXTURE1D:
+		return out->getDataType() == typeid(ShaderPin<float>);
+	case D3D11_RESOURCE_DIMENSION_TEXTURE2D:
+		return out->getDataType() == typeid(ShaderPin<Vector2>);
+	case D3D11_RESOURCE_DIMENSION_TEXTURE3D:
+		return out->getDataType() == typeid(ShaderPin<Vector3>);
+	default:
+		return false;
 	}
 }
 
@@ -587,13 +654,47 @@ ShaderResultNode::ShaderResultNode()
 
 }
 
-NodeFlow::NodeFlow()
+const char* TimeNode::timeName[2] = { "Time", "Time0_1" };
+TimeNode::TimeNode()
 {
-	nodeFactory.Set(this);
-	resultNode = addNode<ShaderResultNode>({ 100, 100 }).get();
+	setTitle((char*)u8"시간");
+	setStyle(ImFlow::NodeStyle::cyan());
+	addOUT<ShaderPin<float>>("")->behaviour(
+		[this]()
+		{
+			auto var = std::make_shared<LocalVariable>();
+			var->type = "float";
+			var->identifier = std::format({ "c_{}" }, getUID());
+			var->initializationExpression = std::format({ "frameData.{}" }, timeName[currItem]);
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
+			return ShaderPin<float>{ var };
+		});
 }
 
-NodeFlow::~NodeFlow() = default;
+void TimeNode::draw()
+{
+	//사이즈	조절
+	ImGui::PushItemWidth(120);
+	ImGui::PushID("combbo");
+	ImGui::Combo("", &currItem, timeName, IM_ARRAYSIZE(timeName));
+	ImGui::PopID();
+	ImGui::PopItemWidth();
+	
+}
+
+void TimeNode::Serialize(nlohmann::json& j)
+{
+	j["currItem"] = currItem;
+}
+
+void TimeNode::Deserialize(const nlohmann::json& j)
+{
+	if (j.find("currItem") != j.cend())
+	{
+		currItem = j["currItem"];
+	}
+}
+
 
 AddNode::AddNode()
 {
@@ -622,6 +723,12 @@ AddNode::AddNode()
 			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
 			return ShaderPin<void>{ var };
 		})->renderer(UnLabelPinRenderer);
+}
+
+void AddNode::draw()
+{
+	ImGui::Dummy(ImGui::GetItemRectSize() * 0.25f);
+	ImGui::Text(" + ");
 }
 
 SubNode::SubNode()
@@ -653,7 +760,13 @@ SubNode::SubNode()
 		})->renderer(UnLabelPinRenderer);
 }
 
-MullNode::MullNode()
+void SubNode::draw()
+{
+	ImGui::Dummy(ImGui::GetItemRectSize() * 0.25f);
+	ImGui::Text(" - ");
+}
+
+MulNode::MulNode()
 {
 	setTitle((char*)u8"곱하기");
 	setStyle(ImFlow::NodeStyle::cyan());
@@ -675,6 +788,12 @@ MullNode::MullNode()
 			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
 			return ShaderPin<void>{ var };
 		})->renderer(UnLabelPinRenderer);
+}
+
+void MulNode::draw()
+{
+	ImGui::Dummy(ImGui::GetItemRectSize() * 0.25f);
+	ImGui::Text(" X ");
 }
 
 DivNode::DivNode()
@@ -700,3 +819,17 @@ DivNode::DivNode()
 			return ShaderPin<void>{ var };
 		})->renderer(UnLabelPinRenderer);
 }
+
+void DivNode::draw()
+{
+	ImGui::Dummy(ImGui::GetItemRectSize() * 0.25f);
+	ImGui::Text(" / ");
+}
+
+NodeFlow::NodeFlow()
+{
+	nodeFactory.Set(this);
+	resultNode = addNode<ShaderResultNode>({ 100, 100 }).get();
+}
+
+NodeFlow::~NodeFlow() = default;

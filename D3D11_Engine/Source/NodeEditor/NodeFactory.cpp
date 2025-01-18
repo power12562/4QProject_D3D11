@@ -17,8 +17,9 @@ ShaderNodeFactory::ShaderNodeFactory()
 	ADD_FACTORY_NODE(TextureNode);
 	ADD_FACTORY_NODE(AddNode);
 	ADD_FACTORY_NODE(SubNode);
-	ADD_FACTORY_NODE(MullNode);
+	ADD_FACTORY_NODE(MulNode);
 	ADD_FACTORY_NODE(DivNode);
+	ADD_FACTORY_NODE(TimeNode);
 
 	nodeCreateFuncs["ShaderResultNode"] = 
 		[](ImFlow::ImNodeFlow* nodeFlow) -> std::shared_ptr<ShaderNode> 

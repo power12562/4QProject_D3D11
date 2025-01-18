@@ -5,9 +5,18 @@
 #include "Light.h"
 #include <vector>
 
+#include <chrono>
+
 #include <array>
 
 
+struct FrameBufferData
+{
+	float Time;
+	float Time0_1;
+	float pad1;
+	float pad2;
+};
 
 struct MeshDrawCommand2
 {
@@ -125,6 +134,12 @@ private:
 
 	ComPtr<ID3D11SamplerState> samplerState;
 
+#pragma region PerFrameConstants
+
+	ConstantBuffer frameBuffer;
+	Binadble frameBufferPS;
+
+#pragma endregion PerFrameConstants
 private:
 	void ProcessDrawCommand(MeshDrawCommand& drawCommands);
 	void ProcessDrawCommands(std::vector<MeshDrawCommand2*>& drawCommands, bool isWithMaterial = true);

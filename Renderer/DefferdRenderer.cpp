@@ -129,6 +129,13 @@ DefferdRenderer::DefferdRenderer()
 	cameraBinadbleCS.bindableType = EShaderBindable::ConstantBuffer;
 	cameraBinadbleCS.slot = 1;
 	cameraBinadbleCS.bind = cameraBuffer;
+
+	FrameBufferData frameData{};
+	frameBuffer.Init(frameData);
+	frameBufferPS.shaderType = EShaderType::Pixel;
+	frameBufferPS.bindableType = EShaderBindable::ConstantBuffer;
+	frameBufferPS.slot = 3;
+	frameBufferPS.bind = frameBuffer;
 }
 
 DefferdRenderer::~DefferdRenderer()
@@ -399,6 +406,18 @@ void DefferdRenderer::Render()
 		BindBinadble(cameraBinadbleVS);
 		BindBinadble(cameraBinadblePS);
 		BindBinadble(cameraBinadbleCS);
+
+
+		auto currTime = std::chrono::high_resolution_clock::now();
+
+		FrameBufferData frameData{};
+		frameData.Time = std::chrono::duration<float>(currTime.time_since_epoch()).count();
+		frameData.Time0_1 = frameData.Time - std::floor(frameData.Time);
+
+		frameBuffer.Update(frameData);
+		BindBinadble(frameBufferPS);
+
+
 
 		//for (const auto& bindable : directLight.GetBindables())
 		//{

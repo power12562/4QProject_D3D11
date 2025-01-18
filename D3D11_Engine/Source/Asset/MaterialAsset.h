@@ -28,7 +28,7 @@ public:
 	void SetSamplerState(const D3D11_SAMPLER_DESC& desc, uint32_t slot);
 
 public:
-	void SetPixelShader(std::string shaderCode);
+	void SetPixelShader(std::string shaderCode, bool isForward);
 
 	void SetTexture2D(const wchar_t* path, uint32_t slot);
 	template <typename T> void SetTexture2D(const wchar_t* path, T type)	
@@ -56,6 +56,7 @@ private:
 
 	std::vector<uint32_t>		samplerSlot;
 	std::vector<SamplerState>	samplers;
+	bool isForward;
 public:
 	const PixelShader& GetPS() { return pixelShader; }
 	const std::vector<uint32_t>& GetTexturesSlot() { return texturesSlot; }
