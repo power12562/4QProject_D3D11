@@ -26,7 +26,6 @@ public:
 	/// Begin IRenderer Data
 	virtual struct MeshDrawCommand GetMeshDrawCommand() override { return meshDrawCommand; }
 
-	bool isForward = false;
 protected:
 	MeshDrawCommand				meshDrawCommand;
 	ConstantBuffer				transformBuffer;

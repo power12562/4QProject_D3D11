@@ -426,6 +426,14 @@ TextureNode::TextureNode()
 	addOUT<ShaderPin<Vector3>>((char*)u8"RGB")->behaviour(
 		[this]()
 		{
+			std::string texcoord = "input.Tex";
+			auto uvValue = getInVal<ShaderPin<void>>("UV");
+			if (uvValue.value)
+			{
+				texcoord = uvValue.value->identifier;
+			}
+		
+
 			auto var = std::make_shared<RegistorVariable>();
 			var->type = "Texture2D";
 			var->identifier = std::format({ "t_{}" }, getUID());
@@ -435,7 +443,7 @@ TextureNode::TextureNode()
 			auto var2 = std::make_shared<LocalVariable>();
 			var2->type = "float3";
 			var2->identifier = std::format({ "c_{}" }, getUID());
-			var2->initializationExpression = std::format({ " {}.Sample(DefaultSampler, input.Tex).rgb" }, var->identifier);
+			var2->initializationExpression = std::format({ " {}.Sample(DefaultSampler, {}).rgb" }, var->identifier, texcoord);
 
 
 			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
@@ -445,6 +453,13 @@ TextureNode::TextureNode()
 	addOUT<ShaderPin<float>>((char*)u8"R")->behaviour(
 		[this]()
 		{
+			std::string texcoord = "input.Tex";
+			auto uvValue = getInVal<ShaderPin<void>>("UV");
+			if (uvValue.value)
+			{
+				texcoord = uvValue.value->identifier;
+			}
+
 			auto var = std::make_shared<RegistorVariable>();
 			var->type = "Texture2D";
 			var->identifier = std::format({ "t_{}" }, getUID());
@@ -454,7 +469,7 @@ TextureNode::TextureNode()
 			auto var2 = std::make_shared<LocalVariable>();
 			var2->type = "float3";
 			var2->identifier = std::format({ "c_R{}" }, getUID());
-			var2->initializationExpression = std::format({ " {}.Sample(DefaultSampler, input.Tex).r" }, var->identifier);
+			var2->initializationExpression = std::format({ " {}.Sample(DefaultSampler, {}).r" }, var->identifier, texcoord);
 
 
 			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
@@ -464,6 +479,13 @@ TextureNode::TextureNode()
 	addOUT<ShaderPin<float>>((char*)u8"G")->behaviour(
 		[this]()
 		{
+			std::string texcoord = "input.Tex";
+			auto uvValue = getInVal<ShaderPin<void>>("UV");
+			if (uvValue.value)
+			{
+				texcoord = uvValue.value->identifier;
+			}
+
 			auto var = std::make_shared<RegistorVariable>();
 			var->type = "Texture2D";
 			var->identifier = std::format({ "t_{}" }, getUID());
@@ -473,7 +495,7 @@ TextureNode::TextureNode()
 			auto var2 = std::make_shared<LocalVariable>();
 			var2->type = "float3";
 			var2->identifier = std::format({ "c_G{}" }, getUID());
-			var2->initializationExpression = std::format({ " {}.Sample(DefaultSampler, input.Tex).g" }, var->identifier);
+			var2->initializationExpression = std::format({ " {}.Sample(DefaultSampler, {}).g" }, var->identifier, texcoord);
 
 
 			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
@@ -483,6 +505,13 @@ TextureNode::TextureNode()
 	addOUT<ShaderPin<float>>((char*)u8"B")->behaviour(
 		[this]()
 		{
+			std::string texcoord = "input.Tex";
+			auto uvValue = getInVal<ShaderPin<void>>("UV");
+			if (uvValue.value)
+			{
+				texcoord = uvValue.value->identifier;
+			}
+
 			auto var = std::make_shared<RegistorVariable>();
 			var->type = "Texture2D";
 			var->identifier = std::format({ "t_{}" }, getUID());
@@ -492,7 +521,7 @@ TextureNode::TextureNode()
 			auto var2 = std::make_shared<LocalVariable>();
 			var2->type = "float";
 			var2->identifier = std::format({ "c_B{}" }, getUID());
-			var2->initializationExpression = std::format({ " {}.Sample(DefaultSampler, input.Tex).b" }, var->identifier);
+			var2->initializationExpression = std::format({ " {}.Sample(DefaultSampler, {}).b" }, var->identifier, texcoord);
 
 
 			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
@@ -502,6 +531,13 @@ TextureNode::TextureNode()
 	addOUT<ShaderPin<Vector4>>((char*)u8"RGBA")->behaviour(
 		[this]()
 		{
+			std::string texcoord = "input.Tex";
+			auto uvValue = getInVal<ShaderPin<void>>("UV");
+			if (uvValue.value)
+			{
+				texcoord = uvValue.value->identifier;
+			}
+
 			auto var = std::make_shared<RegistorVariable>();
 			var->type = "Texture2D";
 			var->identifier = std::format({ "t_{}" }, getUID());
@@ -511,7 +547,7 @@ TextureNode::TextureNode()
 			auto var2 = std::make_shared<LocalVariable>();
 			var2->type = "float4";
 			var2->identifier = std::format({ "c_RGBA{}" }, getUID());
-			var2->initializationExpression = std::format({ " {}.Sample(DefaultSampler, input.Tex).rgba" }, var->identifier);
+			var2->initializationExpression = std::format({ " {}.Sample(DefaultSampler, {}).rgba" }, var->identifier, texcoord);
 
 
 			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
@@ -624,6 +660,10 @@ void TextureNode::Deserialize(const nlohmann::json& j)
 
 bool TextureNode::IsValidShaderPinType(ImFlow::Pin* out)
 {
+	if (out->getDataType() == typeid(ShaderPin<void>))
+	{
+		return true;
+	}
 	switch (dimension)
 	{
 	case D3D11_RESOURCE_DIMENSION_TEXTURE1D:
@@ -710,11 +750,6 @@ AddNode::AddNode()
 			auto a = getInVal<ShaderPin<void>>("a");
 			auto b = getInVal<ShaderPin<void>>("b");
 
-			if (a.value->type != b.value->type)
-			{
-				return ShaderPin<void>{};
-			}
-
 			auto var = std::make_shared<LocalVariable>();
 			var->type = a.value->type;
 			var->identifier = std::format({ "c_{}" }, getUID());
@@ -744,11 +779,6 @@ SubNode::SubNode()
 		{
 			auto a = getInVal<ShaderPin<void>>("a");
 			auto b = getInVal<ShaderPin<void>>("b");
-
-			if (a.value->type != b.value->type)
-			{
-				return ShaderPin<void>{};
-			}
 
 			auto var = std::make_shared<LocalVariable>();
 			var->type = a.value->type;
@@ -826,6 +856,23 @@ void DivNode::draw()
 	ImGui::Text(" / ");
 }
 
+TexCoordNode::TexCoordNode()
+{
+	setTitle((char*)u8"uvº¬ 0");
+	addOUT<ShaderPin<void>>("uv(0)")->behaviour(
+		[this]()
+		{
+			auto var = std::make_shared<LocalVariable>();
+			var->type = "float2";
+			var->identifier = std::format({ "c_{}" }, getUID());
+			var->initializationExpression = "input.Tex";
+
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
+			return ShaderPin<void>{ var };
+		});
+}
+
+
 NodeFlow::NodeFlow()
 {
 	nodeFactory.Set(this);
@@ -833,3 +880,331 @@ NodeFlow::NodeFlow()
 }
 
 NodeFlow::~NodeFlow() = default;
+
+BreakVector2Node::BreakVector2Node()
+{
+	setTitle((char*)u8"∫§≈Õ2 ∫–«ÿ");
+	setStyle(ImFlow::NodeStyle::cyan());
+	addIN<ShaderPin<Vector2>>("", {}, SameType());
+	addOUT<ShaderPin<float>>("x")->behaviour(
+		[this]()
+		{
+			auto vector = getInVal<ShaderPin<Vector2>>("");
+			auto var = std::make_shared<LocalVariable>();
+			var->type = "float";
+			var->identifier = std::format({ "c_x{}" }, getUID());
+			var->initializationExpression = std::format({ "{}.x" }, vector.value->identifier);
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
+			return ShaderPin<float>{ var };
+		});
+	addOUT<ShaderPin<float>>("y")->behaviour(
+		[this]()
+		{
+			auto vector = getInVal<ShaderPin<Vector2>>("");
+			auto var = std::make_shared<LocalVariable>();
+			var->type = "float";
+			var->identifier = std::format({ "c_y{}" }, getUID());
+			var->initializationExpression = std::format({ "{}.y" }, vector.value->identifier);
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
+			return ShaderPin<float>{ var };
+		});
+}
+
+MakeVector2Node::MakeVector2Node()
+{
+	setTitle((char*)u8"∫§≈Õ2");
+	setStyle(ImFlow::NodeStyle::cyan());
+	addIN<ShaderPin<float>>("x", {}, SameType());
+	addIN<ShaderPin<float>>("y", {}, SameType());
+	addOUT<ShaderPin<Vector2>>("")->behaviour(
+		[this]()
+		{
+			auto xPin = getInVal<ShaderPin<float>>("x");
+			auto yPin = getInVal<ShaderPin<float>>("y");
+
+			std::string xIdentifier = std::to_string(x);
+			std::string yIdentifier = std::to_string(y);
+
+			if (xPin.value)
+			{
+				xIdentifier = xPin.value->identifier;
+			}			
+			if (yPin.value)
+			{
+				yIdentifier = yPin.value->identifier;
+			}
+
+			auto var = std::make_shared<LocalVariable>();
+			var->type = "float2";
+			var->identifier = std::format({ "c_{}" }, getUID());
+			var->initializationExpression = std::format({ "float2({}, {})" }, xIdentifier, yIdentifier);
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
+			return ShaderPin<Vector2>{ var };
+		})->renderer(UnLabelPinRenderer);
+}
+
+void MakeVector2Node::draw()
+{
+	if (inPin("x")->isConnected())
+	{
+		ImGui::Dummy({40, 20});
+	}
+	else
+	{
+		ImGui::SetNextItemWidth(100);
+		ImGui::PushID("x");
+		ImGui::DragFloat("", &x, 0.01f);
+		ImGui::PopID();
+	}
+
+	if (inPin("y")->isConnected())
+	{
+		ImGui::Dummy({ 40, 20 });
+	}
+	else
+	{
+		ImGui::SetNextItemWidth(100);
+		ImGui::PushID("y");
+		ImGui::DragFloat("", &y, 0.01f);
+		ImGui::PopID();
+	}
+
+}
+
+void MakeVector2Node::Serialize(nlohmann::json& j)
+{
+	j["x"] = x;
+	j["y"] = y;
+}
+
+void MakeVector2Node::Deserialize(const nlohmann::json& j)
+{
+	if (j.find("x") != j.cend())
+	{
+		x = j["x"];
+	}
+	if (j.find("y") != j.cend())
+	{
+		y = j["y"];
+	}
+}
+
+MakeVector3Node::MakeVector3Node()
+{
+	setTitle((char*)u8"∫§≈Õ3");
+	setStyle(ImFlow::NodeStyle::cyan());
+	addIN<ShaderPin<float>>("x", {}, SameType());
+	addIN<ShaderPin<float>>("y", {}, SameType());
+	addIN<ShaderPin<float>>("z", {}, SameType());
+	addOUT<ShaderPin<Vector3>>("")->behaviour(
+		[this]()
+		{
+			auto xPin = getInVal<ShaderPin<float>>("x");
+			auto yPin = getInVal<ShaderPin<float>>("y");
+			auto zPin = getInVal<ShaderPin<float>>("z");
+
+			std::string xIdentifier = std::to_string(x);
+			std::string yIdentifier = std::to_string(y);
+			std::string zIdentifier = std::to_string(z);
+			if (xPin.value)
+			{
+				xIdentifier = xPin.value->identifier;
+			}
+			if (yPin.value)
+			{
+				yIdentifier = yPin.value->identifier;
+			}
+			if (zPin.value)
+			{
+				zIdentifier = zPin.value->identifier;
+			}
+
+			auto var = std::make_shared<LocalVariable>();
+			var->type = "float3";
+			var->identifier = std::format({ "c_{}" }, getUID());
+			var->initializationExpression = std::format({ "float3({}, {}, {})" }, xIdentifier, yIdentifier, zIdentifier);
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
+			return ShaderPin<Vector3>{ var };
+		});
+}
+
+void MakeVector3Node::Serialize(nlohmann::json& j)
+{
+	j["x"] = x;
+	j["y"] = y;
+	j["z"] = z;
+}
+
+void MakeVector3Node::Deserialize(const nlohmann::json& j)
+{
+	if (j.find("x") != j.cend())
+	{
+		x = j["x"];
+	}
+	if (j.find("y") != j.cend())
+	{
+		y = j["y"];
+	}
+	if (j.find("z") != j.cend())
+	{
+		z = j["z"];
+	}
+}
+
+void MakeVector3Node::draw()
+{
+	if (inPin("x")->isConnected())
+	{
+		ImGui::Dummy({ 40, 20 });
+	}
+	else
+	{
+		ImGui::SetNextItemWidth(100);
+		ImGui::PushID("x");
+		ImGui::DragFloat("", &x, 0.01f);
+		ImGui::PopID();
+	}
+	if (inPin("y")->isConnected())
+	{
+		ImGui::Dummy({ 40, 20 });
+	}
+	else
+	{
+		ImGui::SetNextItemWidth(100);
+		ImGui::PushID("y");
+		ImGui::DragFloat("", &y, 0.01f);
+		ImGui::PopID();
+	}
+	if (inPin("z")->isConnected())
+	{
+		ImGui::Dummy({ 40, 20 });
+	}
+	else
+	{
+		ImGui::SetNextItemWidth(100);
+		ImGui::PushID("z");
+		ImGui::DragFloat("", &z, 0.01f);
+		ImGui::PopID();
+	}
+}
+
+MakeVector4Node::MakeVector4Node()
+{
+	setTitle((char*)u8"∫§≈Õ4");
+	setStyle(ImFlow::NodeStyle::cyan());
+	addIN<ShaderPin<float>>("x", {}, SameType());
+	addIN<ShaderPin<float>>("y", {}, SameType());
+	addIN<ShaderPin<float>>("z", {}, SameType());
+	addIN<ShaderPin<float>>("w", {}, SameType());
+	addOUT<ShaderPin<Vector4>>("")->behaviour(
+		[this]()
+		{
+			auto xPin = getInVal<ShaderPin<float>>("x");
+			auto yPin = getInVal<ShaderPin<float>>("y");
+			auto zPin = getInVal<ShaderPin<float>>("z");
+			auto wPin = getInVal<ShaderPin<float>>("w");
+
+			std::string xIdentifier = std::to_string(x);
+			std::string yIdentifier = std::to_string(y);
+			std::string zIdentifier = std::to_string(z);
+			std::string wIdentifier = std::to_string(w);
+			if (xPin.value)
+			{
+				xIdentifier = xPin.value->identifier;
+			}
+			if (yPin.value)
+			{
+				yIdentifier = yPin.value->identifier;
+			}
+			if (zPin.value)
+			{
+				zIdentifier = zPin.value->identifier;
+			}
+			if (wPin.value)
+			{
+				wIdentifier = wPin.value->identifier;
+			}
+			auto var = std::make_shared<LocalVariable>();
+			var->type = "float4";
+			var->identifier = std::format({ "c_{}" }, getUID());
+			var->initializationExpression = std::format({ "float4({}, {}, {}, {})" }, xIdentifier, yIdentifier, zIdentifier, wIdentifier);
+			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
+			return ShaderPin<Vector4>{ var };
+		})->renderer(UnLabelPinRenderer);
+}
+
+void MakeVector4Node::Serialize(nlohmann::json& j)
+{
+	j["x"] = x;
+	j["y"] = y;
+	j["z"] = z;
+	j["w"] = w;
+}
+
+void MakeVector4Node::Deserialize(const nlohmann::json& j)
+{
+	if (j.find("x") != j.cend())
+	{
+		x = j["x"];
+	}
+	if (j.find("y") != j.cend())
+	{
+		y = j["y"];
+	}
+	if (j.find("z") != j.cend())
+	{
+		z = j["z"];
+	}
+	if (j.find("w") != j.cend())
+	{
+		w = j["w"];
+	}
+}
+
+void MakeVector4Node::draw()
+{
+	if (inPin("x")->isConnected())
+	{
+		ImGui::Dummy({ 40, 20 });
+	}
+	else
+	{
+		ImGui::SetNextItemWidth(100);
+		ImGui::PushID("x");
+		ImGui::DragFloat("", &x, 0.01f);
+		ImGui::PopID();
+	}
+	if (inPin("y")->isConnected())
+	{
+		ImGui::Dummy({ 40, 20 });
+	}
+	else
+	{
+		ImGui::SetNextItemWidth(100);
+		ImGui::PushID("y");
+		ImGui::DragFloat("", &y, 0.01f);
+		ImGui::PopID();
+	}
+	if (inPin("z")->isConnected())
+	{
+		ImGui::Dummy({ 40, 20 });
+	}
+	else
+	{
+		ImGui::SetNextItemWidth(100);
+		ImGui::PushID("z");
+		ImGui::DragFloat("", &z, 0.01f);
+		ImGui::PopID();
+	}
+	if (inPin("w")->isConnected())
+	{
+		ImGui::Dummy({ 40, 20 });
+	}
+	else
+	{
+		ImGui::SetNextItemWidth(100);
+		ImGui::PushID("w");
+		ImGui::DragFloat("", &w, 0.01f);
+		ImGui::PopID();
+	}
+}

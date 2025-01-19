@@ -269,6 +269,70 @@ public:
 	void draw() override;
 };
 
+class TexCoordNode : public ShaderNode
+{
+public:
+	TexCoordNode();
+	virtual ~TexCoordNode() = default;
+};
+
+class BreakVector2Node : public ShaderNode
+{
+public:
+	BreakVector2Node();
+	virtual ~BreakVector2Node() = default;
+};
+
+class MakeVector2Node : public ShaderNode
+{
+public:
+	MakeVector2Node();
+	virtual ~MakeVector2Node() = default;
+
+public:
+	virtual void draw() override;
+	virtual void Serialize(nlohmann::json& j) override;
+	virtual void Deserialize(const nlohmann::json& j) override;
+
+public:
+	float x{ 0 };
+	float y{ 0 };
+};
+
+class MakeVector3Node : public ShaderNode
+{
+public:
+	MakeVector3Node();
+	virtual ~MakeVector3Node() = default;
+
+public:
+	virtual void draw() override;
+	virtual void Serialize(nlohmann::json& j) override;
+	virtual void Deserialize(const nlohmann::json& j) override;
+
+public:
+	float x{ 0 };
+	float y{ 0 };
+	float z{ 0 };
+};
+
+class MakeVector4Node : public ShaderNode
+{
+public:
+	MakeVector4Node();
+	virtual ~MakeVector4Node() = default;
+
+public:
+	virtual void draw() override;
+	virtual void Serialize(nlohmann::json& j) override;
+	virtual void Deserialize(const nlohmann::json& j) override;
+
+public:
+	float x{ 0 };
+	float y{ 0 };
+	float z{ 0 };
+	float w{ 0 };
+};
 
 namespace EShaderResult
 {

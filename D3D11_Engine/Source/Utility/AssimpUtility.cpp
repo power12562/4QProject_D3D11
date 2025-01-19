@@ -167,7 +167,6 @@ namespace Utility
 					if (!compressPopup(basePath.c_str(), ETextureType::Opacity))
 						meshRender->materialAsset.SetTexture2D(basePath.c_str(), ETextureType::Opacity);
 
-					meshRender->isForward = true;
 					std::wstring path = HLSLManager::EngineShaderPath;
 					switch (surface)
 					{

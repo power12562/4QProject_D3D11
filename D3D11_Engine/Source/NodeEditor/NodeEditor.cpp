@@ -41,17 +41,25 @@ void NodeEditor::Update()
 	ImGui::Begin(fileName.c_str(), &isPopUp, ImGuiWindowFlags_MenuBar);
 	
 	UpdateImp();
-
-
+	ImGui::BeginGroup();
+	ImGui::GetWindowDrawList()->AddCircle( ImGui::GetCursorPos() + ImGui::GetWindowPos() +  ImVec2 { 16.0f, 16.0f }, 16.0f, IM_COL32(255, 255, 255, 255));
+	ImGui::Dummy(ImVec2(32.0f, 32.0f));
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Drag to move");
+	}
+	
 	ImGui::PushItemWidth(200);
+	ImGui::Text("Shading Model");
 	ImGui::PushID("shadingModel");
 	ImGui::Combo("", (int*)&myGrid->shadingModel, EShadingModel::name, IM_ARRAYSIZE(EShadingModel::name));
 	ImGui::PopID();
+	ImGui::Text("BlendMode");
 	ImGui::PushID("blendMode");
 	ImGui::Combo("", (int*)&myGrid->blendMode, EBlendMode::name, IM_ARRAYSIZE(EBlendMode::name));
 	ImGui::PopID();
 	ImGui::PopItemWidth();
-
+	ImGui::EndGroup();
 	ImGui::SameLine();
 
 	myGrid->update();
@@ -335,6 +343,10 @@ void ShaderNodeEditor::UpdateImp()
 		{
 			myGrid->Create("DivNode");
 		}
+		if (ImGui::IsKeyDown(ImGuiKey_U))
+		{
+			myGrid->Create("TexCoordNode");
+		}
 	}
 
 };
@@ -391,6 +403,26 @@ void ShaderNodeEditor::Load(std::filesystem::path path)
 				{
 					myGrid->Create("DivNode");
 				}
+				if (ImGui::MenuItem((char*)u8"텍스처 좌표", "(U)"))
+				{
+					myGrid->Create("TexCoordNode");
+				}
+				if (ImGui::MenuItem((char*)u8"float2만들기"))
+				{
+					myGrid->Create("MakeVector2Node");
+				}
+				if (ImGui::MenuItem((char*)u8"float3만들기"))
+				{
+					myGrid->Create("MakeVector3Node");
+				}
+				if (ImGui::MenuItem((char*)u8"float4만들기"))
+				{
+					myGrid->Create("MakeVector4Node");
+				}
+				if (ImGui::MenuItem((char*)u8"float2분해"))
+				{
+					myGrid->Create("BreakVector2Node");
+				}
 			}
 		});
 
@@ -414,6 +446,22 @@ void ShaderNodeEditor::Load(std::filesystem::path path)
 			if (ImGui::MenuItem((char*)u8"나누기", "(D)"))
 			{
 				result = myGrid->Create("DivNode");
+			}
+			if (ImGui::MenuItem((char*)u8"float2만들기"))
+			{
+				result = myGrid->Create("MakeVector2Node");
+			}
+			if (ImGui::MenuItem((char*)u8"float3만들기"))
+			{
+				result = myGrid->Create("MakeVector3Node");
+			}
+			if (ImGui::MenuItem((char*)u8"float4만들기"))
+			{
+				result = myGrid->Create("MakeVector4Node");
+			}
+			if (ImGui::MenuItem((char*)u8"float2분해"))
+			{
+				result = myGrid->Create("BreakVector2Node");
 			}
 			if (result && dragged->getType() == ImFlow::PinType::PinType_Output)
 			{

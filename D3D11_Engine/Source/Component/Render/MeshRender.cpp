@@ -127,7 +127,6 @@ void MeshRender::Render()
 
 	//포워드 여부
 	meshDrawCommand.materialData.pixelShader = materialAsset.GetPS();
-	meshDrawCommand.materialData.pixelShader.isForward = this->isForward;
 
 	//바운딩 박스
 	meshDrawCommand.meshData.boundingBox = gameObject.GetOBBToWorld();

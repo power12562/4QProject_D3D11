@@ -12,7 +12,6 @@ void BlingPhongMeshRender::Start()
 		return;
 	}
 	SimpleMeshRender::Start();
-	isForward = true;
 
 	{
 		using namespace std::string_literals;

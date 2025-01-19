@@ -13,7 +13,6 @@ void BlingPhongBoneMeshRender::Start()
 	}
 
 	SimpleBoneMeshRender::Start();
-	isForward = true;
 
 	{
 		using namespace std::string_literals;

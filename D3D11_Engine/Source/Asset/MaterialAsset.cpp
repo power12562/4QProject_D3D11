@@ -10,6 +10,7 @@ MaterialAsset::MaterialAsset()
 
 MaterialAsset::~MaterialAsset()
 {
+	texturesV2.clear();
 	for (auto& path : currTexturePath)
 	{
 		textureManager.ReleaseSharingTexture(path.c_str());
@@ -59,6 +60,7 @@ void MaterialAsset::SetPixelShader(std::string shaderCode, bool isForward)
 	ComPtr<ID3D11PixelShader> rhiPixelShader;
 	hlslManager.CreateSharingShader(shaderCode.data(), shaderCode.size(), &rhiPixelShader);
 	pixelShader.LoadShader(rhiPixelShader.Get());
+	pixelShader.isForward = isForward;
 }
 
 void MaterialAsset::SetTexture2D(const wchar_t* path, uint32_t slot)
@@ -91,10 +93,10 @@ void MaterialAsset::ReleaseTexture(uint32_t slot)
 	}
 	if (path)
 	{
+		texturesV2.erase(texturesV2.begin() + index);
 		textureManager.ReleaseSharingTexture(path->c_str());
 		currTexturePath.erase(currTexturePath.begin() + index);
 		texturesSlot.erase(texturesSlot.begin() + index);
-		texturesV2.erase(texturesV2.begin() + index);
 	}
 }
 
@@ -117,6 +119,8 @@ void MaterialAsset::Serialized(std::ofstream& ofs)
 		Write::wstring(ofs, path);
 	}
 	Write::string(ofs, pixelShaderData);
+	Write::data(ofs, isForward);
+	
 }
 
 void MaterialAsset::Deserialized(std::ifstream& ifs)
@@ -150,5 +154,6 @@ void MaterialAsset::Deserialized(std::ifstream& ifs)
 		SetTexture2D(tempCurrTexturePath[i].c_str(), tempTexturesSlot[i]);
 	}
 	pixelShaderData = Read::string(ifs );
-	SetPixelShader(pixelShaderData, false);
+	isForward = Read::data<bool>(ifs);
+	SetPixelShader(pixelShaderData, isForward);
 }

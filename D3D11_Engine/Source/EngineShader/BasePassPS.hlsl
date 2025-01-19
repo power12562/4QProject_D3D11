@@ -38,8 +38,22 @@ PSResult main(PS_INPUT input)
 	float opacity = material.alpha;
 
 #ifdef ALPHA_TEST
-    clip( opacity - GetClipAlpha );
+    clip( opacity - material.clipAlpha );
 #endif
+	
+#ifdef DITHERING
+	//https://wincnt-shim.tistory.com/395
+	static const float DitheringPattern[16] =
+	{
+		0  / 16.0, 8  / 16.0, 2  / 16.0, 10 / 16.0,
+		12 / 16.0, 4  / 16.0, 14 / 16.0, 6  / 16.0,
+		3  / 16.0, 11 / 16.0, 1  / 16.0, 9  / 16.0,
+		15 / 16.0, 7  / 16.0, 13 / 16.0, 5  / 16.0
+	};
+	uint DitheringIndex = (uint(input.Pos.x) % 4) * 4 + uint(input.Pos.y) % 4;
+	float DitheringOut = 1.0f - DitheringPattern[DitheringIndex];
+	clip(opacity - DitheringOut);
+#endif // DITHERING
 	
 	PSResult result = (PSResult)1;
 	float3 albedo = material.albedo;

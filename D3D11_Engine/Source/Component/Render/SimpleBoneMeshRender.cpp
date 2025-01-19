@@ -29,7 +29,6 @@ void SimpleBoneMeshRender::Serialized(std::ofstream& ofs)
 	using namespace Binary;
 	Write::data(ofs, Enable);
 	Write::Color(ofs, baseColor);
-	Write::data(ofs, isForward);
 	Write::data(ofs, GetMeshID());
 	Write::wstring(ofs, GetVSpath());
 	Write::wstring(ofs, GetPSpath());
@@ -75,7 +74,6 @@ void SimpleBoneMeshRender::Deserialized(std::ifstream& ifs)
 	using namespace Binary;
 	Enable = Read::data<bool>(ifs);
 	baseColor = Read::Color(ifs);
-	isForward = Read::data<bool>(ifs);
 	SetMeshResource(Read::data<int>(ifs)); //meshID
 	SetVS(Read::wstring(ifs).c_str());
 	SetPS(Read::wstring(ifs).c_str());

@@ -310,7 +310,7 @@ void DefferdRenderer::Render()
 
 	auto culledDrawCommands = 
 		allDrawCommandsOrigin 
-		| std::views::filter([frustum](const MeshDrawCommand2& item) { return frustum.Intersects(item.boundingBox); })
+		//| std::views::filter([frustum](const MeshDrawCommand2& item) { return frustum.Intersects(item.boundingBox); })
 		| std::views::transform([](MeshDrawCommand2& item) -> MeshDrawCommand2* { return &item; });
 
 	std::ranges::copy(culledDrawCommands, std::back_inserter(allDrawCommands));	
@@ -510,6 +510,8 @@ void DefferdRenderer::Render()
 		
 		immediateContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
 		immediateContext->OMSetDepthStencilState(defaultDSS.Get(), 0);
+		immediateContext->OMSetBlendState(alphaRenderState.Get(), nullptr, 0xffffffff);
+		immediateContext->OMSetDepthStencilState(noWriteDSS.Get(), 0);
 		ProcessDrawCommands(forwardDrawCommands);
 
 		immediateContext->OMSetBlendState(alphaRenderState.Get(), nullptr, 0xffffffff);
