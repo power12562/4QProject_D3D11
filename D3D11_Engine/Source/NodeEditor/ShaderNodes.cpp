@@ -619,7 +619,11 @@ void TextureNode::draw()
 			Set(path);
 		}
 	}
+#if IMGUI_VERSION_NUM >= 19160
+	ImGui::Image((ImTextureID)(ID3D11ShaderResourceView*)texture, { 100, 100 });
+#else
 	ImGui::Image((ID3D11ShaderResourceView*)texture, { 100, 100 });
+#endif
 }
 
 void TextureNode::Serialize(nlohmann::json& j)
