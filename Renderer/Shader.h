@@ -81,6 +81,7 @@ public:
 
 public:
 	operator ID3D11PixelShader* () { return pixelShader.Get(); }
+	operator const ID3D11PixelShader* () const { return pixelShader.Get(); }
 	void CreateShader(ID3DBlob* compiledBlob);
 	void LoadShader(ID3D11PixelShader* pixelShader) { this->pixelShader = pixelShader; }
 

@@ -63,7 +63,7 @@ void RendererTestScene::ImGUIRender()
             MeshRender::ReloadShaderAll();
 			for (auto& i : meshList)
 			{
-				i->materialAsset.OpenAsset(L"Resource/Texture/Test.MaterialAsset");
+				i->materialAsset.OpenAsset(i->materialAsset.GetAssetPath().c_str());
 			}
         }
 

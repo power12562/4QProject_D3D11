@@ -45,7 +45,7 @@ struct SkyBoxMeshDrawCommand : public MeshDrawCommand
 {
 };
 
-struct PostProcessMeshDrawCommand
+struct PostProcesCommand
 {
 	ComputeShader computeShader;
 };
