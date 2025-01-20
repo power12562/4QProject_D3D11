@@ -519,10 +519,13 @@ void DefferdRenderer::Render()
 		ProcessDrawCommands(alphaDrawCommands);
 
 
+		ProcessDrawCommand(skyBoxDrawCommand);
+
+
+
 		ID3D11RenderTargetView* nullSRV[1]{ nullptr };
 		immediateContext->OMSetRenderTargets(std::size(nullSRV), nullSRV, nullptr);
 	}
-	ProcessDrawCommand(skyBoxDrawCommand);
 	
 
 

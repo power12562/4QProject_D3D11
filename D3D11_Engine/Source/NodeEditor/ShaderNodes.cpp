@@ -528,32 +528,32 @@ TextureNode::TextureNode()
 			GetHandler()->GetShaderNodeReturn().data.emplace_back(var2);
 			return ShaderPin<float>{ var2 };
 		});
-	addOUT<ShaderPin<Vector4>>((char*)u8"RGBA")->behaviour(
-		[this]()
-		{
-			std::string texcoord = "input.Tex";
-			auto uvValue = getInVal<ShaderPin<void>>("UV");
-			if (uvValue.value)
+		addOUT<ShaderPin<Vector4>>((char*)u8"RGBA")->behaviour(
+			[this]()
 			{
-				texcoord = uvValue.value->identifier;
-			}
+				std::string texcoord = "input.Tex";
+				auto uvValue = getInVal<ShaderPin<void>>("UV");
+				if (uvValue.value)
+				{
+					texcoord = uvValue.value->identifier;
+				}
 
-			auto var = std::make_shared<RegistorVariable>();
-			var->type = "Texture2D";
-			var->identifier = std::format({ "t_{}" }, getUID());
-			var->registorSlot = ERegisterSlot::Texture;
-			var->path = texturePath;
+				auto var = std::make_shared<RegistorVariable>();
+				var->type = "Texture2D";
+				var->identifier = std::format({ "t_{}" }, getUID());
+				var->registorSlot = ERegisterSlot::Texture;
+				var->path = texturePath;
 
-			auto var2 = std::make_shared<LocalVariable>();
-			var2->type = "float4";
-			var2->identifier = std::format({ "c_RGBA{}" }, getUID());
-			var2->initializationExpression = std::format({ " {}.Sample(DefaultSampler, {}).rgba" }, var->identifier, texcoord);
+				auto var2 = std::make_shared<LocalVariable>();
+				var2->type = "float4";
+				var2->identifier = std::format({ "c_RGBA{}" }, getUID());
+				var2->initializationExpression = std::format({ " {}.Sample(DefaultSampler, {}).rgba" }, var->identifier, texcoord);
 
 
-			GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
-			GetHandler()->GetShaderNodeReturn().data.emplace_back(var2);
-			return ShaderPin<Vector4>{ var2 };
-		});
+				GetHandler()->GetShaderNodeReturn().data.emplace_back(var);
+				GetHandler()->GetShaderNodeReturn().data.emplace_back(var2);
+				return ShaderPin<Vector4>{ var2 };
+			});
 
 
 }
@@ -619,11 +619,17 @@ void TextureNode::draw()
 			Set(path);
 		}
 	}
+	//
+	if (dimension == D3D11_RESOURCE_DIMENSION_TEXTURE2D){
+
+
 #if IMGUI_VERSION_NUM >= 19160
-	ImGui::Image((ImTextureID)(ID3D11ShaderResourceView*)texture, { 100, 100 });
+		ImGui::Image((ImTextureID)(ID3D11ShaderResourceView*)texture, { 100, 100 });
 #else
-	ImGui::Image((ID3D11ShaderResourceView*)texture, { 100, 100 });
+		ImGui::Image((ID3D11ShaderResourceView*)texture, { 100, 100 });
 #endif
+	}
+
 }
 
 void TextureNode::Serialize(nlohmann::json& j)
