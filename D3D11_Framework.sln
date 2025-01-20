@@ -21,6 +21,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CopyShader", "CopyShader\Co
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImguiNodeEditor", "ImguiNodeEditor\ImguiNodeEditor.vcxproj", "{D181DD16-0471-474A-9147-E2B6BFE7C8AF}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PotionAtelier", "PotionAtelier\PotionAtelier.vcxproj", "{15CF9B1D-70FB-4C09-AB21-DD49D77A4CD4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -77,6 +79,14 @@ Global
 		{D181DD16-0471-474A-9147-E2B6BFE7C8AF}.Release|x64.Build.0 = Release|x64
 		{D181DD16-0471-474A-9147-E2B6BFE7C8AF}.Release|x86.ActiveCfg = Release|Win32
 		{D181DD16-0471-474A-9147-E2B6BFE7C8AF}.Release|x86.Build.0 = Release|Win32
+		{15CF9B1D-70FB-4C09-AB21-DD49D77A4CD4}.Debug|x64.ActiveCfg = Debug|x64
+		{15CF9B1D-70FB-4C09-AB21-DD49D77A4CD4}.Debug|x64.Build.0 = Debug|x64
+		{15CF9B1D-70FB-4C09-AB21-DD49D77A4CD4}.Debug|x86.ActiveCfg = Debug|Win32
+		{15CF9B1D-70FB-4C09-AB21-DD49D77A4CD4}.Debug|x86.Build.0 = Debug|Win32
+		{15CF9B1D-70FB-4C09-AB21-DD49D77A4CD4}.Release|x64.ActiveCfg = Release|x64
+		{15CF9B1D-70FB-4C09-AB21-DD49D77A4CD4}.Release|x64.Build.0 = Release|x64
+		{15CF9B1D-70FB-4C09-AB21-DD49D77A4CD4}.Release|x86.ActiveCfg = Release|Win32
+		{15CF9B1D-70FB-4C09-AB21-DD49D77A4CD4}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
