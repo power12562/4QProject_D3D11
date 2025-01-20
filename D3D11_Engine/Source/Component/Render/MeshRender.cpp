@@ -26,6 +26,7 @@ MeshRender::MeshRender()
 
 MeshRender::~MeshRender()
 {
+	meshDrawCommand.~MeshDrawCommand();
 	
 }
 
