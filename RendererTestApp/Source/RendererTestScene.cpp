@@ -16,9 +16,10 @@ void RendererTestScene::Start()
 	auto cube = NewGameObject<CubeObject>(L"Cube");
 	auto skyBox = NewGameObject<SkyBoxObject>(L"skyBox");
 
-	nodeEditor = std::make_unique<ShaderNodeEditor>();
-	nodeEditor2 = std::make_unique<ShaderNodeEditor>("NodeEditor2");
+	nodeEditor = std::make_unique<ShaderNodeEditor>("Resource/NodeEditor");
+	nodeEditor2 = std::make_unique<ShaderNodeEditor>("Resource/NodeEditor2");
 	//nodeEditor->SetResultNode<TextureNode>("Resource/Texture/1735656899.jpg", EShaderResult::Normal);
+
 	auto pipe = std::views::transform([](auto& pair) { return pair.second; }) | std::ranges::views::join;
 
 	std::ranges::copy(Utility::CollectMeshComponents(cube) | pipe, std::back_inserter(meshList));

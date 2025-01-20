@@ -649,7 +649,15 @@ executionsLine.str()
 
 	for (auto& item : registerValues)
 	{
-		std::filesystem::path relativePath =  std::filesystem::relative(item->path, std::filesystem::current_path());
+		std::filesystem::path projPath = path;
+		std::filesystem::path currPath = std::filesystem::current_path();
+
+		if (projPath.is_relative())
+		{
+			projPath = currPath / projPath.parent_path();
+		}
+
+		std::filesystem::path relativePath = std::filesystem::relative(item->path, projPath);
 
 		materialAsset.SetTexture2D(relativePath.c_str(), item->registorSlot);
 	}

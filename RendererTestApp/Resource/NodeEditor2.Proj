@@ -73,7 +73,7 @@
         },
         {
             "Type": "TextureNode",
-            "path": "Resource\\Texture\\NoiseVolume.dds",
+            "path": "Texture\\NoiseVolume.dds",
             "pins": [
                 662345837686521650,
                 11557930003392842908,
