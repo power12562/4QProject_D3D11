@@ -1,5 +1,6 @@
 #include "SkyBoxRender.h"
 #include <Manager/HLSLManager.h>
+#include <Component/Render/MeshRender.h>
 
 SkyBoxRender* SkyBoxRender::GetMainSkyBox()
 {
@@ -92,8 +93,7 @@ void SkyBoxRender::Start()
         SetPS(pixelPath.c_str());
     }
     mainSkyBox = this;
-
-
+    D3D11_GameApp::GetRenderer().SetSkyBoxDrawCommand(meshDrawCommand);
 }
 
 void SkyBoxRender::FixedUpdate()
@@ -108,14 +108,67 @@ void SkyBoxRender::LateUpdate()
 {
 }
 
-void SkyBoxRender::UpdateMeshDrawCommand()
+void SkyBoxRender::Render()
 {
-    D3D11_GameApp::GetRenderer().SetSkyBoxDrawCommand(this->GetMeshDrawCommand());
+   //TransformBufferData 업데이트(더티 체크 필요할듯?)
+    transformBuffer.Set(
+        TransformBufferData
+        {
+            .World = XMMatrixTranspose(transform.GetWM()),
+            .WorldInverseTranspose = transform.GetIWM()
+        }
+    );
+
+    //등록
+    meshDrawCommand.meshData.shaderResources.push_back(
+        Binadble
+        {
+            .shaderType = EShaderType::Vertex,
+            .bindableType = EShaderBindable::ConstantBuffer,
+            .slot = 0,
+            .bind = (ID3D11Buffer*)transformBuffer
+        }
+    );
+
+    //텍스쳐 등록
+    size_t textureCount = materialAsset.GetTexturesV2().size();
+    const auto& textures = materialAsset.GetTexturesV2();
+    const auto& textureSlot = materialAsset.GetTexturesSlot();
+    for (size_t i = 0; i < textureCount; i++)
+    {
+        if (textureSlot[i] != TEXTURE_TYPE::ENV)
+            continue;
+
+        Binadble bind{};
+        bind.bindableType = EShaderBindable::ShaderResource;
+        bind.shaderType = EShaderType::Pixel;
+        bind.slot = textureSlot[i];
+        bind.bind = (ID3D11ShaderResourceView*)textures[i];
+        meshDrawCommand.materialData.shaderResources.push_back(bind);
+    }
+
+    //샘플러 등록
+    size_t samplersCount = materialAsset.GetSamplers().size();
+    const auto& samplers = materialAsset.GetSamplers();
+    const auto& samplerSlot = materialAsset.GetSamplerSlot();
+    for (size_t i = 0; i < samplersCount; i++)
+    {
+        Binadble bind{};
+        bind.bindableType = EShaderBindable::Sampler;
+        bind.shaderType = EShaderType::Pixel;
+        bind.slot = samplerSlot[i];
+        bind.bind = (ID3D11SamplerState*)samplers[i];
+        meshDrawCommand.materialData.shaderResources.push_back(bind);
+    }
 }
 
 void SkyBoxRender::SetSkyBox(TEXTURE_TYPE type, const wchar_t* path)
 {
-    materialAsset.SetTexture2D(path, type);
+    if(TEXTURE_TYPE::ENV == type)
+        materialAsset.SetCubeMapTexture(path, type);
+    else
+        materialAsset.SetTexture2D(path, type);
+
     const Texture* brdf_lut = nullptr;
     const Texture* diffuse_ibl = nullptr;
     const Texture* specular_ibl = nullptr;
@@ -169,6 +222,27 @@ void SkyBoxRender::SetSkyBox(TEXTURE_TYPE type, const wchar_t* path)
 void SkyBoxRender::ResetSkyBox(TEXTURE_TYPE type)
 {
     materialAsset.ReleaseTexture(type);
+}
+
+void SkyBoxRender::SetVS(const wchar_t* path)
+{
+    currVSpath = path;
+    {
+        ComPtr<ID3D11VertexShader> vs;
+        ComPtr<ID3D11InputLayout> il;
+        hlslManager.CreateSharingShader(currVSpath.c_str(), &vs, &il);
+        meshDrawCommand.meshData.vertexShader.LoadShader(vs.Get(), il.Get());
+    }
+}
+
+void SkyBoxRender::SetPS(const wchar_t* path)
+{
+    currPSpath = path;
+    {
+        ComPtr<ID3D11PixelShader> ps;
+        hlslManager.CreateSharingShader(currPSpath.c_str(), &ps);
+        meshDrawCommand.materialData.pixelShader.LoadShader(ps.Get());
+    }
 }
 
 void SkyBoxRender::CreateMesh()

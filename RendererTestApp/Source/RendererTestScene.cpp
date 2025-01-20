@@ -23,19 +23,15 @@ void RendererTestScene::Start()
 	auto pipe = std::views::transform([](auto& pair) { return pair.second; }) | std::ranges::views::join;
 
 	std::ranges::copy(Utility::CollectMeshComponents(cube) | pipe, std::back_inserter(meshList));
-	for (auto& i : Utility::CollectMeshComponents(skyBox) | pipe)
-	{
-		SkyBoxRender* sky = dynamic_cast<SkyBoxRender*>(i);
-		if (sky)
-		{
-			sky->SetSkyBox(SkyBoxRender::ENV, L"Resource/Texture/IBL/EnvHDR.dds");
-			sky->SetSkyBox(SkyBoxRender::BRDF_LUT, L"Resource/Texture/IBL/Brdf.dds");
-			sky->SetSkyBox(SkyBoxRender::Diffuse_IBL, L"Resource/Texture/IBL/DiffuseIBL.dds");
-			sky->SetSkyBox(SkyBoxRender::Specular_IBL, L"Resource/Texture/IBL/SpecularIBL.dds");
 
-		}
+	SkyBoxRender* sky = skyBox->IsComponent<SkyBoxRender>();
+	if (sky)
+	{
+		sky->SetSkyBox(SkyBoxRender::ENV, L"Resource/Texture/IBL/EnvHDR.dds");
+		sky->SetSkyBox(SkyBoxRender::BRDF_LUT, L"Resource/Texture/IBL/Brdf.dds");
+		sky->SetSkyBox(SkyBoxRender::Diffuse_IBL, L"Resource/Texture/IBL/DiffuseIBL.dds");
+		sky->SetSkyBox(SkyBoxRender::Specular_IBL, L"Resource/Texture/IBL/SpecularIBL.dds");
 	}
-	
 
 	for (auto& i : meshList)
 	{

@@ -1,14 +1,15 @@
 #pragma once
-#include <Component/Render/MeshRender.h>
+#include <Component/Base/RenderComponent.h>
+#include <Asset/MaterialAsset.h>
 
-class SkyBoxRender : public MeshRender
+class SkyBoxRender : public RenderComponent
 {
 	inline static SkyBoxRender* mainSkyBox = nullptr;
 public:
 	static SkyBoxRender* GetMainSkyBox();
 	enum TEXTURE_TYPE
 	{
-		ENV,
+		ENV = 0,
 		BRDF_LUT = 30,
 		Diffuse_IBL = 31,
 		Specular_IBL = 32,
@@ -24,14 +25,32 @@ protected:
 	virtual void FixedUpdate() override;
 	virtual void Update() override;
 	virtual void LateUpdate() override;
-	virtual void UpdateMeshDrawCommand() override;
+	virtual void Render() override;
+	virtual struct MeshDrawCommand GetMeshDrawCommand() override { return meshDrawCommand; }
 
 public:
 	void SetSkyBox(TEXTURE_TYPE type, const wchar_t* path);
 	void ResetSkyBox(TEXTURE_TYPE type);
 
+public:
+	void SetVS(const wchar_t* path);
+	inline const std::wstring& GetVSpath() { return currVSpath; }
+
+	void SetPS(const wchar_t* path);
+	inline const std::wstring& GetPSpath() { return currPSpath; }
+
 private:
-	virtual void CreateMesh() override;
+	std::wstring currVSpath;
+	std::wstring currPSpath;
+
+protected:
+	MeshDrawCommand				meshDrawCommand;
+	MaterialAsset               materialAsset;
+	ConstantBuffer				material;
+	ConstantBuffer				transformBuffer;
+
+private:
+	void CreateMesh();
 
 private:
 	std::vector<Vector4> vertices;

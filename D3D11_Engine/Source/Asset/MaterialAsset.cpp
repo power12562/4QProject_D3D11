@@ -63,6 +63,20 @@ void MaterialAsset::SetPixelShader(std::string shaderCode, bool isForward)
 	pixelShader.isForward = isForward;
 }
 
+void MaterialAsset::SetCubeMapTexture(const wchar_t* path, uint32_t slot)
+{
+	ReleaseTexture(slot);
+	currTexturePath.emplace_back(path);
+	texturesSlot.emplace_back(slot);
+	texturesV2.emplace_back();
+
+	Texture& textures = texturesV2.back();
+	ComPtr<ID3D11ShaderResourceView> textuer2D;
+	textureManager.CreateSharingCubeMap(path, &textuer2D);
+	textures.LoadTexture(textuer2D.Get());
+	textuer2D->AddRef();
+}
+
 void MaterialAsset::SetTexture2D(const wchar_t* path, uint32_t slot)
 {
 	ReleaseTexture(slot);

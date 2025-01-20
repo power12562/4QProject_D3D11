@@ -29,6 +29,14 @@ public:
 
 public:
 	void SetPixelShader(std::string shaderCode, bool isForward);
+	
+	template <typename T>
+	void SetCubeMapTexture(const wchar_t* path, T type)
+	{
+		uint32_t slot = static_cast<uint32_t>(type);
+		SetCubeMapTexture(path, slot);
+	}
+	void SetCubeMapTexture(const wchar_t* path, uint32_t slot);
 
 	void SetTexture2D(const wchar_t* path, uint32_t slot);
 	template <typename T> void SetTexture2D(const wchar_t* path, T type)	
